@@ -4,6 +4,7 @@
 . ./subcolon.sh
 . ./output_file_name.sh  # computes output file name
 . ./keywords_are_present_in_file.sh
+. ./set_keywords_in_fits_header.sh
 
 function show_help
 {
@@ -66,8 +67,8 @@ fi
 
 # check whether file already contains SITELAT and SITELONG. If it
 # does, those override the defaults.
-sitelat=$($WCSTOOLS/gethead -b $file SITELAT)
-sitelong=$($WCSTOOLS/gethead -b $file SITELONG)
+sitelat=$(get_keyword_from_fits_header $file  SITELAT)
+sitelong=$(get_keyword_from_fits_header $file SITELONG)
 latitude=$(subcolon ${sitelat:-$default_latitude} )
 longitude=$(subcolon ${sitelong:-$default_longitude} )
 
@@ -78,8 +79,8 @@ longitude=$(subcolon ${sitelong:-$default_longitude} )
 outfile=$(output_file_name $file $name_extension)
 
 if [[ $outfile != $file ]]; then cp $file $outfile; fi
-#echo "$latitude_comment"
-$WCSTOOLS/sethead -h $outfile $latitude_name=$latitude / "$latitude_comment"  $longitude_name=$longitude / "$longitude_comment"
+
+set_keywords_in_fits_header $outfile $latitude_name=$latitude / "$latitude_comment"  $longitude_name=$longitude / "$longitude_comment"
 
 
 
