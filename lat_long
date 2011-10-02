@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# include function for turning underscores into colons.
+. ./subcolon.sh
+
+function show_help
+{
+    echo "Usage: lat_long [options] fits-file"
+    echo "Options:"
+    echo "   -h           show this help"
+    echo "   -f           force overwriting of existing keywords"
+    echo "   -n arg       write to copy of input fle with arg appended to its name"
+}
+# processes or sets latitude/longitude for Feder Observatory in FITS file
+# after running FITS file will contain keywords LATITUDE and LONGITUD
+# with appropriate values in sexagesimal.
+#
+# processing is ncessary to properly format latitude/longitude from
+# value written by MaximDL.
+
+#use only the packaged version of wcstools
+WCSTOOLS=wcstools-local/bin
+
+default_latitude="46:52:00"
+latitude_name="LATITUDE"
+latitude_comment="Observatory latitude [degrees]"
+default_longitude="96:27:12"
+longitude_name="LONGITUD"
+longitude_comment="Observatory longitude [deg west]"
+
+while [[ $1 == -* ]]; do
+    case "$1" in
+      -h|--help|-\?) show_help; exit 0;;
+      -f) force=1; shift;;
+      -n) if (($# > 2)) && [[ $2 != -* ]]; then
+            name_addition=$2; shift 2
+          else 
+            echo "-n requires an argument" 1>&2
+            exit 1
+          fi ;;
+      --) shift; break;;
+      -*) echo "invalid option: $1" 1>&2; show_help; exit 1;;
+    esac
+done
+
+if [[ $# != 1 ]] 
+then
+    show_help
+    exit 1
+fi
+
+file=$1
+
+# check whether file currently contains latitude/longitude. If it
+# does, halt unless -f option has been passed.
+
+file_long=$($WCSTOOLS/gethead -b $file $longitude_name)
+file_lat=$($WCSTOOLS/gethead -b $file $latitude_name)
+if [[ ( $file_long || $file_lat ) && ! $force ]]
+then
+    echo "use option -f to force replacement of existing $latitude_name and/or $longitude_name"
+    exit 1;
+fi
+
+# check whether file already contains SITELAT and SITELONG. If it
+# does, those override the defaults.
+sitelat=$($WCSTOOLS/gethead -b $file SITELAT)
+sitelong=$($WCSTOOLS/gethead -b $file SITELONG)
+latitude=$(subcolon ${sitelat:-$default_latitude} )
+longitude=$(subcolon ${sitelong:-$default_longitude} )
+
+# We are ready to write
+
+# add name_addition to file name before the extension if
+# name_addition is set.
+extension=${file##*.}
+#echo $extension
+outfile=${file/.$extension/${name_addition:+_}$name_addition.$extension}
+#echo "outfile $outfile"
+#echo $latitude $longitude
+if [[ $outfile != $file ]]; then cp $file $outfile; fi
+#echo "$latitude_comment"
+$WCSTOOLS/sethead -h $outfile $latitude_name=$latitude / "$latitude_comment"  $longitude_name=$longitude / "$longitude_comment"
+
+
+
+
