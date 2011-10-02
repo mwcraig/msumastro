@@ -2,7 +2,7 @@
 
 # include function for turning underscores into colons.
 . ./subcolon.sh
-
+. ./output_file_name.sh  # computes output file name
 function show_help
 {
     echo "Usage: lat_long [options] fits-file"
@@ -72,12 +72,9 @@ longitude=$(subcolon ${sitelong:-$default_longitude} )
 # We are ready to write
 
 # add name_addition to file name before the extension if
-# name_addition is set.
-extension=${file##*.}
-#echo $extension
-outfile=${file/.$extension/${name_addition:+_}$name_addition.$extension}
-#echo "outfile $outfile"
-#echo $latitude $longitude
+
+outfile=$(output_file_name $file $name_extension)
+
 if [[ $outfile != $file ]]; then cp $file $outfile; fi
 #echo "$latitude_comment"
 $WCSTOOLS/sethead -h $outfile $latitude_name=$latitude / "$latitude_comment"  $longitude_name=$longitude / "$longitude_comment"
