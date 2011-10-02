@@ -3,6 +3,8 @@
 # include function for turning underscores into colons.
 . ./subcolon.sh
 . ./output_file_name.sh  # computes output file name
+. ./keywords_are_present_in_file.sh
+
 function show_help
 {
     echo "Usage: lat_long [options] fits-file"
@@ -54,11 +56,11 @@ file=$1
 # check whether file currently contains latitude/longitude. If it
 # does, halt unless -f option has been passed.
 
-file_long=$($WCSTOOLS/gethead -b $file $longitude_name)
-file_lat=$($WCSTOOLS/gethead -b $file $latitude_name)
-if [[ ( $file_long || $file_lat ) && ! $force ]]
+keywords="$latitude_name $longitude_name"
+keywords_present=$(keywords_are_present_in_file $file $keywords )
+if [[ ($keywords_present) && ! $force ]]
 then
-    echo "use option -f to force replacement of existing $latitude_name and/or $longitude_name"
+    echo "use option -f to force replacement of existing $keywords"
     exit 1;
 fi
 
