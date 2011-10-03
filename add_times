@@ -75,6 +75,12 @@ if [[ !($dateobs == *?T?*) ]]; then echo "MOO"; datetime=${dateobs}T$timeobs; el
 jd=$(./wcstools-local/bin/getdate fd2jd $datetime)
 mjd=$(./wcstools-local/bin/getdate fd2mjd $datetime)
 longitude=$(./wcstools-local/bin/getdate deg2ang $(get_keyword_from_fits_header $file $longitude_name))
+
+if [[ !$longitude ]]; then
+    echo "No longitude present in FITS file!"
+    exit 1
+fi
+
 #echo $longitude 
 #echo "-l $longitude ft2lst $datetime"
 
