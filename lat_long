@@ -5,6 +5,7 @@
 . ./output_file_name.sh  # computes output file name
 . ./keywords_are_present_in_file.sh
 . ./set_keywords_in_fits_header.sh
+. ./keyword_names.sh
 
 function show_help
 {
@@ -25,11 +26,8 @@ function show_help
 WCSTOOLS=wcstools-local/bin
 
 default_latitude="46:52:00"
-latitude_name="LATITUDE"
-latitude_comment="Observatory latitude [degrees]"
 default_longitude="96:27:12"
-longitude_name="LONGITUD"
-longitude_comment="Observatory longitude [deg west]"
+
 
 while [[ $1 == -* ]]; do
     case "$1" in

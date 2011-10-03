@@ -19,17 +19,11 @@ function show_help
 . ./keywords_are_present_in_file.sh
 . ./output_file_name.sh
 . ./set_keywords_in_fits_header.sh
+. ./keyword_names.sh
 
 #use only the packaged version of wcstools
 #WCSTOOLS=wcstools-local/bin
 
-lst_name="LST"
-lst_comment="Local Sidereal Time"
-jd_name="JD"
-jd_comment="Julian Date at start of observation"
-mjd_name="MJD"
-mjd_comment="Modified Julian Date MJD=JD-2400000.5 at start of
-observation"
 
 while [[ $1 == -* ]]; do
     case "$1" in
@@ -80,7 +74,7 @@ if [[ !($dateobs == *?T?*) ]]; then echo "MOO"; datetime=${dateobs}T$timeobs; el
 
 jd=$(./wcstools-local/bin/getdate fd2jd $datetime)
 mjd=$(./wcstools-local/bin/getdate fd2mjd $datetime)
-longitude=$(./wcstools-local/bin/getdate deg2ang $(get_keyword_from_fits_header $file LONGITUD))
+longitude=$(./wcstools-local/bin/getdate deg2ang $(get_keyword_from_fits_header $file $longitude_name))
 #echo $longitude 
 #echo "-l $longitude ft2lst $datetime"
 
