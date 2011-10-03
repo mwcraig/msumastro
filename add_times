@@ -69,7 +69,7 @@ dateobs=$(get_keyword_from_fits_header $file DATE-OBS)
 timeobs=$(get_keyword_from_fits_header $file TIME-OBS)
 #echo $dateobs
 #echo $timeobs
-if [[ !($dateobs == *?T?*) ]]; then echo "MOO"; datetime=${dateobs}T$timeobs; else
+if [[ !($dateobs == *?T?*) ]]; then datetime=${dateobs}T$timeobs; else
     datetime=$dateobs; fi
 
 jd=$(./wcstools-local/bin/getdate fd2jd $datetime)
