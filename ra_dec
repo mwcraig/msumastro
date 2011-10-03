@@ -10,6 +10,7 @@ function show_help
     echo "   -n arg       write to copy of input fle with arg appended to its name"
 }
 
+. ./subcolon.sh
 . ./keywords_are_present_in_file.sh
 . ./output_file_name.sh
 . ./set_keywords_in_fits_header.sh
