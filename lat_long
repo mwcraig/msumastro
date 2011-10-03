@@ -70,6 +70,10 @@ sitelong=$(get_keyword_from_fits_header $file SITELONG)
 latitude=$(subcolon ${sitelat:-$default_latitude} )
 longitude=$(subcolon ${sitelong:-$default_longitude} )
 
+# check for bogus negative longitude for Feder:
+
+if [[ $longitude = -$default_longitude ]]; then longitude=$default_longitude; fi
+
 # We are ready to write
 
 # add name_addition to file name before the extension if
