@@ -1,0 +1,85 @@
+#!/bin/bash
+
+. ./show_help.sh
+
+. ./keywords_are_present_in_file.sh
+. ./output_file_name.sh
+. ./set_keywords_in_fits_header.sh
+. ./keyword_names.sh
+
+function to_radians
+{
+    angle=$1
+    echo "$1/45*a(1)" | bc -l
+    return
+}
+getdate=./wcstools-local/bin/getdate
+
+while [[ $1 == -* ]]; do
+    case "$1" in
+      -h|--help|-\?) show_help; exit 0;;
+      -f) force=1; shift;;
+      -n) if (($# > 2)) && [[ $2 != -* ]]; then
+            name_addition=$2; shift 2
+          else 
+            echo "-n requires an argument" 1>&2
+            exit 1
+          fi ;;
+      --) shift; break;;
+      -*) echo "invalid option: $1" 1>&2; show_help; exit 1;;
+    esac
+done
+
+if [[ $# != 1 ]] 
+then
+    show_help
+    exit 1
+fi
+
+file=$1
+
+ra=$(get_keyword_from_fits_header $file $ra_name)
+lst=$(get_keyword_from_fits_header $file $lst_name)
+
+if [[ (! $ra) || (! $lst) ]]; then
+    echo "Missing RA or LST in FITS file $file"
+    exit 1
+fi
+
+#echo $ra $lst
+
+ra_angle=$($getdate hr2ang $ra)
+lst_angle=$($getdate hr2ang $lst)
+
+#echo "$lst_angle  $ra_angle"
+ha_angle=$( echo "($lst_angle - $ra_angle)" | bc -l)
+ha=$($getdate ang2hr $ha_angle)
+
+#echo $ha_angle
+ha_radian=$(to_radians $ha_angle)
+dec_radian=$(to_radians $($getdate deg2ang $(get_keyword_from_fits_header $file $dec_name)))
+latitude_radian=$(to_radians $($getdate deg2ang $(get_keyword_from_fits_header $file $latitude_name)))
+#echo $dec_radian $latitude_radian
+
+airmass_raw=$( echo "1/(s($latitude_radian)*s($dec_radian)+c($latitude_radian)*c($dec_radian)*c($ha_radian))"| bc -l)
+
+#echo $airmass_raw
+
+# trim airmass to three figures to right of decimal
+if [[ $airmass_raw = 1\.[0-9][0-9][0-9]* ]]; then 
+    airmass=${airmass_raw:0:5}
+else
+    echo "WTF? Airmass $airmass_raw doesn't have three digits to right of decimal."
+fi
+
+#echo $airmass
+
+# We are ready to write
+
+# add name_addition to file name before the extension if
+
+outfile=$(output_file_name $file $name_extension)
+
+if [[ $outfile != $file ]]; then cp $file $outfile; fi
+
+set_keywords_in_fits_header $outfile $ha_name=$ha / "$ha_comment"  $airmass_name=$airmass / "$airmass_comment"

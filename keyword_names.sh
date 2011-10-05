@@ -22,3 +22,9 @@ dec_name="DEC"
 dec_comment="Approximate DEC at EQUINOX"
 equinox_name="EQUINOX"
 equinox_comment="Equniox of RA and DEC"
+
+# Hour angle and airmass
+ha_name="HA"
+ha_comment="Hour angle"
+airmass_name="secz"
+airmass_comment="Airmass (Sec ZD) at start of observation"
