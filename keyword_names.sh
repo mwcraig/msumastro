@@ -16,6 +16,8 @@ mjd_comment="Modified Julian Date MJD=JD-2400000.5 at start of
 observation"
 
 # RA/DEC
+feder_ra_name="OBJCTRA"
+feder_dec_name="OBJCTDEC"
 ra_name="RA"
 ra_comment="Approximate RA at EQUINOX"
 dec_name="DEC"
@@ -28,3 +30,9 @@ ha_name="HA"
 ha_comment="Hour angle"
 airmass_name="secz"
 airmass_comment="Airmass (Sec ZD) at start of observation"
+
+#file status summary
+filter_name="FILTER"
+telescope_name="TELESCOP"
+image_type_name="IMAGETYP"
+object_name="OBJECT"

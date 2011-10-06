@@ -1,1 +1,118 @@
 #!/bin/bash
+
+filter_status_file=NEEDS_FILTER.txt
+object_status_file=NEEDS_OBJECT.txt
+
+function show_help
+{
+    echo "Sure wish I had time to write documentation!"
+}
+
+. ./get_keyword_from_fits_header.sh
+. ./keywords_are_present_in_file.sh
+. ./keyword_names.sh
+
+while [[ $1 == -* ]]; do
+    case "$1" in
+      -h|--help|-\?) show_help; exit 0;;
+      -t) if (($# > 2)) && [[ $2 != -* ]]; then
+            image_types_too=$2; shift 2
+          else 
+            echo "-t requires an argument" 1>&2
+            exit 1
+          fi ;;
+      -o) if (($# > 2)) && [[ $2 != -* ]]; then
+            output_file=$2; shift 2
+          else 
+            echo "-t requires an argument" 1>&2
+            exit 1
+          fi ;;
+      --) shift; break;;
+      -*) echo "invalid option: $1" 1>&2; show_help; exit 1;;
+    esac
+done
+
+if [[ $# != 1 ]] 
+then
+    show_help
+    exit 1
+fi
+
+dir_name=$1
+
+header_status_file=${output_file:-$default_header_status_file}
+
+fits_files=$dir_name/*.fit
+
+# loop over files
+# using a stupid indexed array instead of associative array because
+# server doesn't have bash4.
+i=0
+
+declare -a file_name
+declare -a filter_present
+declare -a image_type
+declare -a telescope_set
+declare -a object_info_present
+
+
+bias_temp_file=.$$.bias.txt
+dark_tmp_file=.$$.dark.txt
+flat_temp_file=.$$.flat.txt
+light_temp_file=.$$.light.txt
+
+# for each file get:
+# image type
+# status of telescope keyword
+# status of ra/dec/object keywords
+for file in $fits_files; do
+    file_name[$i]=$file
+    telescope_set[$i]=$( keywords_are_present_in_file $file $telescope_name )
+    object_present=$( keywords_are_present_in_file $file $object_name )
+    ra_present=$( keywords_are_present_in_file $file $ra_name $feder_ra_name)
+    dec_present=$( keywords_are_present_in_file $file $dec_name $feder_dec_name)
+    if [[ $object_present || ( $ra_present && $dec_present ) ]]; then 
+	object_info_present[$i]="Yes"
+    fi 
+    filter_present[$i]=$( keywords_are_present_in_file $file $filter_name )
+    image_type=$( get_keyword_from_fits_header $file $image_type_name )
+#    echo $file $i
+#    echo ${filter_present[$i]}
+
+    shopt -s nocasematch
+    case $image_type in
+	Light* ) echo $file LIGHT >> $light_temp_file; isLight="yes";;
+	Dark* ) echo  $file DARK >> $dark_temp_file; isDark="yes";;
+	Bias* ) echo $file BIAS >> $bias_temp_file; isBias="yes";;
+	Flat* ) echo $file FLAT >> $flat_temp_file; isFlat="Yes";;
+	* ) echo "Bad news, unknown image type."; exit 1;;
+    esac 
+    shopt -u nocasematch
+
+    # don't need filter for bias/dark
+    if [[ $isLight || $isFlat ]]; then
+	 if [[ ! ${filter_present[$i]} ]]; then echo $file >> $filter_status_file; wrote_filter=1; fi
+    fi
+
+    #only need object information for light images
+    if [[ $isLight ]]; then
+	if [[ ! ${object_info_present[$i]} ]]; then echo $file >> $object_status_file; wrote_object=1; fi
+    fi 
+    : $(( i++ ))
+done
+
+if [[ $image_types_too ]]; then
+    if [[ -e $image_types_too ]]; then rm $image_types_too; fi
+    if [[ $isBias ]]; then cat $bias_temp_file > $image_types_too; fi
+    if [[ $Isdark ]]; then cat $dark_temp_file >> $image_types_too; fi
+    if [[ $isFlat ]]; then cat $flat_temp_file >> $image_types_too; fi
+    if [[ $isLight ]]; then cat $light_temp_file >> $image_types_too; fi
+    rm -f $bias_temp_file $dark_temp_file $flat_temp_file $light_temp_file
+fi
+
+    
+
+
+
+
+
