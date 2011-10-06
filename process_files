@@ -1,0 +1,26 @@
+#!/bin/bash
+
+dir=$1
+
+# Make a manifest to aid in processing files
+./file_status_summary -t Manifest $dir
+
+fits_files=$dir/*.fit
+
+light_files=$(cat LIGHT_FILES.txt)
+
+for file in $fits_files; do 
+    ./lat_long $file || exit 1;
+    ./add_times $file || exit 1;
+done
+
+# Do any files need an object? If so, abort.
+if [[ -e NEEDS_OBJECT.txt ]]; then 
+    echo "Fix the object information before trying to add ra/dec!"
+    exit 1;
+fi
+
+for file in $light_files; do
+    ./ra_dec $file || exit 1
+    ./ha_airmass $file || exit 1
+done
