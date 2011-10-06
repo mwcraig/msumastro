@@ -2,6 +2,17 @@
 
 dir=$1
 
+# check for wcstools
+
+if [[ ! -e wcstools-local ]]; then
+    echo "You are screwed, man, no wcstools!"
+    exit 1
+fi
+
+# build wcstools if necessary
+
+./make_wcstools
+
 # Make a manifest to aid in processing files
 ./file_status_summary -t Manifest $dir
 
