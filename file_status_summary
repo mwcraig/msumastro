@@ -81,7 +81,7 @@ for file in $fits_files; do
 
     shopt -s nocasematch
     case $image_type in
-	Light* ) echo $file LIGHT >> $light_temp_file; isLight="yes";;
+	Light* ) echo $file LIGHT >> $light_temp_file; echo $file >> LIGHT_FILES.txt; isLight="yes";;
 	Dark* ) echo  $file DARK >> $dark_temp_file; isDark="yes";;
 	Bias* ) echo $file BIAS >> $bias_temp_file; isBias="yes";;
 	Flat* ) echo $file FLAT >> $flat_temp_file; isFlat="Yes";;
@@ -91,17 +91,18 @@ for file in $fits_files; do
 
     # don't need filter for bias/dark
     if [[ $isLight || $isFlat ]]; then
-	 if [[ ! ${filter_present[$i]} ]]; then echo $file >> $filter_status_file; wrote_filter=1; fi
+	 if [[ ! ${filter_present[$i]} ]]; then echo $file >> $dir_name/$filter_status_file; wrote_filter=1; fi
     fi
 
     #only need object information for light images
     if [[ $isLight ]]; then
-	if [[ ! ${object_info_present[$i]} ]]; then echo $file >> $object_status_file; wrote_object=1; fi
+	if [[ ! ${object_info_present[$i]} ]]; then echo $file >> $dir_name/$object_status_file; wrote_object=1; fi
     fi 
     : $(( i++ ))
 done
 
 if [[ $image_types_too ]]; then
+    image_types_too=$dir_name/$image_types_too
     if [[ -e $image_types_too ]]; then rm $image_types_too; fi
     if [[ $isBias ]]; then cat $bias_temp_file > $image_types_too; fi
     if [[ $Isdark ]]; then cat $dark_temp_file >> $image_types_too; fi
