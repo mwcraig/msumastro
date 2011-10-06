@@ -56,10 +56,10 @@ declare -a telescope_set
 declare -a object_info_present
 
 
-bias_temp_file=.$$.bias.txt
-dark_tmp_file=.$$.dark.txt
-flat_temp_file=.$$.flat.txt
-light_temp_file=.$$.light.txt
+bias_temp_file=$dir_name/.$$.bias.txt
+dark_temp_file=$dir_name/.$$.dark.txt
+flat_temp_file=$dir_name/.$$.flat.txt
+light_temp_file=$dir_name/.$$.light.txt
 
 # for each file get:
 # image type
