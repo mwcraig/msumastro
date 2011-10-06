@@ -49,7 +49,7 @@ fits_files=$dir_name/*.fit
 # server doesn't have bash4.
 i=0
 
-declare -a file_name
+#declare -a file_name
 declare -a filter_present
 declare -a image_type
 declare -a telescope_set
@@ -66,7 +66,7 @@ light_temp_file=$dir_name/.$$.light.txt
 # status of telescope keyword
 # status of ra/dec/object keywords
 for file in $fits_files; do
-    file_name[$i]=$file
+    file_name=$( basename $file )
     telescope_set[$i]=$( keywords_are_present_in_file $file $telescope_name )
     object_present=$( keywords_are_present_in_file $file $object_name )
     ra_present=$( keywords_are_present_in_file $file $ra_name $feder_ra_name)
@@ -81,10 +81,13 @@ for file in $fits_files; do
 
     shopt -s nocasematch
     case $image_type in
-	Light* ) echo $file LIGHT >> $light_temp_file; echo $file >> LIGHT_FILES.txt; isLight="yes";;
-	Dark* ) echo  $file DARK >> $dark_temp_file; isDark="yes";;
-	Bias* ) echo $file BIAS >> $bias_temp_file; isBias="yes";;
-	Flat* ) echo $file FLAT >> $flat_temp_file; isFlat="Yes";;
+	Light* ) echo $file_name LIGHT >> $light_temp_file; 
+	    echo $file_name >> $dir_name/LIGHT_FILES.txt
+	    isLight="yes"
+	    haveLight="yes";;
+	Dark* ) echo  $file_name DARK >> $dark_temp_file; haveDark="yes";;
+	Bias* ) echo $file_name BIAS >> $bias_temp_file; haveBias="yes";;
+	Flat* ) echo $file_name FLAT >> $flat_temp_file; isFlat="Yes"; haveFlat="yes";;
 	* ) echo "Bad news, unknown image type."; exit 1;;
     esac 
     shopt -u nocasematch
@@ -98,16 +101,18 @@ for file in $fits_files; do
     if [[ $isLight ]]; then
 	if [[ ! ${object_info_present[$i]} ]]; then echo $file >> $dir_name/$object_status_file; wrote_object=1; fi
     fi 
+    isLight=
+    isFlat=
     : $(( i++ ))
 done
 
 if [[ $image_types_too ]]; then
     image_types_too=$dir_name/$image_types_too
     if [[ -e $image_types_too ]]; then rm $image_types_too; fi
-    if [[ $isBias ]]; then cat $bias_temp_file > $image_types_too; fi
-    if [[ $Isdark ]]; then cat $dark_temp_file >> $image_types_too; fi
-    if [[ $isFlat ]]; then cat $flat_temp_file >> $image_types_too; fi
-    if [[ $isLight ]]; then cat $light_temp_file >> $image_types_too; fi
+    if [[ $haveBias ]]; then cat $bias_temp_file > $image_types_too; fi
+    if [[ $haveDark ]]; then cat $dark_temp_file >> $image_types_too; fi
+    if [[ $haveFlat ]]; then cat $flat_temp_file >> $image_types_too; fi
+    if [[ $haveLight ]]; then cat $light_temp_file >> $image_types_too; fi
     rm -f $bias_temp_file $dark_temp_file $flat_temp_file $light_temp_file
 fi
 
