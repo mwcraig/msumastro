@@ -70,6 +70,7 @@ if [[ $airmass_raw = [1-9]\.[0-9][0-9][0-9]* ]]; then
     airmass=${airmass_raw:0:5}
 else
     echo "WTF? Airmass $airmass_raw doesn't have three digits to right of decimal."
+    exit 1
 fi
 
 #echo $airmass
