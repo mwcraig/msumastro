@@ -18,13 +18,16 @@ fi
 
 fits_files=$dir/*.fit
 
+foo=( $fits_files )
+nfiles=${#foo[@]}
 light_files=$(cat $dir/LIGHT_FILES.txt)
 
+#set -x
 i=0
 for file in $fits_files; do
-    echo "Processing file $i of ${#fits_files}: $file"
-    ./lat_long  $file || exit 1;
-    ./add_times $file || exit 1;
+    echo "Processing file $i of $nfiles: $file"
+    ./lat_long  $file
+    ./add_times $file
     : $(( i++ ))
 done
 
@@ -35,6 +38,6 @@ if [[ -e $dir/NEEDS_OBJECT.txt ]]; then
 fi
 
 for file in $light_files; do
-    ./ra_dec $dir/$file || exit 1
-    ./ha_airmass $dir/$file || exit 1
+    ./ra_dec $dir/$file 
+    ./ha_airmass $dir/$file
 done
