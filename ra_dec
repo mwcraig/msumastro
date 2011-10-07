@@ -46,7 +46,7 @@ keywords="$ra_name $dec_name"
 keywords_present=$(keywords_are_present_in_file $file $keywords )
 if [[ ($keywords_present) && ! $force ]]
 then
-    echo "use option -f to force replacement of existing $keywords"
+    echo "use option -f to force replacement of existing $keywords in $file"
     exit 1;
 fi
 outfile=$(output_file_name $file $name_extension)
@@ -66,7 +66,7 @@ elif [[ $object ]]; then
 	 echo "Not found"
 	 exit 1;
     elif [[ $simbad == [0-9]* ]]; then
-	echo ${#simbad}
+	#echo ${#simbad}
 	ra=${simbad[0]}
 	dec=${simbad[1]}
 	equinox="2000.0"
