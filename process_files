@@ -37,7 +37,12 @@ if [[ -e $dir/NEEDS_OBJECT.txt ]]; then
     exit 1;
 fi
 
+foo=( $light_files )
+nfiles=${#foo[@]}
+i=0
 for file in $light_files; do
+    echo "Processing file $i of $nfiles: $file"
     ./ra_dec $dir/$file 
     ./ha_airmass $dir/$file
+    : $(( i++ ))
 done
