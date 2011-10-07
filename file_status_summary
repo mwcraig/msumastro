@@ -2,6 +2,7 @@
 
 filter_status_file=NEEDS_FILTER.txt
 object_status_file=NEEDS_OBJECT.txt
+light_frame_file=LIGHT_FILES.txt
 
 function show_help
 {
@@ -41,8 +42,6 @@ fi
 #set -x
 dir_name=$1
 
-header_status_file=${output_file:-$default_header_status_file}
-
 fits_files=$dir_name/*.fit
 
 # loop over files
@@ -61,6 +60,11 @@ bias_temp_file=$dir_name/.$$.bias.txt
 dark_temp_file=$dir_name/.$$.dark.txt
 flat_temp_file=$dir_name/.$$.flat.txt
 light_temp_file=$dir_name/.$$.light.txt
+
+#
+# check for existing output files, and nuke if needed:
+#
+/bin/rm -f $dir_name/$light_frame_file $dir_name/$filter_status_file $dir_name/$object_status_file
 
 # for each file get:
 # image type
