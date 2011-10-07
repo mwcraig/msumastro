@@ -38,6 +38,7 @@ then
     exit 1
 fi
 
+#set -x
 dir_name=$1
 
 header_status_file=${output_file:-$default_header_status_file}
@@ -94,12 +95,12 @@ for file in $fits_files; do
 
     # don't need filter for bias/dark
     if [[ $isLight || $isFlat ]]; then
-	 if [[ ! ${filter_present[$i]} ]]; then echo $file >> $dir_name/$filter_status_file; wrote_filter=1; fi
+	 if [[ ! ${filter_present[$i]} ]]; then echo $file_name >> $dir_name/$filter_status_file; wrote_filter=1; fi
     fi
 
     #only need object information for light images
     if [[ $isLight ]]; then
-	if [[ ! ${object_info_present[$i]} ]]; then echo $file >> $dir_name/$object_status_file; wrote_object=1; fi
+	if [[ ! ${object_info_present[$i]} ]]; then echo $file_name >> $dir_name/$object_status_file; wrote_object=1; fi
     fi 
     isLight=
     isFlat=
