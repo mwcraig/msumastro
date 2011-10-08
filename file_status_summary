@@ -49,11 +49,6 @@ fits_files=$dir_name/*.fit
 # server doesn't have bash4.
 i=0
 
-#declare -a file_name
-declare -a filter_present
-declare -a image_type
-declare -a telescope_set
-declare -a object_info_present
 
 
 bias_temp_file=$dir_name/.$$.bias.txt
@@ -72,17 +67,16 @@ light_temp_file=$dir_name/.$$.light.txt
 # status of ra/dec/object keywords
 for file in $fits_files; do
     file_name=$( basename $file )
-    telescope_set[$i]=$( keywords_are_present_in_file $file $telescope_name )
+    telescope_set=$( keywords_are_present_in_file $file $telescope_name )
     object_present=$( keywords_are_present_in_file $file $object_name )
     ra_present=$( keywords_are_present_in_file $file $ra_name $feder_ra_name)
     dec_present=$( keywords_are_present_in_file $file $dec_name $feder_dec_name)
     if [[ $object_present || ( $ra_present && $dec_present ) ]]; then 
-	object_info_present[$i]="Yes"
+	object_info_present="Yes"
     fi 
-    filter_present[$i]=$( keywords_are_present_in_file $file $filter_name )
+    filter_present=$( keywords_are_present_in_file $file $filter_name )
     image_type=$( get_keyword_from_fits_header $file $image_type_name )
 #    echo $file $i
-#    echo ${filter_present[$i]}
 
     shopt -s nocasematch
     case $image_type in
@@ -99,7 +93,7 @@ for file in $fits_files; do
 
     # don't need filter for bias/dark
     if [[ $isLight || $isFlat ]]; then
-	 if [[ ! ${filter_present[$i]} ]]; then echo $file_name >> $dir_name/$filter_status_file; wrote_filter=1; fi
+	 if [[ ! ${filter_present} ]]; then echo $file_name >> $dir_name/$filter_status_file; wrote_filter=1; fi
     fi
 
     #only need object information for light images
