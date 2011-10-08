@@ -98,7 +98,7 @@ for file in $fits_files; do
 
     #only need object information for light images
     if [[ $isLight ]]; then
-	if [[ ! ${object_info_present[$i]} ]]; then echo $file_name >> $dir_name/$object_status_file; wrote_object=1; fi
+	if [[ ! ${object_info_present} ]]; then echo $file_name >> $dir_name/$object_status_file; wrote_object=1; fi
     fi 
     isLight=
     isFlat=
