@@ -36,3 +36,14 @@ filter_name="FILTER"
 telescope_name="TELESCOP"
 image_type_name="IMAGETYP"
 object_name="OBJECT"
+
+# synonyms
+ra_synonym_1=$feder_ra_name
+# if there is more than one synonym add a number to the basename, as
+# in
+#ra_synonym_2="MYRANAME"
+
+dec_synonym_1=$feder_dec_name
+
+airmass_synonym_1="AIRMASS"
+

@@ -1,0 +1,91 @@
+#!/bin/bash
+
+
+function show_help
+{
+    echo "Usage: ra_dec [options] fits-file"
+    echo "Options:"
+    echo "   -h           show this help"
+    echo "   -f           force overwriting of existing FITS keywords"
+    echo "   -n arg       write to copy of input fle with arg appended to its name"
+}
+
+. ./subcolon.sh
+. ./keywords_are_present_in_file.sh
+. ./output_file_name.sh
+. ./set_keywords_in_fits_header.sh
+. ./keyword_names.sh
+
+
+getdate=./wcstools-local/bin/getdate
+simpos=./wcstools-local/bin/simpos
+
+while [[ $1 == -* ]]; do
+    case "$1" in
+      -h|--help|-\?) show_help; exit 0;;
+      -f) force=1; shift;;
+      -n) if (($# > 2)) && [[ $2 != -* ]]; then
+            name_addition=$2; shift 2
+          else 
+            echo "-n requires an argument" 1>&2
+            exit 1
+          fi ;;
+      --) shift; break;;
+      -*) echo "invalid option: $1" 1>&2; show_help; exit 1;;
+    esac
+done
+
+if [[ $# != 1 ]] 
+then
+    show_help
+    exit 1
+fi
+
+file=$1
+
+keywords="${!ra_synonym*} ${!dec_synonym*} ${!airmass_synonym*}"
+ra_synonyms="${!ra_synonym*}"
+dec_synonyms="${!dec_synonym*}"
+airmass_synonyms="${!airmass_synonym*}"
+
+objectra=$(get_keyword_from_fits_header $file $feder_ra_name)
+objectdec=$(get_keyword_from_fits_header $file $feder_dec_name)
+
+if [[ $objectdec && $objectra ]]; then 
+    maxim_dl_ra_dec=Yes
+    echo "Will not replace MaximDL RA/DEC in file $file"
+fi
+
+keywords_present=$(keywords_are_present_in_file $file $keywords )
+if [[ ($keywords_present) && ! $force ]]
+then
+    echo "use option -f to force replacement of existing $keywords in $file"
+    exit 1;
+fi
+outfile=$(output_file_name $file $name_extension)
+
+if [[ $outfile != $file ]]; then cp $file $outfile; fi
+
+# if we made it this far we are ready to write.
+
+for synonym in $keywords; do
+    # skip the synonym if it is the feder ra/dec name and that is already present in file.
+    if [[ !( (( ${!synonym} == $feder_ra_name ) || ( ${!synonym} == $feder_dec_name )) && $maxim_dl_ra_dec )  ]]; then 
+	case $synonym in
+	    ra* ) original_name=$ra_name; original_comment="$ra_comment"; sexagesimal="yes";;
+	    dec* ) original_name=$dec_name; original_comment="$dec_comment"; sexagesimal="yes";;
+	    airmass* ) original_name=$airmass_name; original_comment="$airmass_comment"; sexagesimal=;;
+	    * ) echo "Unknown synonym $synonym, exiting..."; exit 1;;
+	esac
+	original_value=$(get_keyword_from_fits_header $file $original_name)
+	if [[ ! $original_value ]]; then 
+	    echo "Sorry, no value for the keyword $original_name in the file $file, exiting."
+	    exit 1
+	fi
+	echo $sexagesimal $synonym
+	if [[ $sexagesimal && (( ${!synonym} == $feder_ra_name ) || ( ${!synonym} == $feder_dec_name )) ]]; then
+	    original_value=${original_value//:/ }
+	fi 
+	set_keywords_in_fits_header $outfile $sethead_opts ${!synonym}="$original_value" / "$original_comment"
+    fi
+done
