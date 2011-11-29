@@ -1,4 +1,4 @@
-from header_item import FITSKeyword
+from fitskeyword import FITSKeyword
 
 class TestGoodFITSKeyword(FITSKeyword):
     def setUp(self):
