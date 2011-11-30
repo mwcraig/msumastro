@@ -42,7 +42,6 @@ class FITSKeyword(object):
         return
 
     def _keyword_is_valid(self, keyword_name):
-        print 'bite me'
         if keyword_name is not None:
             dummy_value = 0
             try:
