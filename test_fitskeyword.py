@@ -16,3 +16,9 @@ class TestGoodFITSKeyword(FITSKeyword):
     def test_synonym_setter_values(self):
         assert ((self.synonyms[0] == 'kwdalt1') and
                 (self.synonyms[1] == 'kwdalt2'))
+
+    def test_names(self):
+        assert self.names == [self.name, self.synonyms[0], self.synonyms[1]]
+            
+            
+

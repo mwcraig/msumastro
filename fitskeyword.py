@@ -52,7 +52,13 @@ class FITSKeyword(object):
         else:
             return False
 
-
-
+    @property
+    def names(self):
+        """Return all names, including synonyms, for this keyword.
+        """
+        all_names = [self.name]
+        if self.synonyms:
+            all_names.extend(self.synonyms)
+        return all_names
  
     
