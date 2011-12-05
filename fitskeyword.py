@@ -1,6 +1,5 @@
 from pyfits import Header
 
-
 class FITSKeyword(object):
     def __init__(self, name=None, value=None, comment=None, synonyms=None):
         self._hdr = Header()
@@ -60,5 +59,18 @@ class FITSKeyword(object):
         if self.synonyms:
             all_names.extend(self.synonyms)
         return all_names
- 
-    
+
+    def history_comment(self, with_name=None):
+        if with_name is None: with_name = self.name
+        return "Updated keyword %s to value %s" % (with_name.upper(), self.value)
+
+    def add_to_header(self, hdu, with_synonyms=True, history=False):
+        header = hdu.header
+        header.update(self.name, self.value, self.comment)
+        if history:
+            header.add_history(self.history_comment())
+        if with_synonyms and self.synonyms:
+            for synonym in self.synonyms:
+                header.update(synonym, self.value, self.comment)
+                if history:
+                    header.add_history(self.history_comment(with_name=synonym))
