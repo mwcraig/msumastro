@@ -17,8 +17,8 @@ def triage_fits_files(dir='.'):
     the current working directory.
     """
     files = listdir(dir)
-    files = fnmatch.filter(files, '*.fit')
-
+    files = fnmatch.filter(files, '*.fit') + fnmatch.filter(files, '*.fit.gz')
+    
     file_info_to_keep = ('file name', 'image type')
     file_info = {}
     for to_keep in file_info_to_keep:
@@ -26,10 +26,11 @@ def triage_fits_files(dir='.'):
     file_needs_filter = []
     file_needs_object = []
     for fitsfile in files:
+        file_with_directories = path.join(dir, fitsfile)
         try:
-            hdulist = pyfits.open(path.join(dir,fitsfile))
+            hdulist = pyfits.open(file_with_directories)
         except IOError:
-            print "Unable to open file %s" % fitsfile
+            print "Unable to open file %s in directory %s" % (fitsfile, dir)
             continue
         header = hdulist[0].header
         image_type =  IRAF_image_type(header[IMAGETYPE])

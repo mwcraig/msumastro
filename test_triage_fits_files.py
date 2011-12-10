@@ -3,6 +3,7 @@ import os
 import numpy
 import pyfits
 from shutil import rmtree
+import gzip
 
 TEST_DIR = 'monkeezs'
 _n_test = {'files': 0, 'need_object':0, 'need_filter':0}
@@ -29,7 +30,7 @@ def test_triage():
     assert len(file_info['needs_object']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
 
-def test_triage_setup():
+def triage_setup():
     global _n_test
 
     for key in _n_test.keys():
@@ -68,9 +69,14 @@ def test_triage_setup():
     filter_object.header.update('OBJCTDEC','00:00:00')
     filter_object.writeto('filter_object_light.fit')
     _n_test['files'] += 1
+    filter_file = open('filter_object_light.fit', 'rb')
+    fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
+    fzipped.writelines(filter_file)
+    fzipped.close()
+    _n_test['files'] += 1
     os.chdir(original_dir)
 
-def test_triage_teardown():
+def triage_teardown():
     global _n_test
 
     for key in _n_test.keys():
@@ -78,5 +84,5 @@ def test_triage_teardown():
     rmtree(TEST_DIR)
     
 
-test_triage.setUp = test_triage_setup
-test_triage.tearDown = test_triage_teardown
+test_triage.setUp = triage_setup
+test_triage.tearDown = triage_teardown
