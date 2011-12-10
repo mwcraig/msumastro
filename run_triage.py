@@ -3,6 +3,8 @@ import asciitable
 import sys
 import os
 
+#import pdb 
+
 object_file_name = 'NEEDS_OBJECT.txt'
 filter_file_name = 'NEEDS_FILTER.txt'
 file_list = 'Manifest.txt'
@@ -12,6 +14,7 @@ def write_list(dir, file, info):
     out.close()
 
 for currentDir in sys.argv[1:]:
+#    pdb.set_trace()
     moo = tff.triage_fits_files(currentDir)
     need_objects = moo['needs_object']
     if need_objects:
