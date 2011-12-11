@@ -24,7 +24,8 @@ def triage_fits_files(dir='.'):
     for to_keep in file_info_to_keep:
         file_info[to_keep] = []
     file_needs_filter = []
-    file_needs_object = []
+    file_needs_minimal_pointing_info = []
+    file_needs_object_name = []
     for fitsfile in files:
         file_with_directories = path.join(dir, fitsfile)
         try:
@@ -43,12 +44,16 @@ def triage_fits_files(dir='.'):
                                 set(Dec.names) |
                                 set(target_object.names)) &
                                (set(header.keys())))
-        if image_type == IRAF['light'] and not object_info_present:
-            file_needs_object.append(fitsfile)
-            
+        if image_type == IRAF['light']:
+            if not object_info_present:
+                file_needs_minimal_pointing_info.append(fitsfile)
+            if target_object.name not in header.keys():
+                file_needs_object_name.append(fitsfile)
+
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
-                'needs_object': file_needs_object}
+                'needs_pointing': file_needs_minimal_pointing_info,
+                'needs_object_name': file_needs_object_name}
     return dir_info
     
 def IRAF_image_type(image_type):

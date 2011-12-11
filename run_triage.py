@@ -5,7 +5,8 @@ import os
 
 #import pdb 
 
-object_file_name = 'NEEDS_OBJECT.txt'
+object_name_file_name = 'NEEDS_OBJECT_NAME.txt'
+pointing_file_name = 'NEEDS_POINTING_INFO.txt'
 filter_file_name = 'NEEDS_FILTER.txt'
 file_list = 'Manifest.txt'
 def write_list(dir, file, info):
@@ -16,10 +17,12 @@ def write_list(dir, file, info):
 for currentDir in sys.argv[1:]:
 #    pdb.set_trace()
     moo = tff.triage_fits_files(currentDir)
-    need_objects = moo['needs_object']
-    if need_objects:
-        write_list(currentDir, object_file_name,need_objects)
+    need_pointing = moo['needs_pointing']
+    if need_pointing:
+        write_list(currentDir, pointing_file_name, need_pointing)
     if moo['needs_filter']:
-        write_list(currentDir, filter_file_name,moo['needs_filter'])
+        write_list(currentDir, filter_file_name, moo['needs_filter'])
+    if moo['needs_object_name']:
+        write_list(currentDir, object_name_file_name, moo['needs_object_name'])
     asciitable.write(moo['files'], os.path.join(currentDir, file_list))
                      
