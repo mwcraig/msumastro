@@ -10,14 +10,14 @@ class TestGoodFITSKeyword(FITSKeyword):
         self.hdu = PrimaryHDU()
         
     def test_name_setter(self):
-        assert self.name == "kwd"
+        assert self.name == "KWD"
 
     def test_synonym_setter_length(self):
         assert len(self.synonyms) == 2
 
     def test_synonym_setter_values(self):
-        assert ((self.synonyms[0] == 'kwdalt1') and
-                (self.synonyms[1] == 'kwdalt2'))
+        assert ((self.synonyms[0] == 'KWDALT1') and
+                (self.synonyms[1] == 'KWDALT2'))
 
     def test_names(self):
         assert self.names == [self.name, self.synonyms[0], self.synonyms[1]]
@@ -47,7 +47,6 @@ class TestGoodFITSKeyword(FITSKeyword):
                 assert False
             except KeyError:
                 assert True
-
 
             
 

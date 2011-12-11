@@ -21,6 +21,9 @@ class FITSKeyword(object):
                 (self.name.upper(), value_string, self.comment,
                  ",".join(str(syn).upper() for syn in self.synonyms)))
 
+    def _set_keyword_case(self, keyword):
+        return keyword.upper()
+
     @property
     def name(self):
         return self._name
@@ -28,7 +31,7 @@ class FITSKeyword(object):
     @name.setter
     def name(self, keyword_name):
         if self._keyword_is_valid(keyword_name):
-            self._name = keyword_name
+            self._name = self._set_keyword_case(keyword_name)
 
     @property
     def synonyms(self):
@@ -46,7 +49,7 @@ class FITSKeyword(object):
                 'Synonyms must either be a string or a list of strings')
         for synonym in synonym_list:
             if self._keyword_is_valid(synonym):
-                self._synonyms.append(synonym)
+                self._synonyms.append(self._set_keyword_case(synonym))
         return
 
     def _keyword_is_valid(self, keyword_name):
