@@ -12,6 +12,15 @@ class FITSKeyword(object):
             self.synonyms = synonyms
         return
 
+    def __str__(self):
+        if self.value is None:
+            value_string = ''
+        else:
+            value_string = str(self.value)
+        return ("%s = %s    / %s \n with synonyms: %s" %
+                (self.name.upper(), value_string, self.comment,
+                 ",".join(str(syn).upper() for syn in self.synonyms)))
+
     @property
     def name(self):
         return self._name
