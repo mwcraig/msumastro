@@ -1,18 +1,17 @@
-import pyfits
 from fitskeyword import FITSKeyword
 
-RA = FITSKeyword(name='RA',
+RA = FITSKeyword(name='ra',
                  comment='Approximate RA at EQUINOX',
-                 synonyms=['OBJCTRA'])
+                 synonyms=['objctra'])
 
 Dec = FITSKeyword(name='DEC',
                   comment='Approximate DEC at EQUINOX',
-                  synonyms=['OBJCTDEC'])
+                  synonyms=['objctdec'])
 
-Object = FITSKeyword(name='OBJECT',
+target_object = FITSKeyword(name='object',
                      comment='Target of the observations')
 
-Latitude = FITSKeyword(name="Latitude",
+latitude = FITSKeyword(name="latitude",
                        comment='[degrees] Observatory latitude',
                        synonyms=['sitelat'])
 
@@ -30,7 +29,7 @@ airmass = FITSKeyword(name='airmass',
 LST = FITSKeyword(name='LST',
                   comment='Local Sidereal Time at start of observation')
 
-JD = FITSKeyword(name='JD-OBS',
+JD = FITSKeyword(name='jd-obs',
                  comment='Julian Date at start of observation')
 
 MJD = FITSKeyword(name='mjd-obs',

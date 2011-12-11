@@ -1,6 +1,6 @@
 import fnmatch
 import pyfits
-from keyword_names import RA, Dec, Object
+from keyword_names import RA, Dec, target_object
 from os import listdir, path
 
 IMAGETYPE = 'IMAGETYP'
@@ -41,7 +41,7 @@ def triage_fits_files(dir='.'):
 
         object_info_present = ((set(RA.names) |
                                 set(Dec.names) |
-                                set(Object.names)) &
+                                set(target_object.names)) &
                                (set(header.keys())))
         if image_type == IRAF['light'] and not object_info_present:
             file_needs_object.append(fitsfile)
