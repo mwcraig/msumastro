@@ -1,4 +1,5 @@
 from pyfits import Header
+from pyfits import PrimaryHDU
 
 class FITSKeyword(object):
     def __init__(self, name=None, value=None, comment=None, synonyms=None):
@@ -86,3 +87,27 @@ class FITSKeyword(object):
                 header.update(synonym, self.value, self.comment)
                 if history:
                     header.add_history(self.history_comment(with_name=synonym))
+
+    def set_value_from_header(self, hdu_or_header):
+        if isinstance(hdu_or_header, PrimaryHDU):
+            header = hdu_or_header.header
+        elif isinstance(hdu_or_header, Header):
+            header = hdu_or_header
+        else:
+            raise ValueError('argument must be a fits Primary HDU or header')
+        values = []
+        for name in self.names:
+            try:
+                values.append(header[name])
+            except KeyError:
+                continue
+        if values:
+            if len(set(values)) > 1:
+                raise ValueError('Found more than one value for keyword %s:\n Values found are: %s'
+                                 % (','.join(self.names), ','.join(values)))
+            self.value = values[0]
+        else:
+            raise ValueError('Keyword not found in header: %s' % self)
+        
+                        
+
