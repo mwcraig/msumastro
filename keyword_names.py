@@ -33,8 +33,16 @@ hour_angle = FITSKeyword(name='ha',
 airmass = FITSKeyword(name='airmass',
                       comment='Airmass (Sec ZD) at start of observation',
                       synonyms=['secz'])
+
+alitude = FITSKeyword(name='alt',
+                      comment='[degrees] Altitude of object above the horizon')
+azimuth = FITSKeyword(name='azimuth',
+                      comment='[degrees] Azimuth of object')
+
 light_files.append(hour_angle)
 light_files.append(airmass)
+light_files.append(altitude)
+light_files.append(azimuth)
 
 LST = FITSKeyword(name='LST',
                   comment='Local Sidereal Time at start of observation')
