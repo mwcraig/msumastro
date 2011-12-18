@@ -22,10 +22,13 @@ latitude = FITSKeyword(name="latitude",
                        synonyms=['sitelat'])
 
 longitude = FITSKeyword(name='longitud',
-                        comment='[degrees] east Observatory longitude',
+                        comment='[degrees east] Observatory longitude',
                         synonyms='sitelong')
+obs_altitude = FITSKeyword(name='altitude',
+                           comment='[meters] Observatory altitude')
 all_files.append(latitude)
 all_files.append(longitude)
+all_files.append(obs_altitude)
 
 hour_angle = FITSKeyword(name='ha',
                          comment='Hour angle')
@@ -34,9 +37,10 @@ airmass = FITSKeyword(name='airmass',
                       comment='Airmass (Sec ZD) at start of observation',
                       synonyms=['secz'])
 
-alitude = FITSKeyword(name='alt',
+altitude = FITSKeyword(name='alt-obj',
                       comment='[degrees] Altitude of object above the horizon')
-azimuth = FITSKeyword(name='azimuth',
+
+azimuth = FITSKeyword(name='az-obj',
                       comment='[degrees] Azimuth of object')
 
 light_files.append(hour_angle)
