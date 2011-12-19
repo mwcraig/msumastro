@@ -47,6 +47,14 @@ class TestGoodFITSKeyword(FITSKeyword):
                 assert False
             except KeyError:
                 assert True
+                
+    def test_add_header_from_header(self):
+        clean_hdu = PrimaryHDU()
+        self.add_to_header(clean_hdu.header)
+        for name in self.names:
+            assert clean_hdu.header[name] == self.value
+    
+
 
             
 

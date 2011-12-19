@@ -77,8 +77,14 @@ class FITSKeyword(object):
         if with_name is None: with_name = self.name
         return "Updated keyword %s to value %s" % (with_name.upper(), self.value)
 
-    def add_to_header(self, hdu, with_synonyms=True, history=False):
-        header = hdu.header
+    def add_to_header(self, hdu_or_header, with_synonyms=True, history=False):
+        if isinstance(hdu_or_header, PrimaryHDU):
+            header = hdu_or_header.header
+        elif isinstance(hdu_or_header, Header):
+            header = hdu_or_header
+        else:
+            raise ValueError('argument must be a fits Primary HDU or header')
+
         header.update(self.name, self.value, self.comment)
         if history:
             header.add_history(self.history_comment())
