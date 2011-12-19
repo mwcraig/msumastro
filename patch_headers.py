@@ -1,11 +1,15 @@
-from feder import feder
-import pyfits
-#from coatpy import Sesame
-import asciitable
 import os
-from keyword_names import *
-from astropysics import obstools, coords
 from math import cos, pi
+
+import asciitable
+import pyfits
+from astropysics import obstools, coords
+
+from feder import feder
+from keyword_names import *
+
+
+#from coatpy import Sesame
 
 def parse_dateobs(dateobs):
     date, time = dateobs.split('T')
@@ -41,7 +45,56 @@ def deg2dms(dd):
     mnt,sec = divmod(dd*3600,60)
     deg,mnt = divmod(mnt,60)
     return int(deg),int(mnt),sec
+
+def add_time_info(header):
+    dateobs = parse_dateobs(header['date-obs'])
+    JD.value = round(obstools.calendar_to_jd(dateobs), 6)
+    MJD.value = round(obstools.calendar_to_jd(dateobs, mjd=True), 6)
     
+    # setting currentobsjd makes calls following it use that time
+    # for calculations
+    
+    feder.currentobsjd = JD.value
+    LST.value = feder.localSiderialTime()
+    LST.value = sexagesimal_string(deg2dms(LST.value))
+    
+    for keyword in all_files:
+        keyword.add_to_header(header)
+
+    
+def add_object_pos_airmass(header):
+    """Add object information, such as RA/Dec and airmass.
+
+    Has side effect of setting feder site JD to JD-OBS, which means it
+    also assume JD.value has been set.
+    """
+    if JD.value is not None:
+        feder.currentobsjd == JD.value
+    else:
+        raise ValueError('Need to set JD.value before calling.')
+
+    try:
+        RA.set_value_from_header(header)
+    except ValueError:
+        raise ValueError("No RA is present.")
+        return
+
+    Dec.set_value_from_header(header)
+    RA.value = RA.value.replace(' ',':')
+    Dec.value = Dec.value.replace(' ',':')
+    object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
+    alt_az = feder.apparentCoordinates(object_coords, refraction=False)
+    altitude.value = round(alt_az.alt.d, 5)
+    azimuth.value = round(alt_az.az.d, 5)
+    airmass.value = round(1/cos(pi/2 - alt_az.alt.r),3)
+    hour_angle.value = sexagesimal_string(
+        coords.EquatorialCoordinatesEquinox((feder.localSiderialTime()-
+                                            object_coords.ra.hours,
+                                             0)).ra.hms)
+    for keyword in light_files:
+        if keyword.value is not None:
+            keyword.add_to_header(header)
+
 def patch_headers(dir='.',manifest='Manifest.txt'):
     try:
         image_info_file = open(os.path.join(dir, manifest))
@@ -58,42 +111,21 @@ def patch_headers(dir='.',manifest='Manifest.txt'):
     latitude.value = sexagesimal_string(feder.latitude.dms)
     longitude.value = sexagesimal_string(feder.longitude.dms)
     obs_altitude.value = feder.altitude
-    
+
     for image in files:
         hdulist = pyfits.open(image)
         header = hdulist[0].header
         int16 = (header['bitpix'] == 16)
         hdulist.verify('fix')
-        dateobs = parse_dateobs(header['date-obs'])
-        JD.value = round(obstools.calendar_to_jd(dateobs), 6)
-        MJD.value = round(obstools.calendar_to_jd(dateobs, mjd=True), 6)
-        
-        # setting currentobsjd makes calls following it use that time
-        # for calculations
-        feder.currentobsjd = JD.value
-        LST.value = feder.localSiderialTime()
-        LST.value = sexagesimal_string(deg2dms(LST.value))
-        
-        for keyword in all_files:
-            keyword.add_to_header(hdulist[0])
+        add_time_info(header)
         if header['imagetyp'] == 'LIGHT':
-            RA.set_value_from_header(header)
-            Dec.set_value_from_header(header)
-            RA.value = RA.value.replace(' ',':')
-            Dec.value = Dec.value.replace(' ',':')
-            object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
-            alt_az = feder.apparentCoordinates(object_coords, refraction=False)
-            altitude.value = round(alt_az.alt.d, 5)
-            azimuth.value = round(alt_az.az.d, 5)
-            airmass.value = round(1/cos(pi/2 - alt_az.alt.r),3)
-            hour_angle.value = sexagesimal_string(
-                                coords.EquatorialCoordinatesEquinox((feder.localSiderialTime()-
-                                                                     object_coords.ra.hours,
-                                                                     0)).ra.hms)
-            for keyword in light_files:
-                if keyword.value is not None:
-                    keyword.add_to_header(hdulist[0])
+            try:
+                add_object_pos_airmass(header)
+            except ValueError:
+                print 'Skipping file %s' % image
+                continue
                 
         hdulist.writeto(image+'new')
-    
+        
+    os.chdir(current_dir)
     
