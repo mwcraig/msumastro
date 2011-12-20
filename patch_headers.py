@@ -8,7 +8,7 @@ from astropysics import obstools, coords
 
 from feder import feder
 from keyword_names import *
-
+from astrometry import add_astrometry
 
 #from coatpy import Sesame
 
@@ -133,6 +133,7 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
+                
         header.add_history('patch_headers.py updated keywords %s' %
                            keyword_names_as_string(keywords_for_light_files))
         if overwrite:
@@ -144,6 +145,10 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         if int16:
             hdulist[0].scale('int16')
         hdulist.writeto(new_image, clobber=overwrite)
-        
+        hdulist.close()
+
+        if header['imagetyp'] == 'LIGHT':
+            add_astrometry(image, ra_dec=(RA.value, Dec.value), overwrite=True)
+            
     chdir(current_dir)
     
