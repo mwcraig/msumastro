@@ -1,4 +1,4 @@
-import os
+from os import path, chdir, getcwd
 from math import cos, pi
 from datetime import datetime
 
@@ -102,14 +102,14 @@ def keyword_names_as_string(list_of_keywords):
 def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
                   overwrite=False):
     try:
-        image_info_file = open(os.path.join(dir, manifest))
+        image_info_file = open(path.join(dir, manifest))
     except IOError:
         raise
 
     image_info = asciitable.read(image_info_file)
     image_info_file.close()
-    current_dir = os.getcwd()
-    os.chdir(dir)
+    current_dir = getcwd()
+    chdir(dir)
 
     files = image_info['file name']
 
@@ -138,12 +138,12 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         if overwrite:
             new_image = image
         else:
-            root, ext = os.path.splitext(image)
+            root, ext = path.splitext(image)
             new_image = root + new_file_ext + ext
             
         if int16:
             hdulist[0].scale('int16')
         hdulist.writeto(new_image, clobber=overwrite)
         
-    os.chdir(current_dir)
+    chdir(current_dir)
     
