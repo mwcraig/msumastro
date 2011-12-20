@@ -1,5 +1,6 @@
 import os
 from math import cos, pi
+from datetime import datetime
 
 import asciitable
 import pyfits
@@ -58,10 +59,9 @@ def add_time_info(header):
     LST.value = feder.localSiderialTime()
     LST.value = sexagesimal_string(deg2dms(LST.value))
     
-    for keyword in all_files:
-        keyword.add_to_header(header)
+    for keyword in keywords_for_all_files:
+        keyword.add_to_header(header, history=False)
 
-    
 def add_object_pos_airmass(header):
     """Add object information, such as RA/Dec and airmass.
 
@@ -91,11 +91,16 @@ def add_object_pos_airmass(header):
         coords.EquatorialCoordinatesEquinox((feder.localSiderialTime()-
                                             object_coords.ra.hours,
                                              0)).ra.hms)
-    for keyword in light_files:
+    for keyword in keywords_for_light_files:
         if keyword.value is not None:
-            keyword.add_to_header(header)
+            keyword.add_to_header(header, history=False)
+            
 
-def patch_headers(dir='.',manifest='Manifest.txt'):
+def keyword_names_as_string(list_of_keywords):
+    return ' '.join([' '.join(keyword.names) for keyword in list_of_keywords])
+    
+def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
+                  overwrite=False):
     try:
         image_info_file = open(os.path.join(dir, manifest))
     except IOError:
@@ -117,15 +122,28 @@ def patch_headers(dir='.',manifest='Manifest.txt'):
         header = hdulist[0].header
         int16 = (header['bitpix'] == 16)
         hdulist.verify('fix')
+        header.add_history('patch_headers.py modified this file on %s'
+                           % datetime.now())
         add_time_info(header)
+        header.add_history('patch_headers.py updated keywords %s' %
+                            keyword_names_as_string(keywords_for_all_files))
         if header['imagetyp'] == 'LIGHT':
             try:
                 add_object_pos_airmass(header)
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
-                
-        hdulist.writeto(image+'new')
+        header.add_history('patch_headers.py updated keywords %s' %
+                           keyword_names_as_string(keywords_for_light_files))
+        if overwrite:
+            new_image = image
+        else:
+            root, ext = os.path.splitext(image)
+            new_image = root + new_file_ext + ext
+            
+        if int16:
+            hdulist[0].scale('int16')
+        hdulist.writeto(new_image, clobber=overwrite)
         
     os.chdir(current_dir)
     
