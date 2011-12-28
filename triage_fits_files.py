@@ -23,9 +23,9 @@ def triage_fits_files(dir='.'):
     file_needs_minimal_pointing_info = []
     file_needs_object_name = []
     for fitsfile in files:
-        file_with_directories = path.join(dir, fitsfile)
+        file_with_directory = path.join(dir, fitsfile)
         try:
-            hdulist = pyfits.open(file_with_directories)
+            hdulist = pyfits.open(file_with_directory)
         except IOError:
             print "Unable to open file %s in directory %s" % (fitsfile, dir)
             continue
