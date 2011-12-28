@@ -4,9 +4,10 @@ import numpy
 import pyfits
 from shutil import rmtree
 import gzip
+from tempfile import mkdtemp
 
-TEST_DIR = 'monkeezs'
 _n_test = {'files': 0, 'need_object':0, 'need_filter':0}
+_test_dir = ''
 
 def test_IRAF_image_type_with_maximDL_name():
     maximDL_name = 'Bias Frame'
@@ -23,7 +24,7 @@ def test_needs_filter():
     assert not tff.needs_filter(tff.IRAF_image_type('dark'))
 
 def test_triage():
-    file_info = tff.triage_fits_files(TEST_DIR)
+    file_info = tff.triage_fits_files(_test_dir)
     print "number of files should be %i" % _n_test['files']
     print file_info['files']
     assert len(file_info['files']['file name']) == _n_test['files']
@@ -32,13 +33,14 @@ def test_triage():
 
 def triage_setup():
     global _n_test
-
+    global _test_dir
+    
     for key in _n_test.keys():
         _n_test[key] = 0
     
     original_dir = os.getcwd()
-    os.mkdir(TEST_DIR)
-    os.chdir(TEST_DIR)
+    _test_dir = mkdtemp()
+    os.chdir(_test_dir)
     img = numpy.arange(100)
 
     no_filter_no_object = pyfits.PrimaryHDU(img)
@@ -81,7 +83,7 @@ def triage_teardown():
 
     for key in _n_test.keys():
         _n_test[key] = 0
-    rmtree(TEST_DIR)
+    rmtree(_test_dir)
     
 
 test_triage.setUp = triage_setup
