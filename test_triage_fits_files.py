@@ -17,17 +17,17 @@ def test_IRAF_image_type_with_IRAF_name():
     assert tff.IRAF_image_type(IRAF_name) == 'BIAS'
 
 def test_needs_filter():
-    assert tff.needs_filter(tff.IRAF['light'])
-    assert tff.needs_filter(tff.IRAF['flat'])
-    assert not tff.needs_filter(tff.IRAF['bias'])
-    assert not tff.needs_filter(tff.IRAF['dark'])
+    assert tff.needs_filter(tff.IRAF_image_type('light'))
+    assert tff.needs_filter(tff.IRAF_image_type('flat'))
+    assert not tff.needs_filter(tff.IRAF_image_type('bias'))
+    assert not tff.needs_filter(tff.IRAF_image_type('dark'))
 
 def test_triage():
     file_info = tff.triage_fits_files(TEST_DIR)
     print "number of files should be %i" % _n_test['files']
     print file_info['files']
     assert len(file_info['files']['file name']) == _n_test['files']
-    assert len(file_info['needs_object']) == _n_test['need_object']
+    assert len(file_info['needs_pointing']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
 
 def triage_setup():
@@ -42,28 +42,28 @@ def triage_setup():
     img = numpy.arange(100)
 
     no_filter_no_object = pyfits.PrimaryHDU(img)
-    no_filter_no_object.header.update('imagetyp', tff.IRAF['light'])
+    no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
     no_filter_no_object.writeto('no_filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
     _n_test['need_filter'] += 1
-    no_filter_no_object.header.update('imagetyp', tff.IRAF['bias'])
+    no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
     _n_test['files'] += 1
 
 
     filter_no_object = pyfits.PrimaryHDU(img)
-    filter_no_object.header.update('imagetyp', tff.IRAF['light'])
+    filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
     filter_no_object.header.update('filter','R')
     filter_no_object.writeto('filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
-    filter_no_object.header.update('imagetyp', tff.IRAF['bias'])
+    filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     filter_no_object.writeto('filter_no_object_bias.fit')
     _n_test['files'] += 1
 
     filter_object = pyfits.PrimaryHDU(img)
-    filter_object.header.update('imagetyp', tff.IRAF['light'])
+    filter_object.header.update('imagetyp', tff.IRAF_image_type('light'))
     filter_object.header.update('filter','R')
     filter_object.header.update('OBJCTRA','00:00:00')
     filter_object.header.update('OBJCTDEC','00:00:00')

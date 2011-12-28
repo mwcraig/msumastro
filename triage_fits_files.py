@@ -4,10 +4,6 @@ from keyword_names import RA, Dec, target_object
 from os import listdir, path
 
 IMAGETYPE = 'IMAGETYP'
-IRAF = {'flat': 'FLAT',
-        'light': 'LIGHT',
-        'dark': 'DARK',
-        'bias': 'BIAS'}
 
 def triage_fits_files(dir='.'):
     """
@@ -44,7 +40,7 @@ def triage_fits_files(dir='.'):
                                 set(Dec.names) |
                                 set(target_object.names)) &
                                (set(header.keys())))
-        if image_type == IRAF['light']:
+        if image_type == IRAF_image_type('light'):
             if not object_info_present:
                 file_needs_minimal_pointing_info.append(fitsfile)
             if target_object.name not in header.keys():
@@ -71,7 +67,7 @@ def needs_filter(image_type):
 
     Returns True if image is Flat or Light, False otherwise.
     """
-    if image_type in (IRAF['flat'], IRAF['light']):
+    if image_type in (IRAF_image_type('flat'), IRAF_image_type('light')):
         return True
     else:
         return False
