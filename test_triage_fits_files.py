@@ -5,6 +5,7 @@ import pyfits
 from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
+from numpy import where
 
 _n_test = {'files': 0, 'need_object':0, 'need_filter':0}
 _test_dir = ''
@@ -28,9 +29,10 @@ def test_triage():
     file_info = tff.triage_fits_files(_test_dir)
     print "number of files should be %i" % _n_test['files']
     print file_info['files']
-    assert len(file_info['files']['file name']) == _n_test['files']
+    assert len(file_info['files']['file']) == _n_test['files']
     assert len(file_info['needs_pointing']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
+    assert len(where(file_info['files']['imagetyp'] == tff.IRAF_image_type('bias'))[0]) == 2
     
 def test_fits_files_in_directory():
     assert (len(tff.fits_files_in_directory(_test_dir)) == _n_test['files'])

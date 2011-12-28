@@ -44,10 +44,8 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
     Returns a dictionary of arrays, with one dictionary entry for each
     of the `keywords`. Missing values are indicated by `None`
     """
-    print file_list, dir
     if not file_list:
         file_list = fits_files_in_directory(dir)
-    print file_list
         
     summary = {}
     summary['file'] = []
@@ -58,7 +56,6 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
         try:
             header = pyfits.getheader(path.join(dir,afile))
         except IOError:
-            print 'oops!'
             continue
         summary['file'].append(afile)
         for keyword in keywords:
@@ -79,10 +76,8 @@ def triage_fits_files(dir='.'):
     """
     files = fits_files_in_directory(dir)
     
-    file_info_to_keep = ('file name', 'image type')
-    file_info = {}
-    for to_keep in file_info_to_keep:
-        file_info[to_keep] = []
+    file_info_to_keep = ['imagetyp']
+
     file_needs_filter = []
     file_needs_minimal_pointing_info = []
     file_needs_object_name = []
@@ -95,8 +90,7 @@ def triage_fits_files(dir='.'):
             continue
         header = hdulist[0].header
         image_type =  IRAF_image_type(header[IMAGETYPE])
-        file_info['file name'].append(fitsfile)
-        file_info['image type'].append(image_type)
+
         if needs_filter(image_type) and 'FILTER' not in header.keys():
             file_needs_filter.append(fitsfile)
 
@@ -110,6 +104,7 @@ def triage_fits_files(dir='.'):
             if target_object.name not in header.keys():
                 file_needs_object_name.append(fitsfile)
 
+    file_info = fits_summary(dir, keywords=file_info_to_keep)
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
                 'needs_pointing': file_needs_minimal_pointing_info,
