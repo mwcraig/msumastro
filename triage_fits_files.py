@@ -2,9 +2,74 @@ import fnmatch
 import pyfits
 from keyword_names import RA, Dec, target_object
 from os import listdir, path
+from numpy import array
 
 IMAGETYPE = 'IMAGETYP'
 
+def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True):
+    """
+    Get names of FITS files in directory, based on filename extension.
+
+    `dir` is the directory to be searched.
+    `extension` is a list of filename extensions that are FITS files.
+    `compressed` should be true if compressed files should be included
+    in the list (e.g. `.fits.gz`)
+
+    Returns only the *names* of the files (with extension), not the full pathname.
+    """
+    # trick below is necessary to make sure we start with a clean copy of
+    # extensions each time
+    full_extensions = []
+    full_extensions.extend(extensions)
+    if compressed:
+        with_gz = [extension + '.gz' for extension in extensions]
+        full_extensions.extend(with_gz)
+
+    all_files = listdir(dir)
+    files = []
+    for extension in full_extensions:
+        files.extend(fnmatch.filter(all_files, '*'+extension))
+    return files
+
+def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
+    """
+    Collect information about fits files in a directory.
+
+    `dir` is the name of the directory to search for FITS files.
+    `file_list` can be set to the list of FITS files in `dir`,
+    otherwise the list will be generated.
+    `keywords` is the list of FITS header keywords for which
+    information will be gathered.
+
+    Returns a dictionary of arrays, with one dictionary entry for each
+    of the `keywords`. Missing values are indicated by `None`
+    """
+    print file_list, dir
+    if not file_list:
+        file_list = fits_files_in_directory(dir)
+    print file_list
+        
+    summary = {}
+    summary['file'] = []
+    for keyword in keywords:
+        summary[keyword] = []
+
+    for afile in file_list:
+        try:
+            header = pyfits.getheader(path.join(dir,afile))
+        except IOError:
+            print 'oops!'
+            continue
+        summary['file'].append(afile)
+        for keyword in keywords:
+            try:
+                summary[keyword].append(header[keyword])
+            except KeyError:
+                summary[keyword].append(None)
+    for key in summary.keys():
+        summary[key] = array(summary[key])
+    return summary
+    
 def triage_fits_files(dir='.'):
     """
     Check FITS files in a directory for deficient headers
@@ -12,8 +77,7 @@ def triage_fits_files(dir='.'):
     `dir` is the name of the directory to search for files; default is
     the current working directory.
     """
-    files = listdir(dir)
-    files = fnmatch.filter(files, '*.fit') + fnmatch.filter(files, '*.fit.gz')
+    files = fits_files_in_directory(dir)
     
     file_info_to_keep = ('file name', 'image type')
     file_info = {}
