@@ -40,6 +40,17 @@ def ccd_bias(bias):
 
     `bias` is a numpy array.
     """
+    import sherpa.ui as ui
+    from numpy import histogram, arange
+
+    values, bins = histogram(bias, bins=arange(bias.min(),bias.max()+1))
+    ui.load_arrays(1, bins[:-1],values)
+    ui.set_model(ui.gauss1d.g1)
+    g1.pos = bias.mean()
+    g1.fwhm = bias.std()
+    ui.fit()
+    return g1
+    
 def ccd_gain(bias, flat):
     """
     Calculate CCD gain from pair of bias and pair of flat frames.
