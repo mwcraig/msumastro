@@ -48,7 +48,7 @@ def test_fits_summary():
         assert len(summary[keyword]) == _n_test['files']
     print summary['file'] == 'no_filter_no_object_bias.fit'
     print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
-    assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == [None]
+    assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
     
     
 def setup():

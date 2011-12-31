@@ -6,11 +6,13 @@ import asciitable
 import pyfits
 from astropysics import obstools, coords
 
-from feder import feder
+from feder import FederSite
 from keyword_names import *
 from astrometry import add_astrometry
 
 #from coatpy import Sesame
+
+feder = FederSite()
 
 def parse_dateobs(dateobs):
     """
