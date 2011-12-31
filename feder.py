@@ -6,6 +6,7 @@ class FederSite(obstools.Site):
 
     An astropysics site with the items described below pre-set.
     """
+    
     def __init__(self):
         """
         Location/name information are set for Feder Observatory.

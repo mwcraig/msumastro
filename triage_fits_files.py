@@ -11,7 +11,9 @@ def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True)
     Get names of FITS files in directory, based on filename extension.
 
     `dir` is the directory to be searched.
+
     `extension` is a list of filename extensions that are FITS files.
+
     `compressed` should be true if compressed files should be included
     in the list (e.g. `.fits.gz`)
 
@@ -36,8 +38,10 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
     Collect information about fits files in a directory.
 
     `dir` is the name of the directory to search for FITS files.
+
     `file_list` can be set to the list of FITS files in `dir`,
     otherwise the list will be generated.
+
     `keywords` is the list of FITS header keywords for which
     information will be gathered.
 
@@ -71,8 +75,10 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
     """
     Check FITS files in a directory for deficient headers
 
-    `dir` is the name of the directory to search for files; default is
-    the current working directory.
+    `dir` is the name of the directory to search for files.
+
+    `file_info_to_keep` is a list of the FITS keywords to get values
+    for for each FITS file in `dir`.
     """
     files = fits_files_in_directory(dir)
     
