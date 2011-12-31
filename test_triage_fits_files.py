@@ -104,7 +104,7 @@ def teardown():
 
     for key in _n_test.keys():
         _n_test[key] = 0
-    #rmtree(_test_dir)
+    rmtree(_test_dir)
     
 
 #test_triage.setUp = triage_setup
