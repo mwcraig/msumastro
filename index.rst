@@ -11,8 +11,14 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
+   Astrometry <astrometry>
    CCD characterization <ccd_characterization>
-
+   Feder-specific items <feder>
+   FITS Keywords <fitskeyword>
+   Keyword Names <keyword_names>
+   Patch Feder FITS headers <patch_headers>
+   Triage a directory of FITS files <triage_fits_files>
+   
 Indices and tables
 ==================
 
