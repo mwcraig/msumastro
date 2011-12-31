@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [[ ! -e ./wcstools-local/bin/gethead ]]; then
-    cd ./wcstools-local
-    make clean
-    make -f Makefile.osx
-fi
