@@ -2,7 +2,18 @@ from pyfits import Header
 from pyfits import PrimaryHDU
 
 class FITSKeyword(object):
+    """
+    Represents a FITS keyword.
+
+    Useful if one logical keyword (e.g. `airmass`) has several
+    often-used synonyms (e.g. secz and `airmass`).
+
+    Checks whether the keyword is a valid FITS keyword when initialized.
+    """
     def __init__(self, name=None, value=None, comment=None, synonyms=None):
+        """
+        All inputs are optional.
+        """
         self._hdr = Header()
         self.name = name
         self.value = value
@@ -27,6 +38,9 @@ class FITSKeyword(object):
 
     @property
     def name(self):
+        """
+        Primary name of the keyword.
+        """
         return self._name
 
     @name.setter
@@ -36,6 +50,9 @@ class FITSKeyword(object):
 
     @property
     def synonyms(self):
+        """
+        List of synonyms for the keyword.
+        """
         return self._synonyms
 
     @synonyms.setter
@@ -66,7 +83,8 @@ class FITSKeyword(object):
 
     @property
     def names(self):
-        """Return all names, including synonyms, for this keyword.
+        """
+        All names, including synonyms, for this keyword, as a list.
         """
         all_names = [self.name]
         if self.synonyms:
@@ -74,10 +92,24 @@ class FITSKeyword(object):
         return all_names
 
     def history_comment(self, with_name=None):
+        """
+        Method to add HISTORY line to header.
+        Use `with_name` to override the name of the keyword object.
+        """
         if with_name is None: with_name = self.name
         return "Updated keyword %s to value %s" % (with_name.upper(), self.value)
 
     def add_to_header(self, hdu_or_header, with_synonyms=True, history=False):
+        """
+        Method to add keyword to FITS header.
+
+        `hdu_or_header` can be either a pyfits `PrimaryHDU` or a
+        pytfits `Header` object.
+        `with_synonyms` determines whether the keyword's synonynms are
+        also added to the header.j
+        `history` determines whether a history comment is added when
+        the keyword is added to the header.
+        """
         if isinstance(hdu_or_header, PrimaryHDU):
             header = hdu_or_header.header
         elif isinstance(hdu_or_header, Header):
@@ -95,6 +127,16 @@ class FITSKeyword(object):
                     header.add_history(self.history_comment(with_name=synonym))
 
     def set_value_from_header(self, hdu_or_header):
+        """
+        Determine value of keyword from FITS header.
+
+        `hdu_or_header` can be either a pyfits `PrimaryHDU` or a
+        pytfits `Header` object.
+
+        If both the primary name of the keyword and its synonyms are
+        present in the FITS header, checks whether the values are
+        identical, and if they aren't, raises an error.
+        """
         if isinstance(hdu_or_header, PrimaryHDU):
             header = hdu_or_header.header
         elif isinstance(hdu_or_header, Header):
