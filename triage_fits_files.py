@@ -42,7 +42,7 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
     information will be gathered.
 
     Returns a dictionary of arrays, with one dictionary entry for each
-    of the `keywords`. Missing values are indicated by `None`
+    of the `keywords`. Missing values are indicated by an empty string.
     """
     if not file_list:
         file_list = fits_files_in_directory(dir)
@@ -62,12 +62,12 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
             try:
                 summary[keyword].append(header[keyword])
             except KeyError:
-                summary[keyword].append(None)
+                summary[keyword].append('')
     for key in summary.keys():
         summary[key] = array(summary[key])
     return summary
     
-def triage_fits_files(dir='.'):
+def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
     """
     Check FITS files in a directory for deficient headers
 
@@ -76,8 +76,6 @@ def triage_fits_files(dir='.'):
     """
     files = fits_files_in_directory(dir)
     
-    file_info_to_keep = ['imagetyp']
-
     file_needs_filter = []
     file_needs_minimal_pointing_info = []
     file_needs_object_name = []
