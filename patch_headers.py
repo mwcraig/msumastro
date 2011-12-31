@@ -13,6 +13,13 @@ from astrometry import add_astrometry
 #from coatpy import Sesame
 
 def parse_dateobs(dateobs):
+    """
+    Parse a MaximDL DATE-OBS.
+
+    `dateobs` is a DATE-OBS in the format `yyy-mm-ddThh:mm:ss`
+
+    Returns a `datetime` object with date and time.
+    """
     date, time = dateobs.split('T')
     date = date.split('-')
     date = map(int, date)
@@ -41,6 +48,7 @@ def sexagesimal_string(dms, precision=2, sign=False):
 def deg2dms(dd):
     """Convert decimal degrees to degrees, minutes, seconds.
 
+    `dd` is decimal degrees.
     Poached from stackoverflow.
     """
     mnt,sec = divmod(dd*3600,60)
@@ -48,6 +56,11 @@ def deg2dms(dd):
     return int(deg),int(mnt),sec
 
 def add_time_info(header):
+    """
+    Add JD, MJD, LST to FITS header.
+
+    Assumes location is feder.
+    """
     dateobs = parse_dateobs(header['date-obs'])
     JD.value = round(obstools.calendar_to_jd(dateobs), 6)
     MJD.value = round(obstools.calendar_to_jd(dateobs, mjd=True), 6)
@@ -101,6 +114,17 @@ def keyword_names_as_string(list_of_keywords):
     
 def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
                   overwrite=False):
+    """
+    Add minimal information to Feder FITS headers.
+
+    `dir` is the directory containing the files to be patched.
+    `manifest` is the name of the file which should contain a listing
+    of all of the FITS files in the directory and their types.
+    `new_file_ext` is the name added to the FITS files with updated
+    header information. It is added to the base name of the input
+    file.
+    `overwrite` should be set to `True` to replace the original files.
+    """
     try:
         image_info_file = open(path.join(dir, manifest))
     except IOError:
