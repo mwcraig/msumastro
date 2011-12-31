@@ -1,4 +1,4 @@
-from numpy import array, zeros
+from numpy import array, zeros, sqrt
 
 def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     """
@@ -50,7 +50,28 @@ def ccd_bias(bias):
     g1.fwhm = bias.std()
     ui.fit()
     return g1
-    
+
+def ccd_read_noise(bias, gain=None, flat=None):
+    """
+    Calculate CCD read noise.
+
+    `bias` is a tuple or list of bias frames as numpy arrays.
+    `gain` should be set to CCD gain.
+    `flat`, if set, should be a pair of flat frames. It is used only
+    to calculate the gain, and is ignored if `gain` is set.
+
+    Either `gain` or `flat` *must* be set.
+
+    Returns the read noise, calculated using the formula on p. 73 of the
+    *Handbook of CCD Astronomy* by Steve Howell.
+    """
+    if gain is None:
+        if flat is None:
+            raise ValueError('Must specify either gain or flat frames.')
+        gain = ccd_gain(bias, flat)
+
+    return gain/sqrt(2)*(bias[0]-bias[1]).std()    
+
 def ccd_gain(bias, flat):
     """
     Calculate CCD gain from pair of bias and pair of flat frames.
