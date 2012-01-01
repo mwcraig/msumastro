@@ -32,10 +32,13 @@ def parse_dateobs(dateobs):
 def sexagesimal_string(dms, precision=2, sign=False):
     """Convert degrees, minutes, seconds into a string
 
-    dms should be a list or tuple of (degrees or hours, minutes, seconds)
-    precision is the number of digits to be kept to the right of the
+    `dms` should be a list or tuple of (degrees or hours, minutes,
+    seconds)
+    
+    `precision` is the number of digits to be kept to the right of the
     decimal in the seconds (default is 2)
-    sign should be True if a leading sign should be displayed for
+    
+    Set `sign` to `True` if a leading sign should be displayed for
     positive values.
     """
     if sign:
@@ -120,11 +123,14 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     Add minimal information to Feder FITS headers.
 
     `dir` is the directory containing the files to be patched.
+    
     `manifest` is the name of the file which should contain a listing
     of all of the FITS files in the directory and their types.
+
     `new_file_ext` is the name added to the FITS files with updated
     header information. It is added to the base name of the input
     file.
+
     `overwrite` should be set to `True` to replace the original files.
     """
     try:
