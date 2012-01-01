@@ -10,6 +10,8 @@ from feder import FederSite
 from keyword_names import *
 from astrometry import add_astrometry
 
+import triage_fits_files as tff
+
 #from coatpy import Sesame
 
 feder = FederSite()
@@ -61,12 +63,12 @@ def deg2dms(dd):
     deg,mnt = divmod(mnt,60)
     return int(deg),int(mnt),sec
 
-def add_time_info(header, JD=None):
+def add_time_info(header):
     """
     Add JD, MJD, LST to FITS header; `header` should be a pyfits
     header object.
 
-    If `JD` is `None`, uses `feder.currentobsjd` as the date.
+    Uses `feder.currentobsjd` as the date.
     """
     dateobs = parse_dateobs(header['date-obs'])
     JD.value = round(obstools.calendar_to_jd(dateobs), 6)
@@ -127,25 +129,25 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     `dir` is the directory containing the files to be patched.
     
     `manifest` is the name of the file which should contain a listing
-    of all of the FITS files in the directory and their types.
+    of all of the FITS files in the directory and their types. If the
+    file isn't present, the list of files is generated automatically.
 
     `new_file_ext` is the name added to the FITS files with updated
     header information. It is added to the base name of the input
-    file.
+    file, between the old file name and the `.fit` or `.fits` extension.
 
     `overwrite` should be set to `True` to replace the original files.
     """
     try:
         image_info_file = open(path.join(dir, manifest))
+        image_info = asciitable.read(image_info_file, delimiter=',')
+        image_info_file.close()
+        files = image_info['file']
     except IOError:
-        raise
+        files = tff.fits_files_in_directory(dir)
 
-    image_info = asciitable.read(image_info_file)
-    image_info_file.close()
     current_dir = getcwd()
     chdir(dir)
-
-    files = image_info['file name']
 
     latitude.value = sexagesimal_string(feder.latitude.dms)
     longitude.value = sexagesimal_string(feder.longitude.dms)
@@ -181,8 +183,8 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         hdulist.writeto(new_image, clobber=overwrite)
         hdulist.close()
 
-        if header['imagetyp'] == 'LIGHT':
-            add_astrometry(image, ra_dec=(RA.value, Dec.value), overwrite=True)
+#        if header['imagetyp'] == 'LIGHT':
+#            add_astrometry(image, ra_dec=(RA.value, Dec.value), overwrite=True)
             
     chdir(current_dir)
     
