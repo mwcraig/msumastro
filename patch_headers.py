@@ -54,17 +54,19 @@ def deg2dms(dd):
     """Convert decimal degrees to degrees, minutes, seconds.
 
     `dd` is decimal degrees.
+    
     Poached from stackoverflow.
     """
     mnt,sec = divmod(dd*3600,60)
     deg,mnt = divmod(mnt,60)
     return int(deg),int(mnt),sec
 
-def add_time_info(header):
+def add_time_info(header, JD=None):
     """
-    Add JD, MJD, LST to FITS header.
+    Add JD, MJD, LST to FITS header; `header` should be a pyfits
+    header object.
 
-    Assumes location is feder.
+    If `JD` is `None`, uses `feder.currentobsjd` as the date.
     """
     dateobs = parse_dateobs(header['date-obs'])
     JD.value = round(obstools.calendar_to_jd(dateobs), 6)
