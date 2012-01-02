@@ -17,7 +17,10 @@ def write_list(dir, file, info):
 for currentDir in sys.argv[1:]:
 #    pdb.set_trace()
     moo = tff.triage_fits_files(currentDir,
-                                file_info_to_keep=['imagetyp', 'filter'])
+                                file_info_to_keep=['imagetyp',
+                                                   'filter',
+                                                   'exptime',
+                                                   'ccd-temp'])
     need_pointing = moo['needs_pointing']
     if need_pointing:
         write_list(currentDir, pointing_file_name, need_pointing)
