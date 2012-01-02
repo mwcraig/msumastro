@@ -69,6 +69,9 @@ def test_ImageFileCollection():
     assert len(img_collection.files_with_key_values(keywords=['imagetyp'],
                                                     values=['bias']))==_n_test['bias']
     assert len(img_collection.files) == _n_test['files']
+    assert img_collection.has_key('filter')
+    assert not img_collection.has_key('flying monkeys')
+    assert len(img_collection.values('imagetyp',unique=True))==2
     
 def setup():
     global _n_test

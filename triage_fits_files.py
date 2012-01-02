@@ -218,6 +218,28 @@ class ImageFileCollection(object):
         """List of FITS files in location.
         """
         return self._files
+
+    def values(self, keyword, unique=False):
+        """Return list of values for a particular keyword.
+
+        Values for `keyword` are returned.
+
+        If `unique` is `True` then only the unique values are returned.
+        """
+        if not self.has_key(keyword):
+            raise ValueError('keyword %s is not in the current summary' % keyword)
+
+        if unique:
+            return list(set(self._summary_info[keyword]))
+        else:
+            return list(self._summary_info[keyword])
+
+    def has_key(self, keyword):
+        """True if keyword is in current summary."""
+        for key in self.keywords:
+            if keyword == key:
+                return True
+        return False
         
     def files_with_keys(self, keywords=[]):
         """Return names of files that contain specified FITS keywords.
