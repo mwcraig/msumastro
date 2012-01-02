@@ -2,7 +2,8 @@ import fnmatch
 import pyfits
 from feder import RA, Dec, target_object
 from os import listdir, path
-from numpy import array
+from numpy import array, where
+from string import lower
 
 IMAGETYPE = 'IMAGETYP'
 
@@ -135,7 +136,163 @@ def needs_filter(image_type):
     else:
         return False
 
-     
-     
+from tempfile import TemporaryFile
+class ImageFileCollection(object):
+    """
+    Representation of a collection (usually a directory) of image files.
+    """
+    def __init__(self,location='.', storage_dir=None, keywords=[], info_file='Manifest.txt'):
+        self._location = location
+        self.storage_dir = storage_dir
+        self._keywords = keywords
+        self._files = fits_files_in_directory(self.location)
+        if keywords:
+            self._summary_info = fits_summary(self.location,
+                                              file_list=self._files,
+                                              keywords=self.keywords)
+        else:
+            self._summary_info = {}
+            
+    @property
+    def location(self):
+        """
+        Location of the collection.
 
-    
+        Path name to directory if it is a directory.
+        """
+        return self._location
+
+    @property
+    def storage_dir(self):
+        """
+        Where information about this collection is stored.
+
+        `None` or `False` means it is not stored on disk; `True` means the storage is
+        in the same place as `self.location`; a `string` is interpreted as the
+        full path name of the directory where information should be
+        stored.
+
+        The storage location must be writeable by the user; this is
+        automatically checked when the property is set.
+
+        """
+        return self._storage
+
+    @storage_dir.setter
+    def storage_dir(self, loc):
+        """
+        On setting, check that `loc` is writable.
+        """
+        if ((isinstance(loc, bool) and not loc) or
+            (loc is None)):
+            self._storage = loc
+            return
+
+        if isinstance(loc, basestring):
+            temp_storage = loc
+        else:
+            temp_storage = self.location
+            
+        #try writing a file to this location...
+        try:
+            tmpfile = TemporaryFile(dir=temp_storage)
+        except OSError:
+            raise
+        tmpfile.close()
+        self._storage = temp_storage
+
+    @property
+    def keywords(self):
+        """
+        List of keywords from FITS files about which you want
+        information.
+        """
+        return self._keywords
+
+    @keywords.setter
+    def keywords(self, keywords=[]):
+        self._keywords = keywords
+
+    @property
+    def files(self):
+        """List of FITS files in location.
+        """
+        return self._files
+        
+    def files_with_keys(self, keywords=[]):
+        """Return names of files that contain specified FITS keywords.
+
+        `keys` is the list of keywords to check for, or empty to check
+        for all of `self.keywords`. Runs much faster if `keys` are in
+        the list of keywords in `self.keywords`
+
+        """
+        if not keywords:
+            use_keys = self.keywords
+        else:
+            use_keys = keywords
+
+
+        return self._find_keywords_by_values(keywords=use_keys,
+                                             values='*')
+
+    def files_with_key_values(self, keywords=[], values=[]):
+        """Determine files whose keywords have listed values.
+
+        `keywords` should be a list of keywords.
+
+        `values` should be a list of their values *as strings*.
+
+        The two lists must have the same length.
+
+        NOTE: Value comparison is case *insensitive*.
+        """
+        if len(keywords) != len(values):
+            raise ValueError('keywords and values must have same length.')
+
+        return self._find_keywords_by_values(keywords, values)
+        
+    def _find_keywords_by_values(self, keywords=[],
+                                            values=[]):
+        """Find files whose keywords have given values.
+
+        `keywords` is a list of keyword names.
+        
+        `values` should be a list desired values as strings or '*' to match any
+        value. The latter simply checks whether the keyword is present
+        in the file with a non-trivial value.
+        """
+        if values == '*':
+            use_values = [values] * len(keywords)
+        else:
+            use_values = values
+            
+        if (set(keywords) & set(self.keywords)):
+            # we already have the information in memory
+            use_info = self._summary_info
+        else:
+            # we need to load information about these keywords.
+            use_info = fits_summary(self.location,
+                                    file_list=self.files,
+                                    keywords=keywords)
+            
+        have_all = set(range(0, len(self._files)))
+        for key, value in zip(keywords, use_values):
+            if value == '*':
+                have_this_value = set(where(use_info[key] != '')[0])
+            else:
+                # need to loop explicitly over array rather than using
+                # where to correctly do string comparison.
+                have_this_value = []
+                for idx, file_key_value in enumerate(use_info[key]):
+                    if file_key_value.lower() == value.lower():
+                        have_this_value.append(idx)
+                have_this_value = set(have_this_value)
+            have_all &= have_this_value
+            
+        # we need to convert the list of files to a numpy array to be
+        # able to index it, but it is easier to work with an ordinary
+        # list for the files.
+        return list(array(self._files)[list(have_all)])
+       
+        
