@@ -178,7 +178,3 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             hdulist[0].scale('int16')
         hdulist.writeto(path.join(dir,new_image), clobber=overwrite)
         hdulist.close()
-
-#        if header['imagetyp'] == 'LIGHT':
-#            add_astrometry(image, ra_dec=(RA.value, Dec.value), overwrite=True)
-                
