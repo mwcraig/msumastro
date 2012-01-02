@@ -57,7 +57,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     print solve_field
     return subprocess.call(solve_field)
         
-def add_astrometry(filename, overwrite=False, ra_dec=None):
+def add_astrometry(filename, overwrite=False, ra_dec=None, note_failure=False):
     """Add WCS headers to FITS file using astrometry.net
 
     `overwrite` should be `True` to overwrite the original file. If `False`,
@@ -66,6 +66,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None):
     `ra_dec` is a list or tuple (RA, Dec) in either decimal or
     sexagesimal form.
 
+    Set `note_failure` to True if you want a file created with
+    extension "failed" if astrometry.net fails.
+    
     Returns `True` on success.
     
     Tries a couple strategies before giving up: first sextractor,
@@ -99,6 +102,13 @@ def add_astrometry(filename, overwrite=False, ra_dec=None):
     if solved_field:
         remove(base+'-indx.xyls')
         
+    if note_failure and not solved_field:
+        try:
+            f = open(base + '.failed', 'wb')
+            f.close()
+        except IOError:
+            pass
+            
     return solved_field
     
         
