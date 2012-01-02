@@ -1,6 +1,6 @@
 import fnmatch
 import pyfits
-from keyword_names import RA, Dec, target_object
+from feder import RA, Dec, target_object
 from os import listdir, path
 from numpy import array
 

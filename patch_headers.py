@@ -6,8 +6,7 @@ import asciitable
 import pyfits
 from astropysics import obstools, coords
 
-from feder import FederSite
-from keyword_names import *
+from feder import *
 from astrometry import add_astrometry
 
 import triage_fits_files as tff
