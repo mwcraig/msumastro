@@ -7,7 +7,7 @@ import gzip
 from tempfile import mkdtemp
 from numpy import where
 
-_n_test = {'files': 0, 'need_object':0, 'need_filter':0}
+_n_test = {'files': 0, 'need_object':0, 'need_filter':0, 'bias':0}
 _test_dir = ''
 _filters = []
 
@@ -49,7 +49,26 @@ def test_fits_summary():
     print summary['file'] == 'no_filter_no_object_bias.fit'
     print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
     assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
-    
+
+def test_ImageFileCollection():
+    try:
+        should_work = tff.ImageFileCollection(storage_dir=_test_dir)
+        assert True
+    except OSError:
+        assert False
+
+    try:
+        should_fail = tff.ImageFileCollection(storage_dir='/')
+        assert False
+    except OSError:
+        assert True
+
+    img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
+    print img_collection.files_with_key_values(keywords=['imagetyp'],
+                                                    values=['bias'])
+    assert len(img_collection.files_with_key_values(keywords=['imagetyp'],
+                                                    values=['bias']))==_n_test['bias']
+    assert len(img_collection.files) == _n_test['files']
     
 def setup():
     global _n_test
@@ -73,7 +92,7 @@ def setup():
     no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
     _n_test['files'] += 1
-
+    _n_test['bias'] += 1
 
     filter_no_object = pyfits.PrimaryHDU(img)
     filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
@@ -84,6 +103,7 @@ def setup():
     filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     filter_no_object.writeto('filter_no_object_bias.fit')
     _n_test['files'] += 1
+    _n_test['bias'] += 1
 
     filter_object = pyfits.PrimaryHDU(img)
     filter_object.header.update('imagetyp', tff.IRAF_image_type('light'))
