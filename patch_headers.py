@@ -1,4 +1,4 @@
-from os import path, chdir, getcwd
+from os import path
 from math import cos, pi
 from datetime import datetime
 
@@ -11,8 +11,6 @@ from keyword_names import *
 from astrometry import add_astrometry
 
 import triage_fits_files as tff
-
-#from coatpy import Sesame
 
 feder = FederSite()
 
@@ -146,15 +144,13 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     except IOError:
         files = tff.fits_files_in_directory(dir)
 
-    current_dir = getcwd()
-    chdir(dir)
 
     latitude.value = sexagesimal_string(feder.latitude.dms)
     longitude.value = sexagesimal_string(feder.longitude.dms)
     obs_altitude.value = feder.altitude
 
     for image in files:
-        hdulist = pyfits.open(image)
+        hdulist = pyfits.open(path.join(dir,image))
         header = hdulist[0].header
         int16 = (header['bitpix'] == 16)
         hdulist.verify('fix')
@@ -180,11 +176,9 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             
         if int16:
             hdulist[0].scale('int16')
-        hdulist.writeto(new_image, clobber=overwrite)
+        hdulist.writeto(path.join(dir,new_image), clobber=overwrite)
         hdulist.close()
 
 #        if header['imagetyp'] == 'LIGHT':
 #            add_astrometry(image, ra_dec=(RA.value, Dec.value), overwrite=True)
-            
-    chdir(current_dir)
-    
+                
