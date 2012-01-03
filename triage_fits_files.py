@@ -241,31 +241,17 @@ class ImageFileCollection(object):
                 return True
         return False
         
-    def files_with_keys(self, keywords=[]):
-        """Return names of files that contain specified FITS keywords.
-
-        `keys` is the list of keywords to check for, or empty to check
-        for all of `self.keywords`. Runs much faster if `keys` are in
-        the list of keywords in `self.keywords`
-
-        """
-        if not keywords:
-            use_keys = self.keywords
-        else:
-            use_keys = keywords
-        return self._find_keywords_by_values(keywords=use_keys,
-                                             values='*')
-
     def files_filtered(self, keywords=[], values=[]):
         """Determine files whose keywords have listed values.
 
         `keywords` should be a list of keywords.
 
-        `values` should be a list of their values *as strings*.
+        `values` should be a list of their values or the string '*' if
+        only the presence of the `keyword` matters.
 
         The two lists must have the same length.
 
-        NOTE: Value comparison is case *insensitive*.
+        NOTE: Value comparison is case *insensitive* for strings.
         """
         if len(keywords) != len(values):
             raise ValueError('keywords and values must have same length.')
