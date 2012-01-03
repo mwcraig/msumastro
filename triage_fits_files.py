@@ -150,11 +150,11 @@ class ImageFileCollection(object):
         self.storage_dir = storage_dir
         self._files = fits_files_in_directory(self.location)
         if keywords:
-            self._summary_info = fits_summary(self.location,
+            self.summary_info = fits_summary(self.location,
                                               file_list=self._files,
                                               keywords=keywords)
         else:
-            self._summary_info = {}
+            self.summary_info = {}
             
     @property
     def location(self):
@@ -210,15 +210,15 @@ class ImageFileCollection(object):
         List of keywords from FITS files about which you want
         information.
         """
-        if self._summary_info:
-            return self._summary_info.keys()
+        if self.summary_info:
+            return self.summary_info.keys()
         else:
             return []
             
     @keywords.setter
     def keywords(self, keywords=[]):
         if keywords:
-            self._summary_info = fits_summary(self.location,
+            self.summary_info = fits_summary(self.location,
                                               file_list=self._files,
                                               keywords=keywords)
 
@@ -239,9 +239,9 @@ class ImageFileCollection(object):
             raise ValueError('keyword %s is not in the current summary' % keyword)
 
         if unique:
-            return list(set(self._summary_info[keyword]))
+            return list(set(self.summary_info[keyword]))
         else:
-            return list(self._summary_info[keyword])
+            return list(self.summary_info[keyword])
 
     def has_key(self, keyword):
         """True if keyword is in current summary."""
@@ -284,7 +284,7 @@ class ImageFileCollection(object):
             
         if (set(keywords) & set(self.keywords)):
             # we already have the information in memory
-            use_info = self._summary_info
+            use_info = self.summary_info
         else:
             # we need to load information about these keywords.
             use_info = fits_summary(self.location,
