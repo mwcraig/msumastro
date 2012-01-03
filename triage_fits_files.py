@@ -253,12 +253,10 @@ class ImageFileCollection(object):
             use_keys = self.keywords
         else:
             use_keys = keywords
-
-
         return self._find_keywords_by_values(keywords=use_keys,
                                              values='*')
 
-    def files_with_key_values(self, keywords=[], values=[]):
+    def files_filtered(self, keywords=[], values=[]):
         """Determine files whose keywords have listed values.
 
         `keywords` should be a list of keywords.
@@ -303,13 +301,16 @@ class ImageFileCollection(object):
             if value == '*':
                 have_this_value = set(where(use_info[key] != '')[0])
             else:
-                # need to loop explicitly over array rather than using
-                # where to correctly do string comparison.
-                have_this_value = []
-                for idx, file_key_value in enumerate(use_info[key]):
-                    if file_key_value.lower() == value.lower():
-                        have_this_value.append(idx)
-                have_this_value = set(have_this_value)
+                if isinstance(value, basestring):
+                    # need to loop explicitly over array rather than using
+                    # where to correctly do string comparison.
+                    have_this_value = []
+                    for idx, file_key_value in enumerate(use_info[key]):
+                        if file_key_value.lower() == value.lower():
+                            have_this_value.append(idx)
+                    have_this_value = set(have_this_value)
+                else:
+                    have_this_value = set(where(use_info[key] == value)[0])
             have_all &= have_this_value
             
         # we need to convert the list of files to a numpy array to be
