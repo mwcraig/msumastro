@@ -148,12 +148,11 @@ class ImageFileCollection(object):
     def __init__(self,location='.', storage_dir=None, keywords=[], info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
-        self._keywords = keywords
         self._files = fits_files_in_directory(self.location)
         if keywords:
             self._summary_info = fits_summary(self.location,
                                               file_list=self._files,
-                                              keywords=self.keywords)
+                                              keywords=keywords)
         else:
             self._summary_info = {}
             
@@ -169,7 +168,7 @@ class ImageFileCollection(object):
     @property
     def storage_dir(self):
         """
-        Where information about this collection is stored.
+        Directory information about this collection should be stored.
 
         `None` or `False` means it is not stored on disk; `True` means the storage is
         in the same place as `self.location`; a `string` is interpreted as the
@@ -211,11 +210,17 @@ class ImageFileCollection(object):
         List of keywords from FITS files about which you want
         information.
         """
-        return self._keywords
-
+        if self._summary_info:
+            return self._summary_info.keys()
+        else:
+            return []
+            
     @keywords.setter
     def keywords(self, keywords=[]):
-        self._keywords = keywords
+        if keywords:
+            self._summary_info = fits_summary(self.location,
+                                              file_list=self._files,
+                                              keywords=keywords)
 
     @property
     def files(self):
