@@ -4,8 +4,7 @@ from feder import RA, Dec, target_object
 from os import listdir, path
 from numpy import array, where
 from string import lower
-
-IMAGETYPE = 'IMAGETYP'
+import atpy
 
 def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True):
     """
@@ -94,7 +93,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
             print "Unable to open file %s in directory %s" % (fitsfile, dir)
             continue
         header = hdulist[0].header
-        image_type =  IRAF_image_type(header[IMAGETYPE])
+        image_type =  IRAF_image_type(header['imagetyp'])
 
         if needs_filter(image_type) and 'FILTER' not in header.keys():
             file_needs_filter.append(fitsfile)
