@@ -45,13 +45,14 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
     `keywords` is the list of FITS header keywords for which
     information will be gathered.
 
-    Returns a dictionary of arrays, with one dictionary entry for each
-    of the `keywords`. Missing values are indicated by an empty string.
+    Returns an ATpy table.
     """
+    from collections import OrderedDict
+    
     if not file_list:
         file_list = fits_files_in_directory(dir)
         
-    summary = {}
+    summary = OrderedDict()
     summary['file'] = []
     for keyword in keywords:
         summary[keyword] = []
@@ -67,9 +68,13 @@ def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
                 summary[keyword].append(header[keyword])
             except KeyError:
                 summary[keyword].append('')
-    for key in summary.keys():
-        summary[key] = array(summary[key])
-    return summary
+
+    summary_table = atpy.Table()
+    
+    for key in summary.keys():        
+        summary_table.add_column(key, summary[key])
+
+    return summary_table
     
 def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
     """
