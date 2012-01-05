@@ -1,4 +1,4 @@
-from numpy import array, zeros, sqrt
+from numpy import array, zeros, sqrt, ndarray
 
 def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     """
@@ -18,8 +18,10 @@ def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     else:
         average_bias = bias
 
+    if not isinstance(dark, ndarray):
+        dark = array(dark)
     if len(dark.shape) == 2:
-        dark_array = array(dark)
+        dark_array = array([dark])
     else:
         dark_array = dark
 
