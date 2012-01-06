@@ -31,7 +31,7 @@ for currentDir in foo:
         for time in exposure_times:
             these_darks=dark_files.where(dark_files['exposure']==time)
             avg_temp[time] = these_darks['ccd-temp'].mean()
-            good_darks = abs(these_darks['ccd-temp'] - avg_temp) < temperature_tolerance
+            good_darks = abs(these_darks['ccd-temp'] - avg_temp[time]) < temperature_tolerance
             bad_darks = logical_not(good_darks)
             if bad_darks.any():
                 raise pipeline.PipelineError('Darks with exposure time %f have a temperature problem!' % time )
@@ -49,7 +49,7 @@ for currentDir in foo:
     if light_files:
         dark_subtractor = ccd.ImageBiasSubtractor()
         for light_file in light_files['file']:
-            light = ccd.FitsImage(light_file)
+            light = ccd.FitsImage(path.join(currentDir,light_file))
             header = light.fitsfile[0].header
             exposure = header['exposure']
             try:
