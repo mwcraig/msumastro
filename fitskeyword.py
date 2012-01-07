@@ -91,7 +91,7 @@ class FITSKeyword(object):
             all_names.extend(self.synonyms)
         return all_names
 
-    def history_comment(self, with_name=None):
+    def historyComment(self, with_name=None):
         """
         Method to add HISTORY line to header.
         Use `with_name` to override the name of the keyword object.
@@ -99,7 +99,7 @@ class FITSKeyword(object):
         if with_name is None: with_name = self.name
         return "Updated keyword %s to value %s" % (with_name.upper(), self.value)
 
-    def add_to_header(self, hdu_or_header, with_synonyms=True, history=False):
+    def addToHeader(self, hdu_or_header, with_synonyms=True, history=False):
         """
         Method to add keyword to FITS header.
 
@@ -119,14 +119,14 @@ class FITSKeyword(object):
 
         header.update(self.name, self.value, self.comment)
         if history:
-            header.add_history(self.history_comment())
+            header.add_history(self.historyComment())
         if with_synonyms and self.synonyms:
             for synonym in self.synonyms:
                 header.update(synonym, self.value, self.comment)
                 if history:
-                    header.add_history(self.history_comment(with_name=synonym))
+                    header.add_history(self.historyComment(with_name=synonym))
 
-    def set_value_from_header(self, hdu_or_header):
+    def setValueFromHeader(self, hdu_or_header):
         """
         Determine value of keyword from FITS header.
 

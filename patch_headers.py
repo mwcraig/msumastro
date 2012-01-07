@@ -93,12 +93,12 @@ def add_object_pos_airmass(header):
         raise ValueError('Need to set JD.value before calling.')
 
     try:
-        RA.set_value_from_header(header)
+        RA.setValueFromHeader(header)
     except ValueError:
         raise ValueError("No RA is present.")
         return
 
-    Dec.set_value_from_header(header)
+    Dec.setValueFromHeader(header)
     RA.value = RA.value.replace(' ',':')
     Dec.value = Dec.value.replace(' ',':')
     object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
