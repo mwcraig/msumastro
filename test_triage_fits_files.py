@@ -64,13 +64,13 @@ def test_ImageFileCollection():
         assert True
 
     img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
-    print img_collection.files_filtered(keywords=['imagetyp'],
+    print img_collection.filesFiltered(keywords=['imagetyp'],
                                                     values=['bias'])
-    assert len(img_collection.files_filtered(keywords=['imagetyp'],
+    assert len(img_collection.filesFiltered(keywords=['imagetyp'],
                                                     values=['bias']))==_n_test['bias']
     assert len(img_collection.files) == _n_test['files']
-    assert img_collection.has_key('filter')
-    assert not img_collection.has_key('flying monkeys')
+    assert img_collection.hasKey('filter')
+    assert not img_collection.hasKey('flying monkeys')
     assert len(img_collection.values('imagetyp',unique=True))==2
     
 def setup():

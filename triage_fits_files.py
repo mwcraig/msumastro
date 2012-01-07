@@ -235,7 +235,7 @@ class ImageFileCollection(object):
 
         If `unique` is `True` then only the unique values are returned.
         """
-        if not self.has_key(keyword):
+        if not self.hasKey(keyword):
             raise ValueError('keyword %s is not in the current summary' % keyword)
 
         if unique:
@@ -243,14 +243,14 @@ class ImageFileCollection(object):
         else:
             return list(self.summary_info[keyword])
 
-    def has_key(self, keyword):
+    def hasKey(self, keyword):
         """True if keyword is in current summary."""
         for key in self.keywords:
             if keyword == key:
                 return True
         return False
         
-    def files_filtered(self, keywords=[], values=[]):
+    def filesFiltered(self, keywords=[], values=[]):
         """Determine files whose keywords have listed values.
 
         `keywords` should be a list of keywords.
