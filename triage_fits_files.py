@@ -149,12 +149,22 @@ class ImageFileCollection(object):
         self._location = location
         self.storage_dir = storage_dir
         self._files = fits_files_in_directory(self.location)
+        self.summary_info = {}
+
+        if info_file is not None:
+            try:
+                self.summary_info = atpy.Table(path.join(self.location,info_file),
+                                               type='ascii',
+                                               delimiter=',')
+            except Exception:
+                print 'Unable to read file %s, will regenerate table' % info_file
+
         if keywords:
-            self.summary_info = fits_summary(self.location,
-                                              file_list=self._files,
-                                              keywords=keywords)
-        else:
-            self.summary_info = {}
+            if not set(keywords).issubset(set(self.keywords)):
+                print 'Regenerating information summary table for %s' % location
+                self.summary_info = fits_summary(self.location,
+                                                 file_list=self._files,
+                                                 keywords=keywords)
             
     @property
     def location(self):
