@@ -79,7 +79,7 @@ def add_time_info(header):
     LST.value = sexagesimal_string(deg2dms(LST.value))
     
     for keyword in keywords_for_all_files:
-        keyword.add_to_header(header, history=False)
+        keyword.addToHeader(header, history=False)
 
 def add_object_pos_airmass(header):
     """Add object information, such as RA/Dec and airmass.
@@ -112,7 +112,7 @@ def add_object_pos_airmass(header):
                                              0)).ra.hms)
     for keyword in keywords_for_light_files:
         if keyword.value is not None:
-            keyword.add_to_header(header, history=False)
+            keyword.addToHeader(header, history=False)
             
 
 def keyword_names_as_string(list_of_keywords):
