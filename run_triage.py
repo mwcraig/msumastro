@@ -29,8 +29,7 @@ for currentDir in sys.argv[1:]:
     if moo['needs_object_name']:
         write_list(currentDir, object_name_file_name,
                    moo['needs_object_name'])
-    asciitable.write(moo['files'],
-                     os.path.join(currentDir, file_list),
-                     delimiter=',')
+    tbl = moo['files']
+    tbl.write(os.path.join(currentDir, file_list), type='ascii', delimiter=',')
                  
                      
