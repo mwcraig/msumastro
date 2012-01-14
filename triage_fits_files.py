@@ -143,7 +143,11 @@ def needs_filter(image_type):
 from tempfile import TemporaryFile
 class ImageFileCollection(object):
     """
-    Representation of a collection (usually a directory) of image files.
+    Representation of a collection (usually a directory) of image
+    files.
+
+    *TODO:* Correctly handle case when keywords is a single value
+    instead of a list.
     """
     def __init__(self,location='.', storage_dir=None, keywords=[], info_file='Manifest.txt'):
         self._location = location
