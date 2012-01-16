@@ -3,7 +3,8 @@ from os import path, remove, rename
 
 def call_astrometry(filename, sextractor=False, feder_settings=True,
                     no_plots=True, minimal_output=True,
-                    ra_dec=None, overwrite=False):
+                    ra_dec=None, overwrite=False,
+                    wcs_reference_image_center=True):
     
     """Wrapper around astrometry.net solve-field.
     
@@ -25,6 +26,9 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     :param overwrite:
         If True, write the WCS header to the input FITS
         file.
+    :param wcs_reference_image_center:
+        If True, force the WCS reference point in the image to be the
+        image center.
     """
     solve_field = ["solve-field"]
     option_list = []
@@ -49,6 +53,9 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         
     if overwrite:
         option_list.append("--overwrite")
+
+    if wcs_reference_image_center:
+        option_list.append("--crpix-center")
         
     options = " ".join(option_list)
 
