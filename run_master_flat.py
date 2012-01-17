@@ -25,7 +25,7 @@ def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
                    'Combination method for producing master')
         
     if sample is not None:
-        if not isinstance(sample, Header):
+        if not isinstance(sample, pyfits.Header):
             raise TypeError
         cards = sample.ascard
         for key in copy_from_sample:
