@@ -2,6 +2,7 @@ import triage_fits_files as tff
 import ccd_characterization as ccd_char
 from astropysics import ccd
 from os import path
+import pyfits
 
 combiner = ccd.ImageCombiner()
 
