@@ -45,23 +45,4 @@ for currentDir in foo:
             print time, avg_temp[time], median(master_dark[time]), mean(master_dark[time])
             print ccd_char.ccd_dark_current(master_bias,dark_data,gain=1.5)/time
 
-    light_files = useful.where(useful['imagetyp'] == 'LIGHT')
-    if light_files:
-        dark_subtractor = ccd.ImageBiasSubtractor()
-        for light_file in light_files['file']:
-            light = ccd.FitsImage(path.join(currentDir,light_file))
-            header = light.fitsfile[0].header
-            exposure = header['exposure']
-            try:
-                dark = master_dark[exposure]
-            except KeyError:
-                print "Holy crap, Batman, I have no dark with exposure time %f!" % exposure
-                raise RuntimeError
-            if abs(header['ccd-temp']-avg_temp[exposure])>temperature_tolerance:
-                print "Aw damn it, the temperature of this exposure, %f, is too far" % header['ccd-temp']
-                print "  from the master dark temperature, %f." % avg_temp[exposure]
-                raise RuntimeError
-            dark_subtractor.biasframe = dark
-            calibrated_light = dark_subtractor.subtractFromImage(light)
-            #calibrated_light = flatten me please!
             
