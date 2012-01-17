@@ -42,6 +42,9 @@ for currentDir in foo:
         these_flats = all_flats.where(all_flats['exptime'] == time)
         flat_filter = these_flats['filter']
         master_dark = master_dark_files.where(master_dark_files['exptime']==time)
+        if not master_dark:
+            print 'Sorry, no dark for the exposure %f, skipping....' %time
+            continue
         master_dark = ccd.FitsImage(master_dark['file'])
         flats = []
         for flat_file in these_flats['file']:
