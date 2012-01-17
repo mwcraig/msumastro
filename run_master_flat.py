@@ -45,6 +45,9 @@ for currentDir in foo:
     for time in exposure_times:
         these_flats = all_flats.where(all_flats['exptime'] == time)
         flat_filter = these_flats['filter'][0]
+        same_filter = (these_flats['filter'] == flat_filter)
+        if not same_filter.all():
+            raise RuntimeError('Holy crap, my flats have mixed filters!')
         master_dark = master_dark_files.where(master_dark_files['exptime']==time)
         if not master_dark:
             print 'Sorry, no dark for the exposure %f, skipping....' %time
