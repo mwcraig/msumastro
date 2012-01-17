@@ -3,6 +3,7 @@ import ccd_characterization as ccd_char
 from astropysics import ccd
 from os import path
 import pyfits
+from datetime import datetime
 
 combiner = ccd.ImageCombiner()
 
