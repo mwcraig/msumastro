@@ -45,7 +45,7 @@ for currentDir in foo:
         if not master_dark:
             print 'Sorry, no dark for the exposure %f, skipping....' %time
             continue
-        master_dark = ccd.FitsImage(master_dark['file'])
+        master_dark = ccd.FitsImage(path.join(currentDir,master_dark['file']))
         flats = []
         for flat_file in these_flats['file']:
             flat = ccd.FitsImage(flat_file)
@@ -58,4 +58,4 @@ for currentDir in foo:
                                temp_dev, sample=sample[0].header,
                                combiner=combiner)
         flat_fn = 'Master_Flat_%s_band' % flat_filter
-        flat_im.save(flat_fn)
+        flat_im.save(path.join(currentDir,flat_fn))
