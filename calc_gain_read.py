@@ -7,7 +7,7 @@ def as_images(tbl, src_dir):
     from os import path
     img = []
     for tb in tbl:
-        img.append(ccd.FitsImage(path.join(src_dir, tb['file'])).data)
+        img.append(ccd.FitsImage(path.join(src_dir, tb['file'])).data[1:,:])
     return img
         
 def calc_gain_read(src_dir):
@@ -29,6 +29,7 @@ def calc_gain_read(src_dir):
      gain = []
      read_noise = []
      for i in range(0,n_files,2):
+         print biases[i].shape
          gain.append(ccd_gain(biases[i:i+2], r_flats[i:i+2]))
          read_noise.append(ccd_read_noise(biases[i:i+2],gain=gain[-1]))
      return (array(gain),array(read_noise))
