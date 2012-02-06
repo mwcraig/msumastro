@@ -105,9 +105,16 @@ def add_astrometry(filename, overwrite=False, ra_dec=None, note_failure=False):
             return False
 
     # whether we succeeded or failed, clean up
-    remove(base+'.axy')
+    try:
+        remove(base+'.axy')
+    except OSError:
+        pass
+        
     if solved_field:
-        remove(base+'-indx.xyls')
+        try:
+            remove(base+'-indx.xyls')
+        except OSError:
+            pass
         
     if note_failure and not solved_field:
         try:
