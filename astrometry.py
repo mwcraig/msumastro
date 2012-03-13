@@ -33,7 +33,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     solve_field = ["solve-field"]
     option_list = []
 
-    option_list.append("--obj 20 --depth 20")
+    option_list.append("--obj 40 --depth 20,40")
     if feder_settings:
         option_list.append("--scale-low 0.4 --scale-high 0.56 --scale-units arcsecperpix")
 
