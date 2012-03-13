@@ -117,6 +117,35 @@ def add_object_pos_airmass(header):
 
 def keyword_names_as_string(list_of_keywords):
     return ' '.join([' '.join(keyword.names) for keyword in list_of_keywords])
+
+def read_object_list(dir='.',list='obsinfo.txt'):
+    """
+    Read a list of objects from a text file.
+
+    `dir` is the directory containing the file.
+
+    `list` is the name of the file.
+
+    File format:
+        + All lines in the files that start with # are ignored.
+        + First line is the name(s) of the observer(s)
+        + Remaining line(s) are name(s) of object(s), one per line
+    """
+    try:
+        object_file = open(path.join(dir,list),'rb')
+    except IOError:
+        raise IOError('File %s in directory %s not found.' % (list, dir))
+
+    first_line = True
+    objects = []
+    for line in object_file:
+        if not line.startswith('#'):
+            if first_line:
+                first_line = False
+            else:
+                objects.append(line.strip())
+
+    return objects
     
 def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
                   overwrite=False):
