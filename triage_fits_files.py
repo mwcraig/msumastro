@@ -33,48 +33,6 @@ def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True)
         files.extend(fnmatch.filter(all_files, '*'+extension))
     return files
 
-def fits_summary(dir='.', file_list=[], keywords=['imagetyp']):
-    """
-    Collect information about fits files in a directory.
-
-    `dir` is the name of the directory to search for FITS files.
-
-    `file_list` can be set to the list of FITS files in `dir`,
-    otherwise the list will be generated.
-
-    `keywords` is the list of FITS header keywords for which
-    information will be gathered.
-
-    Returns an ATpy table.
-    """
-    from collections import OrderedDict
-    
-    if not file_list:
-        file_list = fits_files_in_directory(dir)
-        
-    summary = OrderedDict()
-    summary['file'] = []
-    for keyword in keywords:
-        summary[keyword] = []
-
-    for afile in file_list:
-        try:
-            header = pyfits.getheader(path.join(dir,afile))
-        except IOError:
-            continue
-        summary['file'].append(afile)
-        for keyword in keywords:
-            try:
-                summary[keyword].append(header[keyword])
-            except KeyError:
-                summary[keyword].append('')
-
-    summary_table = atpy.Table()
-    
-    for key in summary.keys():        
-        summary_table.add_column(key, summary[key])
-
-    return summary_table
     
 def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
     """
@@ -113,7 +71,8 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
             if target_object.name not in header.keys():
                 file_needs_object_name.append(fitsfile)
 
-    file_info = fits_summary(dir, keywords=file_info_to_keep)
+    img_collection = ImageFileCollection(dir, keywords=file_info_to_keep)
+    file_info = img_collection.fits_summary(dir, keywords=file_info_to_keep)
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
                 'needs_pointing': file_needs_minimal_pointing_info,
@@ -166,9 +125,9 @@ class ImageFileCollection(object):
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
                 print 'Regenerating information summary table for %s' % location
-                self.summary_info = fits_summary(self.location,
-                                                 file_list=self._files,
-                                                 keywords=keywords)
+                self.summary_info = self.fits_summary(self.location,
+                                                      file_list=self._files,
+                                                      keywords=keywords)
             
     @property
     def location(self):
@@ -232,7 +191,7 @@ class ImageFileCollection(object):
     @keywords.setter
     def keywords(self, keywords=[]):
         if keywords:
-            self.summary_info = fits_summary(self.location,
+            self.summary_info = self.fits_summary(self.location,
                                               file_list=self._files,
                                               keywords=keywords)
 
@@ -280,7 +239,50 @@ class ImageFileCollection(object):
             raise ValueError('keywords and values must have same length.')
 
         return self._find_keywords_by_values(keywords, values)
-        
+
+    def fits_summary(self, dir='.', file_list=[], keywords=['imagetyp']):
+        """
+        Collect information about fits files in a directory.
+
+        `dir` is the name of the directory to search for FITS files.
+
+        `file_list` can be set to the list of FITS files in `dir`,
+        otherwise the list will be generated.
+
+        `keywords` is the list of FITS header keywords for which
+        information will be gathered.
+
+        Returns an ATpy table.
+        """
+        from collections import OrderedDict
+
+        if not file_list:
+            file_list = fits_files_in_directory(dir)
+
+        summary = OrderedDict()
+        summary['file'] = []
+        for keyword in keywords:
+            summary[keyword] = []
+
+        for afile in file_list:
+            try:
+                header = pyfits.getheader(path.join(dir,afile))
+            except IOError:
+                continue
+            summary['file'].append(afile)
+            for keyword in keywords:
+                try:
+                    summary[keyword].append(header[keyword])
+                except KeyError:
+                    summary[keyword].append('')
+
+        summary_table = atpy.Table()
+
+        for key in summary.keys():        
+            summary_table.add_column(key, summary[key])
+
+        return summary_table
+
     def _find_keywords_by_values(self, keywords=[],
                                             values=[]):
         """Find files whose keywords have given values.
@@ -301,9 +303,9 @@ class ImageFileCollection(object):
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
-            use_info = fits_summary(self.location,
-                                    file_list=self.files,
-                                    keywords=keywords)
+            use_info = self.fits_summary(self.location,
+                                         file_list=self.files,
+                                         keywords=keywords)
             
         have_all = set(range(0, len(self._files)))
         for key, value in zip(keywords, use_values):

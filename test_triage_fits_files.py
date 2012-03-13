@@ -39,7 +39,9 @@ def test_fits_files_in_directory():
 
 def test_fits_summary():
     keywords = ['imagetyp', 'filter']
-    summary = tff.fits_summary(_test_dir,
+    image_collection = tff.ImageFileCollection(_test_dir,
+                                               keywords=keywords)
+    summary = image_collection.fits_summary(_test_dir,
                                keywords=keywords)
     print summary['file']
     print summary.keys()
