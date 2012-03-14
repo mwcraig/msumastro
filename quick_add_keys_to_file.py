@@ -1,7 +1,7 @@
 import asciitable as at
 import pyfits
 
-def add_keys(file_list, keys=keylist):
+def add_keys(file_list, keys=''):
     """Add keywords to a list of FITS files.
 
     `file_list` should have one file per line.
@@ -20,7 +20,7 @@ def add_keys(file_list, keys=keylist):
 
     """
     files =at.read(file_list)
-    key_table = at.read(keylist)
+    key_table = at.read(keys)
     for fil in files:
         fil_fits = pyfits.open(fil[0],mode='update')
         hdr = fil_fits[0].header
