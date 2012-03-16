@@ -142,10 +142,11 @@ def read_object_list(dir='.',list='obsinfo.txt'):
         if not line.startswith('#'):
             if first_line:
                 first_line = False
+                observer = line.strip()
             else:
                 objects.append(line.strip())
 
-    return objects
+    return (observer, objects)
     
 def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
                   overwrite=False):

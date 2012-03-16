@@ -18,10 +18,11 @@ def test_sexagesimal_string_with_precision_and_sign():
     assert sexagesimal_string(test_tuple, sign=True, precision=3) == '+01:02:03.142'
 
 def test_read_object_list():
-    objects = read_object_list(dir=_test_dir)
+    observer, objects = read_object_list(dir=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
+    assert observer == 'Ima Observer'
     
 def setup():
     global _test_dir
