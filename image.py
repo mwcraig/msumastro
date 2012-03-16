@@ -100,5 +100,12 @@ class ImageWithWCS(ccd.FitsImage):
 
          return ret
 
-     def save(self, fname):
-         ccd.FitsImage.save(self, fname, clobber=False)
+     def save(self, fname, clobber=False):
+         """
+         Save FITS file.
+
+         `fname` is the name of the file to save to.
+
+         `clobber` should be `True` to overwrite an existing file.
+         """
+         ccd.FitsImage.save(self, fname, clobber=clobber)
