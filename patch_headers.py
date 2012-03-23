@@ -207,3 +207,75 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             hdulist[0].scale('int16')
         hdulist.writeto(path.join(dir,new_image), clobber=overwrite)
         hdulist.close()
+
+def add_object_info(directory='.', object_list=None,
+                    match_radius=20.0, new_file_ext=None):
+    """
+    Automagically add object information to FITS files.
+
+    `directory` is the directory containing the FITS files to be fixed
+    up and an `object_list`. Set `object_list` to `None` to use
+    default object list name.
+
+    `match_radius` is the maximum distance, in arcmin, between the
+    RA/Dec of the image and a particular object for the image to be
+    considered an image of that object.
+    """
+    from astro_object import AstroObject
+    import numpy as np
+    from fitskeyword import FITSKeyword
+    from image import ImageWithWCS
+    
+    images = tff.ImageFileCollection(directory,
+                                     keywords=['imagetyp', 'RA',
+                                               'Dec', 'object'])
+    summary = images.summary_info
+
+    missing_objects = summary.where((summary['object'] == '') &
+                                    (summary['RA'] != '') &
+                                    (summary['Dec'] != ''))
+    if not missing_objects:
+        return
+        
+    ra_dec = []
+    for obj in missing_objects:
+        ra_dec.append(coords.coordsys.FK5Coordinates(obj['RA'],obj['Dec']))
+
+    ra_dec = np.array(ra_dec)
+#    missing_objects.add_column('ra_dec',ra_dec)
+    missing_objects.add_empty_column('distance', np.float32)
+    missing_objects.add_column('found_object',
+                               np.zeros_like(missing_objects['RA']),
+                               dtype=np.bool)
+    observer, objects = read_object_list(directory)
+#    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335), 'ey uma':(135.575,49.810)}
+
+    for object_name in objects:        
+#        obj = AstroObject(object_name, ra_dec=ra_dec_obj[object_name])
+        obj = AstroObject(object_name)
+        obj_keyword = FITSKeyword('object',value=object_name)
+        distance = ra_dec - obj.ra_dec
+        # this is dumb, should be able to do this without explicit
+        # loop:
+        for idx, dist in enumerate(distance):
+            distance[idx] = dist.arcmin
+        missing_objects['distance'] = distance
+        matches = missing_objects['distance'] < match_radius
+        if missing_objects['found_object'][matches].any():
+            print 'Damn, this image already has an object!'
+
+        missing_objects['found_object'][matches] = 1
+        print 'object %s in images %s' % (object_name, ' '.join(missing_objects['file'][matches]))
+        #at the end, add object names to FITS files.
+        for image in missing_objects.where(matches):
+             full_name = path.join(directory,image['file'])
+             image_fits = ImageWithWCS(full_name) 
+             obj_keyword.addToHeader(image_fits.header, history=False)
+             if new_file_ext is not None:
+                 base, ext = path.splitext(full_name)
+                 new_file_name = base+ new_file_ext + ext
+             else:
+                 new_file_name = full_name
+                 
+             image_fits.save(new_file_name, clobber=True)
+        
