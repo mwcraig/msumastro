@@ -3,6 +3,7 @@ from os import path, remove, rename
 
 def call_astrometry(filename, sextractor=False, feder_settings=True,
                     no_plots=True, minimal_output=True,
+                    save_wcs=False, verify=None,
                     ra_dec=None, overwrite=False,
                     wcs_reference_image_center=True):
     
@@ -19,7 +20,15 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         plots (pngs showing object location and more)
     :param minimal_output:
         Suppress, as separate files, output of: WCS
-        header, RA/Dec object list, matching objects list.
+        header, RA/Dec object list, matching objects list, but see
+        also `save_wcs`
+    :param save_wcs:
+        True to save WCS header even if other output is suppressed
+        with `minimial_output`
+    :param verify:
+        Set to the name of a WCS header to be used as a first guess
+        for the astrometry fit; if this plate solution does not work
+        the solution is found as though `verify` had not been specified.
     :param ra_dec:
         List or tuple of RA and Dec; also limits search
         radius to 1 degree.
@@ -46,10 +55,15 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         option_list.append("--no-plot")
 
     if minimal_output:
-        option_list.append("--wcs none --corr none --rdls none --match none")
+        option_list.append("--corr none --rdls none --match none")
+        if not save_wcs:
+            option_list.append("--wcs none")
 
+    if verify is not None:
+        option_list.append("--verify %s" % verify)
+        
     if ra_dec is not None:
-        option_list.append("--ra %s --dec %s --radius 1" % ra_dec)
+        option_list.append("--ra %s --dec %s --radius 0.5" % ra_dec)
         
     if overwrite:
         option_list.append("--overwrite")
@@ -64,7 +78,9 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     print solve_field
     return subprocess.call(solve_field)
         
-def add_astrometry(filename, overwrite=False, ra_dec=None, note_failure=False):
+def add_astrometry(filename, overwrite=False, ra_dec=None,
+                   note_failure=False, save_wcs=False,
+                   verify=None):
     """Add WCS headers to FITS file using astrometry.net
 
     `overwrite` should be `True` to overwrite the original file. If `False`,
@@ -75,6 +91,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None, note_failure=False):
 
     Set `note_failure` to True if you want a file created with
     extension "failed" if astrometry.net fails.
+
+    For explanations of `save_wcs` and `verify` see
+    :func:`call_astrometry`
     
     Returns `True` on success.
     
@@ -90,12 +109,14 @@ def add_astrometry(filename, overwrite=False, ra_dec=None, note_failure=False):
 
     solved_field = (call_astrometry(filename,
                                     sextractor='/opt/local/bin/sex',
-                                    ra_dec=ra_dec)
+                                    ra_dec=ra_dec,
+                                    save_wcs=save_wcs, verify=verify)
                     == 0)
 
     if not solved_field:
             solved_field = (call_astrometry(filename, ra_dec=ra_dec,
-                                            overwrite=True)
+                                            overwrite=True,
+                                            save_wcs=save_wcs, verify=verify)
                             == 0)
 
     if overwrite and solved_field:
