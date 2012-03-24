@@ -269,13 +269,21 @@ def add_object_info(directory='.', object_list=None,
         #at the end, add object names to FITS files.
         for image in missing_objects.where(matches):
              full_name = path.join(directory,image['file'])
+             hdulist = pyfits.open(full_name)
+             header = hdulist[0].header
+             int16 = (header['bitpix'] == 16)
              image_fits = ImageWithWCS(full_name) 
-             obj_keyword.addToHeader(image_fits.header, history=False)
+             obj_keyword.addToHeader(header, history=False)
              if new_file_ext is not None:
                  base, ext = path.splitext(full_name)
                  new_file_name = base+ new_file_ext + ext
+                 overwrite=False
              else:
                  new_file_name = full_name
-                 
-             image_fits.save(new_file_name, clobber=True)
+                 overwrite = True
+             if int16:
+                 hdulist[0].scale('int16')
+             hdulist.writeto(new_file_name, clobber=overwrite)
+             hdulist.close()    
+             
         
