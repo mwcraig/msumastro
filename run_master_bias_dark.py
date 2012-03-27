@@ -7,7 +7,7 @@ from datetime import datetime
 from pyfits import Header
 import pyfits
 
-temperature_tolerance = 1 #degree C
+temperature_tolerance = 2 #degree C
 combiner = ccd.ImageCombiner()
 
 def combine_from_list(dir, fnames, combiner):
@@ -51,6 +51,7 @@ def add_files_info(fits_image, files):
         hdr.add_comment('    '+fil)
     
 for currentDir in foo:
+    print 'Directory %s' % currentDir
     keywords = ['imagetyp', 'exptime', 'ccd-temp']
     images = tff.ImageFileCollection(location=currentDir,
                                      keywords=keywords)
