@@ -4,6 +4,7 @@ from astropysics import ccd
 from os import path
 import pyfits
 from datetime import datetime
+import numpy as np
 
 combiner = ccd.ImageCombiner()
 
@@ -43,26 +44,28 @@ for currentDir in foo:
     exposure_times = set(all_flats['exptime'])
     print exposure_times
     for time in exposure_times:
-        these_flats = all_flats.where(all_flats['exptime'] == time)
-        flat_filter = these_flats['filter'][0]
-        same_filter = (these_flats['filter'] == flat_filter)
-        if not same_filter.all():
-            raise RuntimeError('Holy crap, my flats have mixed filters!')
-        master_dark = master_dark_files.where(master_dark_files['exptime']==time)
-        if not master_dark:
-            print 'Sorry, no dark for the exposure %f, skipping....' %time
-            continue
-        master_dark = ccd.FitsImage(path.join(currentDir,master_dark['file'][0]))
-        flats = []
-        for flat_file in these_flats['file']:
-            flat = ccd.FitsImage(path.join(currentDir,flat_file))
-            flats.append(flat.data - master_dark.data)
-        master_flat = combiner.combineImages(flats)
-        avg_temp = these_flats['ccd-temp'].mean()
-        temp_dev = these_flats['ccd-temp'].std()
-        sample = pyfits.open(path.join(currentDir,these_flats['file'][0]))
-        flat_im = master_frame(master_flat, 'MASTER FLAT', avg_temp,
-                               temp_dev, sample=sample[0].header,
-                               combiner=combiner)
-        flat_fn = 'Master_Flat_%s_band.fit' % flat_filter
-        flat_im.save(path.join(currentDir,flat_fn))
+        flats_time = all_flats.where(all_flats['exptime'] == time)
+        filters = np.unique(flats_time['filter'])
+        for flat_filter in filters:
+            these_flats = flats_time.where(flats_time['filter'] == flat_filter)
+            same_filter = (these_flats['filter'] == flat_filter)
+            if not same_filter.all():
+                raise RuntimeError('Holy crap, my flats have mixed filters!')
+            master_dark = master_dark_files.where(master_dark_files['exptime']==time)
+            if not master_dark:
+                print 'Sorry, no dark for the exposure %f, skipping....' %time
+                continue
+            master_dark = ccd.FitsImage(path.join(currentDir,master_dark['file'][0]))
+            flats = []
+            for flat_file in these_flats['file']:
+                flat = ccd.FitsImage(path.join(currentDir,flat_file))
+                flats.append(flat.data - master_dark.data)
+            master_flat = combiner.combineImages(flats)
+            avg_temp = these_flats['ccd-temp'].mean()
+            temp_dev = these_flats['ccd-temp'].std()
+            sample = pyfits.open(path.join(currentDir,these_flats['file'][0]))
+            flat_im = master_frame(master_flat, 'MASTER FLAT', avg_temp,
+                                   temp_dev, sample=sample[0].header,
+                                   combiner=combiner)
+            flat_fn = 'Master_Flat_%s_band.fit' % flat_filter
+            flat_im.save(path.join(currentDir,flat_fn))
