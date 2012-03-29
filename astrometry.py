@@ -80,7 +80,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         
 def add_astrometry(filename, overwrite=False, ra_dec=None,
                    note_failure=False, save_wcs=False,
-                   verify=None):
+                   verify=None, try_builtin_source_finder=False):
     """Add WCS headers to FITS file using astrometry.net
 
     `overwrite` should be `True` to overwrite the original file. If `False`,
@@ -94,6 +94,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
 
     For explanations of `save_wcs` and `verify` see
     :func:`call_astrometry`
+
+    If `try_biultin_source_finder` is true, try using astrometry.net's
+    built-in source id routines instead of sextractor.
     
     Returns `True` on success.
     
@@ -113,7 +116,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                     save_wcs=save_wcs, verify=verify)
                     == 0)
 
-    if not solved_field:
+    if (not solved_field) and try_builtin_source_finder:
             solved_field = (call_astrometry(filename, ra_dec=ra_dec,
                                             overwrite=True,
                                             save_wcs=save_wcs, verify=verify)
