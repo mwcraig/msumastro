@@ -50,52 +50,55 @@ def add_files_info(fits_image, files):
     for fil in files:
         hdr.add_comment('    '+fil)
     
-for currentDir in foo:
-    print 'Directory %s' % currentDir
-    keywords = ['imagetyp', 'exptime', 'ccd-temp']
-    images = tff.ImageFileCollection(location=currentDir,
-                                     keywords=keywords)
-    useful = images.summary_info
-    #print useful.data
-    bias_files=useful.where(useful['imagetyp']=='BIAS')
-    if bias_files:
-        combiner.method = 'median'
-        master_bias = combine_from_list(currentDir,
-                                        bias_files['file'], combiner)
-        avg_temp = bias_files['ccd-temp'].mean()
-        temp_dev = bias_files['ccd-temp'].std()
-        sample = pyfits.open(path.join(currentDir,bias_files['file'][0]))
-        bias_im = master_frame(master_bias, 'MASTER BIAS', avg_temp,
-                               temp_dev, sample=sample[0].header,
-                               combiner=combiner)
-        add_files_info(bias_im,bias_files['file'])
-        bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
-        
-    dark_files = useful.where(useful['imagetyp']=='DARK')
-    if dark_files:
-        exposure_times = set(dark_files['exptime'])
-        master_dark = {}
-        avg_temp = {}
-        for time in exposure_times:
-            these_darks=dark_files.where(dark_files['exptime']==time)
-            avg_temp[time] = these_darks['ccd-temp'].mean()
-            temp_dev = these_darks['ccd-temp'].std()
-            good_darks = abs(these_darks['ccd-temp'] - avg_temp[time]) < temperature_tolerance
-            if not good_darks.all():
-                raise RuntimeError('Darks with exposure time %f have a temperature problem!' % time )
+def master_bias_dark(directories):
+    for currentDir in directories:
+        print 'Directory %s' % currentDir
+        keywords = ['imagetyp', 'exptime', 'ccd-temp']
+        images = tff.ImageFileCollection(location=currentDir,
+                                         keywords=keywords)
+        useful = images.summary_info
+        #print useful.data
+        bias_files=useful.where(useful['imagetyp']=='BIAS')
+        if bias_files:
             combiner.method = 'median'
-            master_dark = combine_from_list(currentDir,
-                                            these_darks['file'], combiner)
-            sample = pyfits.open(path.join(currentDir,these_darks['file'][0]))
-            dark_im = master_frame(master_dark, 'MASTER DARK', avg_temp[time],
+            master_bias = combine_from_list(currentDir,
+                                            bias_files['file'], combiner)
+            avg_temp = bias_files['ccd-temp'].mean()
+            temp_dev = bias_files['ccd-temp'].std()
+            sample = pyfits.open(path.join(currentDir,bias_files['file'][0]))
+            bias_im = master_frame(master_bias, 'MASTER BIAS', avg_temp,
                                    temp_dev, sample=sample[0].header,
                                    combiner=combiner)
-            dark_fn = 'Master_Dark_{:.2f}_sec_{:.2f}_degC.fit'.format(round(time, 2),
-                                                          round(avg_temp[time], 2))
-            add_files_info(dark_im,these_darks['file'])
-            dark_im.save(path.join(currentDir, dark_fn))
+            add_files_info(bias_im,bias_files['file'])
+            bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
-            print time, avg_temp[time], median(master_dark[time]), mean(master_dark[time])
+        dark_files = useful.where(useful['imagetyp']=='DARK')
+        if dark_files:
+            exposure_times = set(dark_files['exptime'])
+            master_dark = {}
+            avg_temp = {}
+            for time in exposure_times:
+                these_darks=dark_files.where(dark_files['exptime']==time)
+                avg_temp[time] = these_darks['ccd-temp'].mean()
+                temp_dev = these_darks['ccd-temp'].std()
+                good_darks = abs(these_darks['ccd-temp'] - avg_temp[time]) < temperature_tolerance
+                if not good_darks.all():
+                    raise RuntimeError('Darks with exposure time %f have a temperature problem!' % time )
+                combiner.method = 'median'
+                master_dark = combine_from_list(currentDir,
+                                                these_darks['file'], combiner)
+                sample = pyfits.open(path.join(currentDir,these_darks['file'][0]))
+                dark_im = master_frame(master_dark, 'MASTER DARK', avg_temp[time],
+                                       temp_dev, sample=sample[0].header,
+                                       combiner=combiner)
+                dark_fn = 'Master_Dark_{:.2f}_sec_{:.2f}_degC.fit'.format(round(time, 2),
+                                                              round(avg_temp[time], 2))
+                add_files_info(dark_im,these_darks['file'])
+                dark_im.save(path.join(currentDir, dark_fn))
+
+                print time, avg_temp[time], median(master_dark[time]), mean(master_dark[time])
 #            print ccd_char.ccd_dark_current(master_bias,dark_data,gain=1.5)/time
 
-            
+if __name__ == "__main__":
+    from sys import argv
+    master_bias_dark(argv[1:])
