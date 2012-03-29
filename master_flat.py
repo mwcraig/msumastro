@@ -34,7 +34,7 @@ def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
     return img
     
 def master_flat(directories):
-    for currentDir in foo:
+    for currentDir in directories:
         keywords = ['imagetyp', 'exptime', 'filter', 'ccd-temp']
         image_collection = tff.ImageFileCollection(location=currentDir,
                                                    keywords=keywords,
