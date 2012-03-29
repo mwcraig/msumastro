@@ -34,6 +34,15 @@ def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
     return img
     
 def master_flat(directories):
+    """
+    Construct master flats by combining individual flats.
+
+    :param directories: List of directories.
+
+    Each directory must contain master darks whose exposure time
+    matches the flats in the directory. A separate master flat will be
+    constructed for each filter band for which there are flats in the directory.
+    """
     for currentDir in directories:
         keywords = ['imagetyp', 'exptime', 'filter', 'ccd-temp']
         image_collection = tff.ImageFileCollection(location=currentDir,
