@@ -105,6 +105,16 @@ class ImageFileCollection(object):
     Representation of a collection (usually a directory) of image
     files.
 
+    :attrib summary_info: An ATpy table of information about the FITS files in the direction.
+
+    To extract a desired set of files::
+    
+        import triage_fits_files as tff
+        my_files = tff.ImageFileCollection('my_directory',keywords=['object'])
+        summary = my_files.summary_info
+        m101 = (summary['object'] == 'm101')
+        m101_files = summary['file'][m101]
+    
     *TODO:* Correctly handle case when keywords is a single value
     instead of a list.
     """
