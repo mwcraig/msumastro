@@ -144,7 +144,8 @@ def read_object_list(dir='.',list='obsinfo.txt'):
                 first_line = False
                 observer = line.strip()
             else:
-                objects.append(line.strip())
+                if line.strip():
+                    objects.append(line.strip())
 
     return (observer, objects)
     
