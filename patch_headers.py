@@ -247,7 +247,12 @@ def add_object_info(directory='.', object_list=None,
     missing_objects.add_column('found_object',
                                np.zeros_like(missing_objects['RA']),
                                dtype=np.bool)
-    observer, objects = read_object_list(directory)
+    try:
+        observer, objects = read_object_list(directory)
+    except IOError:
+        print 'No object list in directory %s, skipping.' % directory
+        return
+        
 #    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335), 'ey uma':(135.575,49.810)}
 
     for object_name in objects:        
