@@ -111,7 +111,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     base, ext = path.splitext(filename)
 
     solved_field = (call_astrometry(filename,
-                                    sextractor=True',
+                                    sextractor=True,
                                     ra_dec=ra_dec,
                                     save_wcs=save_wcs, verify=verify)
                     == 0)
