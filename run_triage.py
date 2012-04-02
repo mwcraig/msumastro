@@ -1,5 +1,4 @@
 import triage_fits_files as tff
-import asciitable
 import sys
 import os
 
@@ -23,6 +22,13 @@ def triage_directories(directories,
                                                        'filter',
                                                        'exptime',
                                                        'ccd-temp']+extra_keywords)
+        for fil in [pointing_file_name, filter_file_name,
+                       object_name_file_name, file_list]:
+            try:
+                os.remove(os.path.join(currentDir,fil))
+            except OSError:
+                pass
+            
         need_pointing = moo['needs_pointing']
         if need_pointing:
             write_list(currentDir, pointing_file_name, need_pointing)
