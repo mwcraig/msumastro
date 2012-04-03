@@ -50,6 +50,8 @@ for currentDir in sys.argv[1:]:
                                      keywords=['imagetyp', 'object',
                                                'wcsaxes', 'ra', 'dec'])
     summary = images.summary_info
+    if len(summary) == 0:
+        continue
     lights = summary.where((summary['imagetyp'] == 'LIGHT') &
                            (summary['wcsaxes'] == ''))
 
@@ -73,6 +75,14 @@ for currentDir in sys.argv[1:]:
             ra_dec = (ra, dec)
         except KeyError:
             ra_dec = None
+
+        if ra_dec is None:
+            original_fname = path.join(currentDir,light_file['file'])
+            root, ext = path.splitext(original_fname)
+            f = open(root+'.blind','wb')
+            f.close()
+            continue
+            
         astrometry = ast.add_astrometry(img.fitsfile.filename(), ra_dec=ra_dec,
                                         note_failure=True, overwrite=True)
         if astrometry and ra_dec is None:
