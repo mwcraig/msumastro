@@ -38,7 +38,8 @@ def triage_directories(directories,
             write_list(currentDir, object_name_file_name,
                        moo['needs_object_name'])
         tbl = moo['files']
-        tbl.write(os.path.join(currentDir, file_list), type='ascii', delimiter=',')
+        if len(tbl) > 0:
+            tbl.write(os.path.join(currentDir, file_list), type='ascii', delimiter=',')
                  
 if __name__ == "__main__":
     dirs = sys.argv[1:]
