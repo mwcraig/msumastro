@@ -34,7 +34,9 @@ def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True)
     return files
 
     
-def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
+def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
+                                                  'object',
+                                                  'filter']):
     """
     Check FITS files in a directory for deficient headers
 
@@ -43,39 +45,30 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp']):
     `file_info_to_keep` is a list of the FITS keywords to get values
     for for each FITS file in `dir`.
     """
-    files = fits_files_in_directory(dir)
+
+    images = ImageFileCollection(dir, keywords=file_info_to_keep.extend(RA.names))
+    file_info = images.fits_summary(dir, keywords=file_info_to_keep)
+
+    file_needs_filter = \
+        list(images.filesFiltered(keywords=['imagetyp','filter'],
+                                     values=['light', '']))
+    file_needs_filter += \
+        list(images.filesFiltered(keywords=['imagetyp','filter'],
+                                  values=['flat', '']))
+
+    file_needs_object_name = \
+        list(images.filesFiltered(keywords=['imagetyp','object'],
+                                     values=['light','']))
+
+    lights = file_info.where(file_info['imagetyp']=='LIGHT')
+    has_no_ra = array([True]*len(lights))
+    for ra_name in RA.names:
+        has_no_ra &= (lights[ra_name] == '')
+    needs_minimal_pointing = (lights['object'] == '') & has_no_ra    
     
-    file_needs_filter = []
-    file_needs_minimal_pointing_info = []
-    file_needs_object_name = []
-    for fitsfile in files:
-        file_with_directory = path.join(dir, fitsfile)
-        try:
-            hdulist = pyfits.open(file_with_directory)
-        except IOError:
-            print "Unable to open file %s in directory %s" % (fitsfile, dir)
-            continue
-        header = hdulist[0].header
-        image_type =  IRAF_image_type(header['imagetyp'])
-
-        if needs_filter(image_type) and 'FILTER' not in header.keys():
-            file_needs_filter.append(fitsfile)
-
-        object_info_present = ((set(RA.names) |
-                                set(Dec.names) |
-                                set(target_object.names)) &
-                               (set(header.keys())))
-        if image_type == IRAF_image_type('light'):
-            if not object_info_present:
-                file_needs_minimal_pointing_info.append(fitsfile)
-            if target_object.name not in header.keys():
-                file_needs_object_name.append(fitsfile)
-
-    img_collection = ImageFileCollection(dir, keywords=file_info_to_keep)
-    file_info = img_collection.fits_summary(dir, keywords=file_info_to_keep)
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
-                'needs_pointing': file_needs_minimal_pointing_info,
+                'needs_pointing': lights[needs_minimal_pointing],
                 'needs_object_name': file_needs_object_name}
     return dir_info
     
@@ -249,7 +242,7 @@ class ImageFileCollection(object):
             raise ValueError('keywords and values must have same length.')
 
         return self._find_keywords_by_values(keywords, values)
-
+        
     def fits_summary(self, dir='.', file_list=[], keywords=['imagetyp']):
         """
         Collect information about fits files in a directory.
@@ -294,12 +287,12 @@ class ImageFileCollection(object):
         return summary_table
 
     def _find_keywords_by_values(self, keywords=[],
-                                            values=[]):
+                                 values=[]):
         """Find files whose keywords have given values.
 
         `keywords` is a list of keyword names.
         
-        `values` should be a list desired values as strings or '*' to match any
+        `values` should be a list desired values or '*' to match any
         value. The latter simply checks whether the keyword is present
         in the file with a non-trivial value.
         """
@@ -317,26 +310,24 @@ class ImageFileCollection(object):
                                          file_list=self.files,
                                          keywords=keywords)
             
-        have_all = set(range(0, len(self._files)))
+        matches = array([True] * len(use_info))
         for key, value in zip(keywords, use_values):
             if value == '*':
-                have_this_value = set(where(use_info[key] != '')[0])
+                have_this_value = (use_info[key] != '')
             else:
                 if isinstance(value, basestring):
                     # need to loop explicitly over array rather than using
                     # where to correctly do string comparison.
-                    have_this_value = []
+                    have_this_value = array([False] * len(use_info))
                     for idx, file_key_value in enumerate(use_info[key]):
-                        if file_key_value.lower() == value.lower():
-                            have_this_value.append(idx)
-                    have_this_value = set(have_this_value)
+                        have_this_value[idx] = (file_key_value.lower() == value.lower())
                 else:
-                    have_this_value = set(where(use_info[key] == value)[0])
-            have_all &= have_this_value
+                    have_this_value = (use_info[key] == value)
+            matches &= have_this_value
             
         # we need to convert the list of files to a numpy array to be
         # able to index it, but it is easier to work with an ordinary
         # list for the files.
-        return list(array(self._files)[list(have_all)])
+        return use_info['file'][matches]
        
         
