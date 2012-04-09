@@ -5,34 +5,10 @@ from os import path
 import pyfits
 from datetime import datetime
 import numpy as np
+from master_bias_dark import master_frame, add_files_info
 
 combiner = ccd.ImageCombiner()
 
-def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
-    copy_from_sample = ['xbinning', 'ybinning',
-                        'xpixsz', 'ypixsz', 'exptime','filter']
-    img = ccd.FitsImage(data)
-    hdr = img.fitsfile[0].header
-    hdr.update('imagetyp',img_type)
-    now = datetime.utcnow()
-    now = now.replace(microsecond=0)
-    hdr.update('date', now.isoformat(),
-               'Creation date of file')
-    hdr.update('ccd-temp', T, 'Average temperature of CCD')
-    hdr.update('temp-dev', Terr,
-               'Standard deviation of CCD temperature')
-    if combiner is not None:
-        hdr.update('cmbn-mth',combiner.method,
-                   'Combination method for producing master')
-        
-    if sample is not None:
-        if not isinstance(sample, pyfits.Header):
-            raise TypeError
-        cards = sample.ascard
-        for key in copy_from_sample:
-            hdr.update(key,cards[key].value,cards[key].comment)
-    return img
-    
 def master_flat(directories):
     """
     Construct master flats by combining individual flats.
@@ -70,6 +46,7 @@ def master_flat(directories):
                 for flat_file in these_flats['file']:
                     flat = ccd.FitsImage(path.join(currentDir,flat_file))
                     flats.append(flat.data - master_dark.data)
+                combiner.method = "median"
                 master_flat = combiner.combineImages(flats)
                 avg_temp = these_flats['ccd-temp'].mean()
                 temp_dev = these_flats['ccd-temp'].std()
@@ -78,6 +55,7 @@ def master_flat(directories):
                                        temp_dev, sample=sample[0].header,
                                        combiner=combiner)
                 flat_fn = 'Master_Flat_%s_band.fit' % flat_filter
+                add_files_info(flat_im, these_flats['file'])
                 flat_im.save(path.join(currentDir,flat_fn))
 
 if __name__ == "__main__":
