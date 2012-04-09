@@ -291,5 +291,50 @@ def add_object_info(directory='.', object_list=None,
                  hdulist[0].scale('int16')
              hdulist.writeto(new_file_name, clobber=overwrite)
              hdulist.close()    
+
+def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
+    """
+    Add RA/Dec to FITS file that has object name but no pointing.
+    
+    """
+    from numpy import unique
+    from astro_object import AstroObject
+
+    images = tff.ImageFileCollection(directory,
+                                     keywords=['imagetyp', 'RA',
+                                               'Dec', 'object'])
+    summary = images.summary_info
+    missing_dec = summary.where((summary['object'] != '') &
+                                (summary['RA'] == '') &
+                                (summary['Dec'] == ''))
+    if not missing_dec:
+        return
+        
+    objects = unique(missing_dec['object'])
+    for object_name in objects:
+        obj = AstroObject(object_name)
+        RA.value = obj.ra_dec.ra.getHmsStr(canonical=True)
+        Dec.value = obj.ra_dec.dec.getDmsStr(canonical=True)
+        these_files = missing_dec.where(missing_dec['object'] == object_name)
+        for image in these_files:
+            full_name = path.join(directory,image['file'])
+            hdulist = pyfits.open(full_name)
+            header = hdulist[0].header
+            int16 = (header['bitpix'] == 16)
+            RA.addToHeader(header, history=True)
+            Dec.addToHeader(header, history=True)
+            if new_file_ext is not None:
+                base, ext = path.splitext(full_name)
+                new_file_name = base+ new_file_ext + ext
+                overwrite=False
+            else:
+                new_file_name = full_name
+                overwrite = True
+            if int16:
+                hdulist[0].scale('int16')
+            hdulist.writeto(new_file_name, clobber=overwrite)
+            hdulist.close()    
              
         
+        
+
