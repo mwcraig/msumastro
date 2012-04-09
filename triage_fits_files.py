@@ -68,7 +68,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
-                'needs_pointing': lights[needs_minimal_pointing],
+                'needs_pointing': list(lights['file'][needs_minimal_pointing]),
                 'needs_object_name': file_needs_object_name}
     return dir_info
     
