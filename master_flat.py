@@ -28,7 +28,8 @@ def master_flat(directories):
         images = image_collection.summary_info
         master_dark_files = images.where((images['imagetyp'] == 'DARK') &
                                          ('M' in images['calstat']))
-        all_flats = images.where((images['imagetyp'] == 'FLAT') &
+        all_flats = images.where(((images['imagetyp'] == 'FLAT') |
+                                  (images['imagetyp']=='Flat Field'))&
                                  (images['master'] != 'Y'))
         exposure_times = set(all_flats['exptime'])
         print exposure_times

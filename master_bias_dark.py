@@ -72,7 +72,8 @@ def master_bias_dark(directories):
                                          missing=-999)
         useful = images.summary_info
         #print useful.data
-        bias_files=useful.where((useful['imagetyp']=='BIAS') &
+        bias_files=useful.where(((useful['imagetyp']=='BIAS') |
+                                 (useful['imagetyp']=='Bias Frame')) &
                                 (useful['master'] != 'Y'))
         if bias_files:
             combiner.method = 'median'
@@ -87,7 +88,9 @@ def master_bias_dark(directories):
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
-        dark_files = useful.where((useful['imagetyp']=='DARK') &
+        dark_files = useful.where(((useful['imagetyp']=='DARK') |
+                                   (useful['imagetyp']=='Dark Frame'))
+                                   &
                                   (useful['master'] != 'Y'))
         if dark_files:
             exposure_times = set(dark_files['exptime'])
