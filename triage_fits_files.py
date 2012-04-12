@@ -100,6 +100,8 @@ class ImageFileCollection(object):
 
     :attrib summary_info: An ATpy table of information about the FITS files in the direction.
 
+    :param missing: Value to be used for missing entries.
+    
     To extract a desired set of files::
     
         import triage_fits_files as tff
@@ -111,7 +113,8 @@ class ImageFileCollection(object):
     *TODO:* Correctly handle case when keywords is a single value
     instead of a list.
     """
-    def __init__(self,location='.', storage_dir=None, keywords=[], info_file='Manifest.txt'):
+    def __init__(self,location='.', storage_dir=None, keywords=[],
+                 missing='', info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
         self._files = fits_files_in_directory(self.location)
@@ -130,7 +133,8 @@ class ImageFileCollection(object):
                 print 'Regenerating information summary table for %s' % location
                 self.summary_info = self.fits_summary(self.location,
                                                       file_list=self._files,
-                                                      keywords=keywords)
+                                                      keywords=keywords,
+                                                      missing=missing)
             
     @property
     def location(self):
@@ -243,7 +247,8 @@ class ImageFileCollection(object):
 
         return self._find_keywords_by_values(keywords, values)
         
-    def fits_summary(self, dir='.', file_list=[], keywords=['imagetyp']):
+    def fits_summary(self, dir='.', file_list=[],
+                     keywords=['imagetyp'], missing=''):
         """
         Collect information about fits files in a directory.
 
@@ -255,6 +260,10 @@ class ImageFileCollection(object):
         `keywords` is the list of FITS header keywords for which
         information will be gathered.
 
+
+        `missing` is the value to be substituted if a particular file
+        doesn't have a keyword.
+        
         Returns an ATpy table.
         """
         from collections import OrderedDict
@@ -277,7 +286,7 @@ class ImageFileCollection(object):
                 try:
                     summary[keyword].append(header[keyword])
                 except KeyError:
-                    summary[keyword].append('')
+                    summary[keyword].append(missing)
 
         summary_table = atpy.Table()
 

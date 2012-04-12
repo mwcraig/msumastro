@@ -20,7 +20,8 @@ def master_flat(directories):
     constructed for each filter band for which there are flats in the directory.
     """
     for currentDir in directories:
-        keywords = ['imagetyp', 'exptime', 'filter', 'ccd-temp']
+        keywords = ['imagetyp', 'exptime', 'filter', 'ccd-temp',
+                    'calstat', 'master']
         image_collection = tff.ImageFileCollection(location=currentDir,
                                                    keywords=keywords,
                                                    info_file=None)
@@ -28,7 +29,7 @@ def master_flat(directories):
         master_dark_files = images.where((images['imagetyp'] == 'DARK') &
                                          ('M' in images['calstat']))
         all_flats = images.where((images['imagetyp'] == 'FLAT') &
-                                 ('M' not in images['calstat']))
+                                 (images['master'] != 'Y'))
         exposure_times = set(all_flats['exptime'])
         print exposure_times
         for time in exposure_times:

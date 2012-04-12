@@ -29,7 +29,8 @@ def master_frame(data, T, Terr, sample=None,combiner=None,img_type=''):
     except KeyError:
         calstat = 'M'
     hdr.update('calstat',calstat,
-               'Calibrations applied M=master, B=bias, D=Dark,F=flat')
+               'Calibrations applied, MaximDL style')
+    hdr.update('master','Y','Is this a master frame?')
     
     now = datetime.utcnow()
     now = now.replace(microsecond=0)
@@ -65,13 +66,14 @@ def add_files_info(fits_image, files):
 def master_bias_dark(directories):
     for currentDir in directories:
         print 'Directory %s' % currentDir
-        keywords = ['imagetyp', 'exptime', 'ccd-temp', 'calstat']
+        keywords = ['imagetyp', 'exptime', 'ccd-temp', 'calstat', 'master']
         images = tff.ImageFileCollection(location=currentDir,
-                                         keywords=keywords)
+                                         keywords=keywords,
+                                         missing=-999)
         useful = images.summary_info
         #print useful.data
         bias_files=useful.where((useful['imagetyp']=='BIAS') &
-                                ('M' not in useful['calstat']))
+                                (useful['master'] != 'Y'))
         if bias_files:
             combiner.method = 'median'
             master_bias = combine_from_list(currentDir,
@@ -86,7 +88,7 @@ def master_bias_dark(directories):
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
         dark_files = useful.where((useful['imagetyp']=='DARK') &
-                                  ('M' not in useful['imagetyp']))
+                                  (useful['master'] != 'Y'))
         if dark_files:
             exposure_times = set(dark_files['exptime'])
             master_dark = {}
