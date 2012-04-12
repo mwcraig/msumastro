@@ -17,12 +17,20 @@ def combine_from_list(dir, fnames, combiner):
         data.append(a_data)
     return combiner.combineImages(data)
 
-def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
-    copy_from_sample = ['xbinning', 'ybinning',
+def master_frame(data, T, Terr, sample=None,combiner=None,img_type=''):
+    copy_from_sample = ['imagetyp', 'xbinning', 'ybinning',
                         'xpixsz', 'ypixsz', 'exptime']
     img = ccd.FitsImage(data)
     hdr = img.fitsfile[0].header
-    hdr.update('imagetyp',img_type)
+
+    try:
+        calstat = hdr['calstat']
+        calstat += 'M'
+    except KeyError:
+        calstat = 'M'
+    hdr.update('calstat',calstat,
+               'Calibrations applied M=master, B=bias, D=Dark,F=flat')
+    
     now = datetime.utcnow()
     now = now.replace(microsecond=0)
     hdr.update('date', now.isoformat(),
@@ -40,6 +48,10 @@ def master_frame(data, img_type, T, Terr, sample=None,combiner=None):
         cards = sample.ascard
         for key in copy_from_sample:
             hdr.update(key,cards[key].value,cards[key].comment)
+    else:
+        if img_type:
+            hdr.update('imagetyp',img_type)
+
     return img
 
 def add_files_info(fits_image, files):
@@ -53,12 +65,13 @@ def add_files_info(fits_image, files):
 def master_bias_dark(directories):
     for currentDir in directories:
         print 'Directory %s' % currentDir
-        keywords = ['imagetyp', 'exptime', 'ccd-temp']
+        keywords = ['imagetyp', 'exptime', 'ccd-temp', 'calstat']
         images = tff.ImageFileCollection(location=currentDir,
                                          keywords=keywords)
         useful = images.summary_info
         #print useful.data
-        bias_files=useful.where(useful['imagetyp']=='BIAS')
+        bias_files=useful.where((useful['imagetyp']=='BIAS') &
+                                ('M' not in useful['calstat']))
         if bias_files:
             combiner.method = 'median'
             master_bias = combine_from_list(currentDir,
@@ -66,13 +79,14 @@ def master_bias_dark(directories):
             avg_temp = bias_files['ccd-temp'].mean()
             temp_dev = bias_files['ccd-temp'].std()
             sample = pyfits.open(path.join(currentDir,bias_files['file'][0]))
-            bias_im = master_frame(master_bias, 'MASTER BIAS', avg_temp,
+            bias_im = master_frame(master_bias, avg_temp,
                                    temp_dev, sample=sample[0].header,
                                    combiner=combiner)
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
-        dark_files = useful.where(useful['imagetyp']=='DARK')
+        dark_files = useful.where((useful['imagetyp']=='DARK') &
+                                  ('M' not in useful['imagetyp']))
         if dark_files:
             exposure_times = set(dark_files['exptime'])
             master_dark = {}
@@ -88,7 +102,7 @@ def master_bias_dark(directories):
                 master_dark = combine_from_list(currentDir,
                                                 these_darks['file'], combiner)
                 sample = pyfits.open(path.join(currentDir,these_darks['file'][0]))
-                dark_im = master_frame(master_dark, 'MASTER DARK', avg_temp[time],
+                dark_im = master_frame(master_dark, avg_temp[time],
                                        temp_dev, sample=sample[0].header,
                                        combiner=combiner)
                 dark_fn = 'Master_Dark_{:.2f}_sec_{:.2f}_degC.fit'.format(round(time, 2),

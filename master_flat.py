@@ -25,8 +25,10 @@ def master_flat(directories):
                                                    keywords=keywords,
                                                    info_file=None)
         images = image_collection.summary_info
-        master_dark_files = images.where(images['imagetyp'] == 'MASTER DARK')
-        all_flats = images.where(images['imagetyp'] == 'FLAT')
+        master_dark_files = images.where((images['imagetyp'] == 'DARK') &
+                                         ('M' in images['calstat']))
+        all_flats = images.where((images['imagetyp'] == 'FLAT') &
+                                 ('M' not in images['calstat']))
         exposure_times = set(all_flats['exptime'])
         print exposure_times
         for time in exposure_times:
@@ -51,7 +53,7 @@ def master_flat(directories):
                 avg_temp = these_flats['ccd-temp'].mean()
                 temp_dev = these_flats['ccd-temp'].std()
                 sample = pyfits.open(path.join(currentDir,these_flats['file'][0]))
-                flat_im = master_frame(master_flat, 'MASTER FLAT', avg_temp,
+                flat_im = master_frame(master_flat, avg_temp,
                                        temp_dev, sample=sample[0].header,
                                        combiner=combiner)
                 flat_fn = 'Master_Flat_%s_band.fit' % flat_filter
