@@ -58,9 +58,6 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         option_list.append("--corr none --rdls none --match none")
         if not save_wcs:
             option_list.append("--wcs none")
-
-    if verify is not None:
-        option_list.append("--verify %s" % verify)
         
     if ra_dec is not None:
         option_list.append("--ra %s --dec %s --radius 0.5" % ra_dec)
@@ -74,6 +71,13 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     options = " ".join(option_list)
 
     solve_field.extend(options.split())
+
+    # kludge to handle case when path of verify file contains a space--split above does not work
+    # for that case.
+    if verify is not None:
+       solve_field.append("--verify")
+       solve_field.append("%s" %verify)
+
     solve_field.extend([filename])
     print solve_field
     return subprocess.call(solve_field)
