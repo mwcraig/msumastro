@@ -24,6 +24,20 @@ def test_read_object_list():
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
     assert observer == 'Ima Observer'
+
+def test_data_is_unmodified():
+    """No changes should be made to the data."""
+    from shutil import copy
+
+    copy('data/uint16.fit', _test_dir)
+    new_ext = '_new'
+    patch_headers(_test_dir,new_file_ext=new_ext)
+    fname = path.join(_test_dir,'uint16')
+    fname_new = fname+ new_ext
+    orig = pyfits.open(fname+'.fit')
+    print fname, fname_new
+    modified = pyfits.open(fname_new+'.fit')
+    assert np.all(orig[0].data == modified[0].data)
     
 def setup():
     global _test_dir
