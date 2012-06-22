@@ -1,7 +1,8 @@
-from patch_headers import *
+from ..patch_headers import *
 from tempfile import mkdtemp
 from os import path
 from shutil import rmtree
+import numpy as np
 
 test_tuple = (1,2,3.1415)
 _test_dir = ''

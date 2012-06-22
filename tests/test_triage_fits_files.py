@@ -1,4 +1,4 @@
-import triage_fits_files as tff
+from .. import triage_fits_files as tff
 import os
 import numpy
 import pyfits

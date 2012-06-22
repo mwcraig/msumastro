@@ -1,4 +1,4 @@
-from fitskeyword import FITSKeyword
+from ..fitskeyword import FITSKeyword
 from pyfits.hdu import PrimaryHDU
 
 class TestGoodFITSKeyword(FITSKeyword):

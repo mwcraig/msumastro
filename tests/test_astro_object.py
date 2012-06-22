@@ -1,4 +1,4 @@
-import astro_object as ao
+from .. import astro_object as ao
 
 def test_lookup_from_simbad():
     ey_uma = ao.AstroObject('ey uma')
