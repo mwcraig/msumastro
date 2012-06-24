@@ -25,27 +25,36 @@ def test_read_object_list():
     assert objects[1] == 'm101'
     assert observer == 'Ima Observer'
 
-def test_data_is_unmodified():
+def test_data_is_unmodified_by_patch_headers():
     """No changes should be made to the data."""
-    from shutil import copy
-
-    copy('data/uint16.fit', _test_dir)
     new_ext = '_new'
     patch_headers(_test_dir,new_file_ext=new_ext)
     fname = path.join(_test_dir,'uint16')
     fname_new = fname+ new_ext
     orig = pyfits.open(fname+'.fit')
-    print fname, fname_new
+    modified = pyfits.open(fname_new+'.fit')
+    assert np.all(orig[0].data == modified[0].data)
+
+def test_data_is_unmodified_by_adding_object():
+    new_ext = '_obj'
+    patch_headers(_test_dir,new_file_ext=new_ext)
+    add_object_info(_test_dir, new_file_ext=new_ext)
+    fname = path.join(_test_dir,'uint16')
+    fname_new = fname+ new_ext + new_ext
+    orig = pyfits.open(fname+'.fit')
     modified = pyfits.open(fname_new+'.fit')
     assert np.all(orig[0].data == modified[0].data)
     
+    
 def setup():
     global _test_dir
-    
+    from shutil import copy
+
     _test_dir = mkdtemp()
     to_write = '# comment 1\nIma Observer\n# comment 2\ney uma\nm101'
     object_file = open(path.join(_test_dir,'obsinfo.txt'),'wb')
     object_file.write(to_write)
+    copy(path.join('data', 'uint16.fit'), _test_dir)
 
 def teardown():
     global _test_dir
