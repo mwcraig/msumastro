@@ -180,7 +180,8 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     obs_altitude.value = feder.altitude
 
     for image in files:
-        hdulist = pyfits.open(path.join(dir,image))
+        hdulist = pyfits.open(path.join(dir,image),
+                              do_not_scale_image_data=True)
         header = hdulist[0].header
         int16 = (header['bitpix'] == 16)
         hdulist.verify('fix')
@@ -203,9 +204,7 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         else:
             root, ext = path.splitext(image)
             new_image = root + new_file_ext + ext
-            
-        if int16:
-            hdulist[0].scale('int16')
+
         hdulist.writeto(path.join(dir,new_image), clobber=overwrite)
         hdulist.close()
 
