@@ -13,6 +13,22 @@ import triage_fits_files as tff
 
 feder = FederSite()
 
+class FederImage(object):
+    """Unsigned integer image for which no data modification is allowed"""
+    def __init__(self, fname):
+        self._hdulist = pyfits.open(fname, do_not_scale_image_data=True)
+        self._hdulist.verify('fix')
+        
+    @property
+    def header(self):
+        return self._hdulist[0].header
+
+    def save(self, fname, clobber=False):
+        self._hdulist.writeto(fname, clobber=clobber)
+
+    def close(self):
+        self._hdulist.close()
+
 def parse_dateobs(dateobs):
     """
     Parse a MaximDL DATE-OBS.
@@ -180,11 +196,8 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     obs_altitude.value = feder.altitude
 
     for image in files:
-        hdulist = pyfits.open(path.join(dir,image),
-                              do_not_scale_image_data=True)
-        header = hdulist[0].header
-        int16 = (header['bitpix'] == 16)
-        hdulist.verify('fix')
+        img = FederImage(path.join(dir,image))
+        header = img.header
         header.add_history('patch_headers.py modified this file on %s'
                            % datetime.now())
         add_time_info(header)
@@ -193,20 +206,20 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         if header['imagetyp'] == 'LIGHT':
             try:
                 add_object_pos_airmass(header)
+                header.add_history('patch_headers.py updated keywords %s' %
+                                   keyword_names_as_string(keywords_for_light_files))
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
                 
-        header.add_history('patch_headers.py updated keywords %s' %
-                           keyword_names_as_string(keywords_for_light_files))
         if overwrite:
             new_image = image
         else:
             root, ext = path.splitext(image)
             new_image = root + new_file_ext + ext
 
-        hdulist.writeto(path.join(dir,new_image), clobber=overwrite)
-        hdulist.close()
+        img.save(path.join(dir,new_image), clobber=overwrite)
+        img.close()
 
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext=None):
@@ -274,10 +287,8 @@ def add_object_info(directory='.', object_list=None,
         #at the end, add object names to FITS files.
         for image in missing_objects.where(matches):
              full_name = path.join(directory,image['file'])
-             hdulist = pyfits.open(full_name)
-             header = hdulist[0].header
-             int16 = (header['bitpix'] == 16)
-             image_fits = ImageWithWCS(full_name) 
+             img = FederImage(full_name)
+             header = img.header
              obj_keyword.addToHeader(header, history=False)
              if new_file_ext is not None:
                  base, ext = path.splitext(full_name)
@@ -286,10 +297,8 @@ def add_object_info(directory='.', object_list=None,
              else:
                  new_file_name = full_name
                  overwrite = True
-             if int16:
-                 hdulist[0].scale('int16')
-             hdulist.writeto(new_file_name, clobber=overwrite)
-             hdulist.close()    
+             img.save(new_file_name, clobber=overwrite)
+             img.close()    
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
