@@ -33,6 +33,17 @@ def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True)
         files.extend(fnmatch.filter(all_files, '*'+extension))
     return files
 
+def contains_maximdl_imagetype(image_collection):
+    """
+    Check an image file collection for MaxImDL-style image types
+    """
+    import re
+    file_info = image_collection.summary_info
+    image_types = ' '.join([typ for typ in file_info['imagetyp']])
+    if re.search('[fF]rame', image_types) is not None:
+        return True
+    else:
+        return False
     
 def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
                                                   'object',
@@ -52,6 +63,10 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     images = ImageFileCollection(dir, keywords=all_file_info)
     file_info = images.fits_summary(dir, keywords=all_file_info)
 
+    # check for bad image type and halt until that is fixed.
+    if contains_maximdl_imagetype(images):
+        raise ValueError('Correct MaxImDL-style image types before proceeding.')
+        
     file_needs_filter = \
         list(images.filesFiltered(keywords=['imagetyp','filter'],
                                      values=['light', '']))
