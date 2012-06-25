@@ -389,5 +389,8 @@ def compare_data_in_fits(file1, file2):
     hdu1 = pyfits.open(file1)
     hdu2 = pyfits.open(file2)
 
-    return (hdu1[0].data == hdu2[0].data).all()
+    identical = (hdu1[0].data == hdu2[0].data).all()
+    hdu1.close()
+    hdu2.close()
+    return identical
 
