@@ -1,6 +1,7 @@
 from os import path
 from math import cos, pi
 from datetime import datetime
+import numpy as np
 
 import asciitable
 import pyfits
@@ -343,6 +344,50 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             hdulist.writeto(new_file_name, clobber=overwrite)
             hdulist.close()    
              
+def fix_int16_images(directory='.', new_file_ext=None):
+    """Repair unsigned int16 images saved as signed.
+
+    Use with care; if your data really is signed int16 this will corrupt it.
+    """
+    images = tff.ImageFileCollection(directory,
+                                     keywords=['imagetyp', 'bitpix', 'bzero'])
+    summary = images.summary_info
+    bad = summary.where((summary['bitpix'] == 16) &
+                        (summary['bzero'] == ''))
+
+    print 'Potentially fixing %d files in %s' % (len(bad), directory)
+
+    fix_needed = 0
+    
+    for to_fix in bad:
+        full_name = path.join(directory, to_fix['file'])
+        hdulist = pyfits.open(full_name)
+        dat = np.int32(hdulist[0].data)
+        negs = (dat < 0)
+        if negs.any():
+            dat[negs] += 2**16
+            fix_needed += 1
         
-        
+        hdulist[0].data = np.uint16(dat)
+
+        if new_file_ext is not None:
+            base, ext = path.splitext(full_name)
+            new_file_name = base+ new_file_ext + ext
+            overwrite=False
+        else:
+            new_file_name = full_name
+            overwrite = True
+
+        hdulist.writeto(new_file_name, clobber=overwrite)
+
+    print 'Changed values in  %d files out of %d that were fixed' % (fix_needed, len(bad))
+    
+def compare_data_in_fits(file1, file2):
+    """
+    Compare the image data in two FITS files.
+    """
+    hdu1 = pyfits.open(file1)
+    hdu2 = pyfits.open(file2)
+
+    return (hdu1[0].data == hdu2[0].data).all()
 
