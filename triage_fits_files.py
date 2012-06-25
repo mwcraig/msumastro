@@ -46,8 +46,11 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     for for each FITS file in `dir`.
     """
 
-    images = ImageFileCollection(dir, keywords=file_info_to_keep.extend(RA.names))
-    file_info = images.fits_summary(dir, keywords=file_info_to_keep)
+    all_file_info = file_info_to_keep
+    all_file_info.extend(RA.names)
+    
+    images = ImageFileCollection(dir, keywords=all_file_info)
+    file_info = images.fits_summary(dir, keywords=all_file_info)
 
     file_needs_filter = \
         list(images.filesFiltered(keywords=['imagetyp','filter'],
