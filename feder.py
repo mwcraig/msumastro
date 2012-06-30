@@ -26,6 +26,40 @@ class FederSite(obstools.Site):
                                alt=311.8,
                                name='Feder Observatory')
 
+class Instrument(object):
+    """
+    Telescope instrument with simple properties.
+
+    Properties
+    __________
+
+    name
+    fits_name
+    rows
+    columns
+    overscan_start
+    """
+    def __init__(self, name, fits_name=None,
+                 rows=0, columns=0,
+                 overscan_start=None):
+        self.name = name
+        self.fits_name = fits_name
+        self.rows = rows
+        self.columns = columns
+        self.overscan_start = overscan_start
+
+class ApogeeAltaU9(Instrument):
+    def __init__(self):
+        Instrument.__init__(self, "Apogee Alta U9",
+                            fits_name="Apogee Alta",
+                            rows=2048, columns=3085,
+                            overscan_start=3073)
+                
+class Feder(object):
+    def __init__(self):
+        self.site = FederSite()
+        self.instrument = { ApogeeAltaU9().fits_name: ApogeeAltaU9() }
+        
 keywords_for_all_files = []
 keywords_for_light_files = []
 
