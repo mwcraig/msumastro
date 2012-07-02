@@ -41,19 +41,22 @@ class Instrument(object):
     """
     def __init__(self, name, fits_name=None,
                  rows=0, columns=0,
-                 overscan_start=None):
+                 overscan_start=None,
+                 overscan_axis=None ):
         self.name = name
         self.fits_name = fits_name
         self.rows = rows
         self.columns = columns
         self.overscan_start = overscan_start
+        self.overscan_axis = overscan_axis
 
 class ApogeeAltaU9(Instrument):
     def __init__(self):
         Instrument.__init__(self, "Apogee Alta U9",
                             fits_name="Apogee Alta",
                             rows=2048, columns=3085,
-                            overscan_start=3073)
+                            overscan_start=3073,
+                            overscan_axis=1)
                 
 class Feder(object):
     def __init__(self):
