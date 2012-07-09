@@ -64,6 +64,16 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
                 'needs_object_name': file_needs_object_name}
     return dir_info
     
+def IRAF_image_type(image_type):
+    """Convert MaximDL default image type names to IRAF
+
+    `image_type` is the value of the FITS header keyword IMAGETYP.
+    
+    MaximDL default is, e.g. 'Bias Frame', which IRAF calls
+    'BIAS'. Can safely be called with an IRAF-style image_type.
+    """
+    return image_type.split()[0].upper()
+    
 from tempfile import TemporaryFile
 class ImageFileCollection(object):
     """
