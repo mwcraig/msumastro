@@ -6,32 +6,6 @@ from numpy import array, where
 from string import lower
 import atpy
 
-def fits_files_in_directory(dir='.', extensions=['fit','fits'], compressed=True):
-    """
-    Get names of FITS files in directory, based on filename extension.
-
-    `dir` is the directory to be searched.
-
-    `extension` is a list of filename extensions that are FITS files.
-
-    `compressed` should be true if compressed files should be included
-    in the list (e.g. `.fits.gz`)
-
-    Returns only the *names* of the files (with extension), not the full pathname.
-    """
-    # trick below is necessary to make sure we start with a clean copy of
-    # extensions each time
-    full_extensions = []
-    full_extensions.extend(extensions)
-    if compressed:
-        with_gz = [extension + '.gz' for extension in extensions]
-        full_extensions.extend(with_gz)
-
-    all_files = listdir(dir)
-    files = []
-    for extension in full_extensions:
-        files.extend(fnmatch.filter(all_files, '*'+extension))
-    return files
 
 def contains_maximdl_imagetype(image_collection):
     """
@@ -115,7 +89,7 @@ class ImageFileCollection(object):
                  missing='', info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
-        self._files = fits_files_in_directory(self.location)
+        self._files = self._fits_files_in_directory(self.location)
         self.summary_info = {}
 
         if info_file is not None:
@@ -267,7 +241,7 @@ class ImageFileCollection(object):
         from collections import OrderedDict
 
         if not file_list:
-            file_list = fits_files_in_directory(dir)
+            file_list = self._fits_files_in_directory(dir)
 
         summary = OrderedDict()
         summary['file'] = []
@@ -336,5 +310,33 @@ class ImageFileCollection(object):
         # able to index it, but it is easier to work with an ordinary
         # list for the files.
         return use_info['file'][matches]
-       
+        
+    def _fits_files_in_directory(self, dir='.', extensions=['fit','fits'], compressed=True):
+        """
+        Get names of FITS files in directory, based on filename extension.
+        
+        `dir` is the directory to be searched.
+        
+        `extension` is a list of filename extensions that are FITS files.
+        
+        `compressed` should be true if compressed files should be included
+        in the list (e.g. `.fits.gz`)
+        
+        Returns only the *names* of the files (with extension), not the full pathname.
+        """
+        # trick below is necessary to make sure we start with a clean copy of
+        # extensions each time
+        full_extensions = []
+        full_extensions.extend(extensions)
+        if compressed:
+            with_gz = [extension + '.gz' for extension in extensions]
+            full_extensions.extend(with_gz)
+            
+            all_files = listdir(dir)
+            files = []
+            for extension in full_extensions:
+                files.extend(fnmatch.filter(all_files, '*'+extension))
+                
+            return files
+      
         
