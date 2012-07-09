@@ -12,7 +12,8 @@ from astrometry import add_astrometry
 
 import triage_fits_files as tff
 
-feder = FederSite()
+federstuff = Feder()
+feder = federstuff.site
 
 class FederImage(object):
     """Unsigned integer image for which no data modification is allowed"""
