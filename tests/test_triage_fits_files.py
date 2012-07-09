@@ -11,31 +11,16 @@ _n_test = {'files': 0, 'need_object':0, 'need_filter':0, 'bias':0}
 _test_dir = ''
 _filters = []
 
-def test_IRAF_image_type_with_maximDL_name():
-    maximDL_name = 'Bias Frame'
-    assert tff.IRAF_image_type(maximDL_name) == 'BIAS'
-
-def test_IRAF_image_type_with_IRAF_name():
-    IRAF_name = 'BIAS'
-    assert tff.IRAF_image_type(IRAF_name) == 'BIAS'
-
-def test_needs_filter():
-    assert tff.needs_filter(tff.IRAF_image_type('light'))
-    assert tff.needs_filter(tff.IRAF_image_type('flat'))
-    assert not tff.needs_filter(tff.IRAF_image_type('bias'))
-    assert not tff.needs_filter(tff.IRAF_image_type('dark'))
 
 def test_triage():
     file_info = tff.triage_fits_files(_test_dir)
     print "number of files should be %i" % _n_test['files']
-    print file_info['files']
+    print file_info['files']['file']
     assert len(file_info['files']['file']) == _n_test['files']
     assert len(file_info['needs_pointing']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
     assert len(where(file_info['files']['imagetyp'] == tff.IRAF_image_type('bias'))[0]) == 2
     
-def test_fits_files_in_directory():
-    assert (len(tff.fits_files_in_directory(_test_dir)) == _n_test['files'])
 
 def test_fits_summary():
     keywords = ['imagetyp', 'filter']
@@ -130,7 +115,4 @@ def teardown():
     for key in _n_test.keys():
         _n_test[key] = 0
     rmtree(_test_dir)
-    
 
-#test_triage.setUp = triage_setup
-#test_triage.tearDown = triage_teardown
