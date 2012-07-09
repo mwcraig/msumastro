@@ -35,7 +35,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     all_file_info.extend(RA.names)
     
     images = ImageFileCollection(dir, keywords=all_file_info)
-    file_info = images.fits_summary(dir, keywords=all_file_info)
+    file_info = images.fits_summary(keywords=all_file_info)
 
     # check for bad image type and halt until that is fixed.
     if contains_maximdl_imagetype(images):
@@ -113,8 +113,7 @@ class ImageFileCollection(object):
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
                 print 'Regenerating information summary table for %s' % location
-                self.summary_info = self.fits_summary(self.location,
-                                                      file_list=self._files,
+                self.summary_info = self.fits_summary(file_list=self._files,
                                                       keywords=keywords,
                                                       missing=missing)
             
@@ -180,9 +179,8 @@ class ImageFileCollection(object):
     @keywords.setter
     def keywords(self, keywords=[]):
         if keywords:
-            self.summary_info = self.fits_summary(self.location,
-                                              file_list=self._files,
-                                              keywords=keywords)
+            self.summary_info = self.fits_summary(file_list=self._files,
+                                                  keywords=keywords)
 
     @property
     def files(self):
@@ -229,12 +227,10 @@ class ImageFileCollection(object):
 
         return self._find_keywords_by_values(keywords, values)
         
-    def fits_summary(self, dir='.', file_list=[],
+    def fits_summary(self, file_list=[],
                      keywords=['imagetyp'], missing=''):
         """
         Collect information about fits files in a directory.
-
-        `dir` is the name of the directory to search for FITS files.
 
         `file_list` can be set to the list of FITS files in `dir`,
         otherwise the list will be generated.
@@ -260,7 +256,7 @@ class ImageFileCollection(object):
 
         for afile in file_list:
             try:
-                header = pyfits.getheader(path.join(dir,afile))
+                header = pyfits.getheader(path.join(self.location,afile))
             except IOError:
                 continue
             summary['file'].append(afile)
@@ -297,8 +293,7 @@ class ImageFileCollection(object):
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
-            use_info = self.fits_summary(self.location,
-                                         file_list=self.files,
+            use_info = self.fits_summary(file_list=self.files,
                                          keywords=keywords)
             
         matches = array([True] * len(use_info))

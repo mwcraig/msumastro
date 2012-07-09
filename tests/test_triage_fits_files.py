@@ -26,8 +26,7 @@ def test_fits_summary():
     keywords = ['imagetyp', 'filter']
     image_collection = tff.ImageFileCollection(_test_dir,
                                                keywords=keywords)
-    summary = image_collection.fits_summary(_test_dir,
-                               keywords=keywords)
+    summary = image_collection.fits_summary(keywords=keywords)
     print summary['file']
     print summary.keys()
     assert len(summary['file']) == _n_test['files']
