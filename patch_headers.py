@@ -191,7 +191,7 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         files = image_info['file']
     except IOError:
         butt = tff.ImageFileCollection(dir)
-        files = butt._fits_files_in_directory(dir)
+        files = butt._fits_files_in_directory()
 
 
     latitude.value = sexagesimal_string(feder.latitude.dms)
