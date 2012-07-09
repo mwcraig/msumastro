@@ -99,7 +99,7 @@ class ImageFileCollection(object):
                  missing='', info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
-        self._files = self._fits_files_in_directory(self.location)
+        self._files = self._fits_files_in_directory()
         self.summary_info = {}
 
         if info_file is not None:
@@ -251,7 +251,7 @@ class ImageFileCollection(object):
         from collections import OrderedDict
 
         if not file_list:
-            file_list = self._fits_files_in_directory(dir)
+            file_list = self._fits_files_in_directory()
 
         summary = OrderedDict()
         summary['file'] = []
@@ -321,11 +321,9 @@ class ImageFileCollection(object):
         # list for the files.
         return use_info['file'][matches]
         
-    def _fits_files_in_directory(self, dir='.', extensions=['fit','fits'], compressed=True):
+    def _fits_files_in_directory(self, extensions=['fit','fits'], compressed=True):
         """
         Get names of FITS files in directory, based on filename extension.
-        
-        `dir` is the directory to be searched.
         
         `extension` is a list of filename extensions that are FITS files.
         
@@ -342,7 +340,7 @@ class ImageFileCollection(object):
             with_gz = [extension + '.gz' for extension in extensions]
             full_extensions.extend(with_gz)
             
-            all_files = listdir(dir)
+            all_files = listdir(self.location)
             files = []
             for extension in full_extensions:
                 files.extend(fnmatch.filter(all_files, '*'+extension))
