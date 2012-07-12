@@ -6,6 +6,7 @@ from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
 from numpy import where
+import numpy as np
 
 _n_test = {'files': 0, 'need_object':0, 'need_filter':0, 'bias':0}
 _test_dir = ''
@@ -59,6 +60,27 @@ def test_ImageFileCollection():
     assert not img_collection.hasKey('flying monkeys')
     assert len(img_collection.values('imagetyp',unique=True))==2
     
+def test_ImageFileCollection_generator_full_path():
+    collection = tff.ImageFileCollection(location=_test_dir)
+    for path, file_name in zip(collection.paths(), collection.files):
+        assert path == os.path.join(_test_dir, file_name)
+
+def test_ImageFileCollection_generator_headers():
+    collection = tff.ImageFileCollection(location=_test_dir)
+    for header in collection.headers():
+        assert isinstance(header, pyfits.Header)
+
+def test_ImageFileCollection_generator_headers_write():
+    collection = tff.ImageFileCollection(location=_test_dir)
+    for header in collection.headers(save_with_name='_new'):
+        assert isinstance(header, pyfits.Header)
+
+def test_ImageFileCollection_generator_data():
+    collection = tff.ImageFileCollection(location=_test_dir)
+    for img in collection.data():
+        assert isinstance(img, np.ndarray)
+    
+        
 def setup():
     global _n_test
     global _test_dir
@@ -113,5 +135,5 @@ def teardown():
 
     for key in _n_test.keys():
         _n_test[key] = 0
-    rmtree(_test_dir)
+    #rmtree(_test_dir)
 

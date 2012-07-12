@@ -5,7 +5,7 @@ from os import listdir, path
 from numpy import array, where
 from string import lower
 import atpy
-
+import functools
 
 def contains_maximdl_imagetype(image_collection):
     """
@@ -75,6 +75,28 @@ def IRAF_image_type(image_type):
     return image_type.split()[0].upper()
     
 from tempfile import TemporaryFile
+def iterate_files(func):
+    @functools.wraps(func)
+    def wrapper(self, save_with_name="",
+                     clobber=False, hdulist=None):
+        for full_path in self.paths():
+            hdulist = pyfits.open(full_path)
+            yield func(self, save_with_name=save_with_name,
+                     clobber=clobber, hdulist=hdulist)
+            new_path = ""
+            if clobber:
+                new_path = full_path
+            elif save_with_name:
+                root, ext = path.splitext(full_path)
+                new_path = root + save_with_name + ext
+            if new_path:
+                try:
+                    hdulist.writeto(new_path, clobber=clobber)
+                except IOError:
+                    pass
+            hdulist.close()
+    return wrapper
+    
 class ImageFileCollection(object):
     """
     Representation of a collection (usually a directory) of image
@@ -178,6 +200,8 @@ class ImageFileCollection(object):
             
     @keywords.setter
     def keywords(self, keywords=[]):
+        # since keywords are drawn from self.summary_info, setting
+        # summary_info sets the keywords.
         if keywords:
             self.summary_info = self.fits_summary(file_list=self._files,
                                                   keywords=keywords)
@@ -341,5 +365,22 @@ class ImageFileCollection(object):
                 files.extend(fnmatch.filter(all_files, '*'+extension))
                 
             return files
-      
+
+    def paths(self):
+        """
+        Full path to each file.
+        """
+        return [path.join(self.location, file_) for file_ in self.files]
+
+    @iterate_files
+    def headers(self, hdulist=None, save_with_name="", clobber=False):
+        """
+        Generator for headers in the collection.
+
         
+        """
+        return hdulist[0].header
+        
+    @iterate_files
+    def data(self, hdulist=None, save_with_name="", clobber=False):
+        return hdulist[0].data
