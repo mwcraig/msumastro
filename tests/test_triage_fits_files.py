@@ -8,7 +8,10 @@ from tempfile import mkdtemp
 from numpy import where
 import numpy as np
 
-_n_test = {'files': 0, 'need_object':0, 'need_filter':0, 'bias':0}
+_n_test = {'files': 0, 'need_object':0,
+           'need_filter':0, 'bias':0,
+           'compressed':0}
+
 _test_dir = ''
 _filters = []
 
@@ -72,14 +75,20 @@ class TestImageFileCollection(object):
 
     def test_headers(self):
         collection = tff.ImageFileCollection(location=_test_dir)
+        n_headers = 0
         for header in collection.headers():
             assert isinstance(header, pyfits.Header)
-
+            n_headers += 1
+        assert n_headers == _n_test['files']
+        
     def test_generator_headers_write(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, pyfits.Header)
-
+        new_collection = tff.ImageFileCollection(location=_test_dir)
+        assert (len(new_collection.paths()) ==
+                2*(_n_test['files'])-_n_test['compressed'])
+        
     def test_generator_data(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for img in collection.data():
@@ -133,6 +142,7 @@ def setup_module():
     fzipped.writelines(filter_file)
     fzipped.close()
     _n_test['files'] += 1
+    _n_test['compressed'] += 1
     os.chdir(original_dir)
 
 def teardown_module():
