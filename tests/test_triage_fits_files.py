@@ -37,51 +37,56 @@ def test_fits_summary():
     print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
     assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
 
-def test_ImageFileCollection():
-    try:
-        should_work = tff.ImageFileCollection(storage_dir=_test_dir)
-        assert True
-    except OSError:
-        assert False
 
-    try:
-        should_fail = tff.ImageFileCollection(storage_dir='/')
-        assert False
-    except OSError:
-        assert True
 
-    img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
-    print img_collection.filesFiltered(keywords=['imagetyp'],
-                                                    values=['bias'])
-    assert len(img_collection.filesFiltered(keywords=['imagetyp'],
-                                                    values=['bias']))==_n_test['bias']
-    assert len(img_collection.files) == _n_test['files']
-    assert img_collection.hasKey('filter')
-    assert not img_collection.hasKey('flying monkeys')
-    assert len(img_collection.values('imagetyp',unique=True))==2
+class TestImageFileCollection(object):
     
-def test_ImageFileCollection_generator_full_path():
-    collection = tff.ImageFileCollection(location=_test_dir)
-    for path, file_name in zip(collection.paths(), collection.files):
-        assert path == os.path.join(_test_dir, file_name)
+    def test_storage_dir_set(self):
+        try:
+            should_work = tff.ImageFileCollection(storage_dir=_test_dir)
+            assert True
+        except OSError:
+            assert False
 
-def test_ImageFileCollection_generator_headers():
-    collection = tff.ImageFileCollection(location=_test_dir)
-    for header in collection.headers():
-        assert isinstance(header, pyfits.Header)
+        try:
+            should_fail = tff.ImageFileCollection(storage_dir='/')
+            assert False
+        except OSError:
+            assert True
 
-def test_ImageFileCollection_generator_headers_write():
-    collection = tff.ImageFileCollection(location=_test_dir)
-    for header in collection.headers(save_with_name='_new'):
-        assert isinstance(header, pyfits.Header)
+        img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
+        print img_collection.filesFiltered(keywords=['imagetyp'],
+                                                        values=['bias'])
+        print _n_test
+        assert len(img_collection.filesFiltered(keywords=['imagetyp'],
+                                                        values=['bias']))==_n_test['bias']
+        assert len(img_collection.files) == _n_test['files']
+        assert img_collection.hasKey('filter')
+        assert not img_collection.hasKey('flying monkeys')
+        assert len(img_collection.values('imagetyp',unique=True))==2
+    
+    def test_generator_full_path(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for path, file_name in zip(collection.paths(), collection.files):
+            assert path == os.path.join(_test_dir, file_name)
 
-def test_ImageFileCollection_generator_data():
-    collection = tff.ImageFileCollection(location=_test_dir)
-    for img in collection.data():
-        assert isinstance(img, np.ndarray)
+    def test_headers(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for header in collection.headers():
+            assert isinstance(header, pyfits.Header)
+
+    def test_generator_headers_write(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for header in collection.headers(save_with_name='_new'):
+            assert isinstance(header, pyfits.Header)
+
+    def test_generator_data(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for img in collection.data():
+            assert isinstance(img, np.ndarray)
     
         
-def setup():
+def setup_module():
     global _n_test
     global _test_dir
     
@@ -130,10 +135,10 @@ def setup():
     _n_test['files'] += 1
     os.chdir(original_dir)
 
-def teardown():
+def teardown_module():
     global _n_test
 
     for key in _n_test.keys():
         _n_test[key] = 0
-    #rmtree(_test_dir)
+    rmtree(_test_dir)
 
