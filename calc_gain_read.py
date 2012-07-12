@@ -1,4 +1,4 @@
-from triage_fits_files import ImageFileCollection
+from image_collection import ImageFileCollection
 from  ccd_characterization import ccd_gain, ccd_read_noise
 from numpy import array
 from astropysics import ccd

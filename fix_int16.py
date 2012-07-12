@@ -2,7 +2,7 @@ from os import listdir, path
 import numpy as np
 
 from patch_headers import fix_int16_images, compare_data_in_fits
-from triage_fits_files import ImageFileCollection
+from image_collection import ImageFileCollection
 
 fix_vol = '/Volumes/FULL BACKUP/processed'
 #fix_vol = 'foo'

@@ -1,4 +1,4 @@
-import triage_fits_files as tff
+import image_collection as tff
 import sys
 import os
 

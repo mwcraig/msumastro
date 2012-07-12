@@ -3,7 +3,7 @@ from astropysics import ccd
 from os import path, rename
 import sys
 import numpy as np
-import triage_fits_files as tff
+import image_collection as tff
 from image import ImageWithWCS
 
 def astrometry_img_group(img_group, directory='.'):

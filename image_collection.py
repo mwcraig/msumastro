@@ -108,7 +108,7 @@ class ImageFileCollection(object):
     
     To extract a desired set of files::
     
-        import triage_fits_files as tff
+        import image_collection as tff
         my_files = tff.ImageFileCollection('my_directory',keywords=['object'])
         summary = my_files.summary_info
         m101 = (summary['object'] == 'm101')

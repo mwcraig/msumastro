@@ -1,5 +1,5 @@
 from astropysics import ccd, pipeline
-import triage_fits_files as tff
+import image_collection as tff
 from os import path
 import numpy as np
 

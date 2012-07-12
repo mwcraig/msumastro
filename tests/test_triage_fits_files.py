@@ -1,4 +1,4 @@
-from .. import triage_fits_files as tff
+from .. import image_collection as tff
 import os
 import numpy
 import pyfits

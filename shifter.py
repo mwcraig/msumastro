@@ -1,5 +1,5 @@
 from image import ImageWithWCS
-import triage_fits_files as tff
+import image_collection as tff
 import numpy as np
 from os import path
 

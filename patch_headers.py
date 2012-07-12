@@ -10,7 +10,7 @@ from astropysics import obstools, coords
 from feder import *
 from astrometry import add_astrometry
 
-import triage_fits_files as tff
+import image_collection as tff
 
 federstuff = Feder()
 feder = federstuff.site
