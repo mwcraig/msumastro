@@ -77,19 +77,28 @@ def IRAF_image_type(image_type):
 from tempfile import TemporaryFile
 def iterate_files(func):
     @functools.wraps(func)
-    def wrapper(self, save_with_name="",
+    def wrapper(self, save_with_name="", save_location='',
                      clobber=False, hdulist=None):
         for full_path in self.paths():
             hdulist = pyfits.open(full_path)
             yield func(self, save_with_name=save_with_name,
-                     clobber=clobber, hdulist=hdulist)
-            new_path = ""
-            if clobber:
-                new_path = full_path
-            elif save_with_name:
-                root, ext = path.splitext(full_path)
-                new_path = root + save_with_name + ext
-            if new_path:
+                       save_location='', clobber=clobber, hdulist=hdulist)
+            if save_location:
+                destination_dir = save_location
+            else:
+                destination_dir = path.dirname(full_path)
+#            new_path = ""
+            basename = path.basename(full_path)
+#            if clobber:
+#                new_path = full_path
+            if save_with_name:
+                base, ext = path.splitext(basename)
+                basename = base + save_with_name + ext
+#                new_path = path.join(destination_dir, basename)
+
+            new_path = path.join(destination_dir, basename)
+
+            if (new_path != full_path) or clobber:
                 try:
                     hdulist.writeto(new_path, clobber=clobber)
                 except IOError:
@@ -373,14 +382,33 @@ class ImageFileCollection(object):
         return [path.join(self.location, file_) for file_ in self.files]
 
     @iterate_files
-    def headers(self, hdulist=None, save_with_name="", clobber=False):
+    def headers(self, save_with_name='',
+                save_location='', clobber=False,
+                hdulist=None):
         """
-        Generator for headers in the collection.
+        Generator for headers in the collection including writing of
+        FITS file before moving to next item.
 
+        Parameters
+
+        save_with_name : str
+            string added to end of file name (before extension) if
+            FITS file should be saved after iteration. Unless
+            `save_location` is set, files will be saved to location of
+            the source files `self.location`
         
+        save_location : str
+            Directory in which to save FITS files; implies that FITS
+            files will be saved. Note this provides an easy way to
+            copy a directory of files--loop over the headers with
+            `save_location` set.
+
+        clobber : bool
+            If True, overwrite input FITS files.
         """
+        
         return hdulist[0].header
         
     @iterate_files
-    def data(self, hdulist=None, save_with_name="", clobber=False):
+    def data(self, hdulist=None, save_with_name="", save_location='', clobber=False):
         return hdulist[0].data

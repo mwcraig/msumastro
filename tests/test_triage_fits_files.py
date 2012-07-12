@@ -80,8 +80,22 @@ class TestImageFileCollection(object):
             assert isinstance(header, pyfits.Header)
             n_headers += 1
         assert n_headers == _n_test['files']
+
+    def test_headers_save_location(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        destination = mkdtemp()
+        for header in collection.headers(save_location=destination):
+            pass
+        new_collection = tff.ImageFileCollection(location =
+                                                 destination)
+        basenames = lambda paths: set([os.path.basename(file) for file in paths])
+
+        assert (len(basenames(collection.paths())-
+                   basenames(new_collection.paths())) ==
+                _n_test['compressed'])
+        rmtree(destination)
         
-    def test_generator_headers_write(self):
+    def test_generator_headers_save_with_name(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, pyfits.Header)
