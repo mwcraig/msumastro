@@ -1,11 +1,11 @@
-Look for problems in directory of FITS files
+Class for managing a collection of images
 ============================================
 
 The most useful item in this package is the class :class:`ImageFileCollection`
 
 Contents:
 
-.. automodule:: triage_fits_files
+.. automodule:: image_collection
    :members:
    :undoc-members:
 

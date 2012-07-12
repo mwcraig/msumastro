@@ -38,7 +38,7 @@ Contents:
    FITS Keyword class <fitskeyword>
    Add FITS Keyword to file <quick_add_keys_to_file>
    Patch Feder FITS headers <patch_headers>
-   Triage a directory of FITS files <triage_fits_files>
+   Manage directory of images <image_collection>
    Image with WCS <image>
    Image reduction <reduction>
 
