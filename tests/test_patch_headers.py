@@ -49,7 +49,6 @@ def test_data_is_unmodified_by_adding_object():
                            do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
     
-    
 def setup():
     global _test_dir
     from shutil import copy

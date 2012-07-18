@@ -184,23 +184,15 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
 
     `overwrite` should be set to `True` to replace the original files.
     """
-    try:
-        image_info_file = open(path.join(dir, manifest))
-        image_info = asciitable.read(image_info_file, delimiter=',')
-        image_info_file.close()
-        files = image_info['file']
-    except IOError:
-        butt = ImageFileCollection(dir)
-        files = butt._fits_files_in_directory() 
-
+    images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
     latitude.value = sexagesimal_string(feder.latitude.dms)
     longitude.value = sexagesimal_string(feder.longitude.dms)
     obs_altitude.value = feder.altitude
 
-    for image in files:
-        img = FederImage(path.join(dir,image))
-        header = img.header
+    for header in images.headers(save_with_name=new_file_ext,
+                                 clobber=overwrite,
+                                 do_not_scale_image_data=True):
         header.add_history('patch_headers.py modified this file on %s'
                            % datetime.now())
         add_time_info(header)
@@ -214,15 +206,6 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
-                
-        if overwrite:
-            new_image = image
-        else:
-            root, ext = path.splitext(image)
-            new_image = root + new_file_ext + ext
-
-        img.save(path.join(dir,new_image), clobber=overwrite)
-        img.close()
 
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext=None):
