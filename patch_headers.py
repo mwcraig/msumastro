@@ -10,7 +10,7 @@ from astropysics import obstools, coords
 from feder import *
 from astrometry import add_astrometry
 
-import image_collection as tff
+from image_collection import ImageFileCollection
 
 federstuff = Feder()
 feder = federstuff.site
@@ -190,7 +190,7 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
         image_info_file.close()
         files = image_info['file']
     except IOError:
-        butt = tff.ImageFileCollection(dir)
+        butt = ImageFileCollection(dir)
         files = butt._fits_files_in_directory() 
 
 
@@ -242,7 +242,7 @@ def add_object_info(directory='.', object_list=None,
     from fitskeyword import FITSKeyword
     from image import ImageWithWCS
     
-    images = tff.ImageFileCollection(directory,
+    images = ImageFileCollection(directory,
                                      keywords=['imagetyp', 'RA',
                                                'Dec', 'object'])
     summary = images.summary_info
@@ -311,7 +311,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     from numpy import unique
     from astro_object import AstroObject
 
-    images = tff.ImageFileCollection(directory,
+    images = ImageFileCollection(directory,
                                      keywords=['imagetyp', 'RA',
                                                'Dec', 'object'])
     summary = images.summary_info
@@ -351,7 +351,7 @@ def fix_int16_images(directory='.', new_file_ext=None):
 
     Use with care; if your data really is signed int16 this will corrupt it.
     """
-    images = tff.ImageFileCollection(directory,
+    images = ImageFileCollection(directory,
                                      keywords=['imagetyp', 'bitpix', 'bzero'])
     summary = images.summary_info
     bad = summary.where((summary['bitpix'] == 16) &
