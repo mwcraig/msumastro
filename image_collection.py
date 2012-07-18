@@ -78,7 +78,7 @@ from tempfile import TemporaryFile
 def iterate_files(func):
     @functools.wraps(func)
     def wrapper(self, save_with_name="", save_location='',
-                     clobber=False, hdulist=None):
+                clobber=False, hdulist=None):
         for full_path in self.paths():
             hdulist = pyfits.open(full_path)
             yield func(self, save_with_name=save_with_name,
@@ -87,14 +87,10 @@ def iterate_files(func):
                 destination_dir = save_location
             else:
                 destination_dir = path.dirname(full_path)
-#            new_path = ""
             basename = path.basename(full_path)
-#            if clobber:
-#                new_path = full_path
             if save_with_name:
                 base, ext = path.splitext(basename)
                 basename = base + save_with_name + ext
-#                new_path = path.join(destination_dir, basename)
 
             new_path = path.join(destination_dir, basename)
 
