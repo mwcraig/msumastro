@@ -31,8 +31,10 @@ def test_data_is_unmodified_by_patch_headers():
     patch_headers(_test_dir,new_file_ext=new_ext)
     fname = path.join(_test_dir,'uint16')
     fname_new = fname+ new_ext
-    orig = pyfits.open(fname+'.fit')
-    modified = pyfits.open(fname_new+'.fit')
+    orig = pyfits.open(fname+'.fit',
+                       do_not_scale_image_data=True)
+    modified = pyfits.open(fname_new+'.fit',
+                           do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
 
 def test_data_is_unmodified_by_adding_object():
@@ -41,8 +43,10 @@ def test_data_is_unmodified_by_adding_object():
     add_object_info(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir,'uint16')
     fname_new = fname+ new_ext + new_ext
-    orig = pyfits.open(fname+'.fit')
-    modified = pyfits.open(fname_new+'.fit')
+    orig = pyfits.open(fname+'.fit',
+                       do_not_scale_image_data=True)
+    modified = pyfits.open(fname_new+'.fit',
+                           do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
     
     
