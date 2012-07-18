@@ -78,9 +78,9 @@ from tempfile import TemporaryFile
 def iterate_files(func):
     @functools.wraps(func)
     def wrapper(self, save_with_name="", save_location='',
-                clobber=False, hdulist=None):
+                clobber=False, hdulist=None, **kwd):
         for full_path in self.paths():
-            hdulist = pyfits.open(full_path)
+            hdulist = pyfits.open(full_path, **kwd)
             yield func(self, save_with_name=save_with_name,
                        save_location='', clobber=clobber, hdulist=hdulist)
             if save_location:
@@ -380,7 +380,7 @@ class ImageFileCollection(object):
     @iterate_files
     def headers(self, save_with_name='',
                 save_location='', clobber=False,
-                hdulist=None):
+                hdulist=None, **kwd):
         """
         Generator for headers in the collection including writing of
         FITS file before moving to next item.
@@ -401,6 +401,9 @@ class ImageFileCollection(object):
 
         clobber : bool
             If True, overwrite input FITS files.
+
+        **kwd : dict
+            Any additional keywords are passed to `pyfits.open`
         """
         
         return hdulist[0].header
