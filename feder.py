@@ -1,5 +1,6 @@
 from astropysics import obstools
 from fitskeyword import FITSKeyword
+import numpy as np
 
 class FederSite(obstools.Site):
     """
@@ -26,6 +27,30 @@ class FederSite(obstools.Site):
                                alt=311.8,
                                name='Feder Observatory')
 
+    def localSiderialTime(self, seconds_decimal=None, *arg, **kwd):
+        import datetime
+        try:
+            return_type = kwd['returntype']
+        except KeyError:
+            return_type = 'hours'
+
+        if return_type is None or return_type == 'hours':
+            return super(FederSite, self).localSiderialTime(*arg,
+                                                            **kwd)
+
+        return_type = kwd.pop('returntype', None)
+        lst = super(FederSite, self).localSiderialTime(*arg,
+                                                       returntype='datetime',
+                                                       **kwd)
+        if seconds_decimal is not None:
+            seconds = np.round(lst.second + lst.microsecond/1e6, seconds_decimal)
+            sec = np.int(seconds)
+            microsec = np.long((seconds-sec)*1e6)
+            lst = datetime.time(lst.hour, lst.minute, sec, microsec)
+        if return_type == 'string':
+            lst = lst.isoformat()
+        return lst
+        
 class Instrument(object):
     """
     Telescope instrument with simple properties.
