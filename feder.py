@@ -45,7 +45,7 @@ class FederSite(obstools.Site):
         if seconds_decimal is not None:
             seconds = np.round(lst.second + lst.microsecond/1e6, seconds_decimal)
             sec = np.int(seconds)
-            microsec = np.long((seconds-sec)*1e6)
+            microsec = np.int(np.round((seconds-sec)*1e6))
             lst = datetime.time(lst.hour, lst.minute, sec, microsec)
         if return_type == 'string':
             lst = lst.isoformat()
