@@ -123,7 +123,7 @@ class ImageFileCollection(object):
     instead of a list.
     """
     def __init__(self,location='.', storage_dir=None, keywords=[],
-                 missing='', info_file='Manifest.txt'):
+                 missing=-999, info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
@@ -257,7 +257,7 @@ class ImageFileCollection(object):
         return self._find_keywords_by_values(keywords, values)
         
     def fits_summary(self, file_list=[],
-                     keywords=['imagetyp'], missing=''):
+                     keywords=['imagetyp'], missing=-999):
         """
         Collect information about fits files in a directory.
 
@@ -268,20 +268,26 @@ class ImageFileCollection(object):
         information will be gathered.
 
 
-        `missing` is the value to be substituted if a particular file
-        doesn't have a keyword.
+        `missing` is the numerical value to be substituted if a particular file
+        doesn't have a keyword. =
         
         Returns an ATpy table.
         """
         from collections import OrderedDict
 
+        missing = float(missing)
+        
         if not file_list:
             file_list = self._fits_files_in_directory()
 
         summary = OrderedDict()
         summary['file'] = []
+        missing_values = OrderedDict()
+        missing_values['file'] = []
+        data_type = {}
         for keyword in keywords:
             summary[keyword] = []
+            missing_values[keyword] = []
 
         for afile in file_list:
             try:
@@ -289,16 +295,39 @@ class ImageFileCollection(object):
             except IOError:
                 continue
             summary['file'].append(afile)
+            missing_values['file'].append(False)
+            data_type['file'] = type('string')
             for keyword in keywords:
                 try:
                     summary[keyword].append(header[keyword])
+                    missing_values[keyword].append(False)
+                    try:
+                        current_dtype = data_type[keyword]
+                    except KeyError:
+                        data_type[keyword] = type(header[keyword])
+                        current_dtype = data_type[keyword]
+                    if current_dtype != data_type[keyword]:
+                        raise ValueError('Different data types found for keyword %s' % keyword)
                 except KeyError:
                     summary[keyword].append(missing)
-
+                    missing_values[keyword].append(True)
+                if keyword not in data_type.keys():
+                    data_type[keyword] = type(None)
+                    
         summary_table = atpy.Table()
 
-        for key in summary.keys():        
-            summary_table.add_column(key, summary[key])
+        for key in summary.keys():
+            if data_type[key] == type(None):
+                data_type[key] = type('str')
+                summary[key] = [str(val) for val in summary[key]]
+            if data_type[key] == type('str'):
+                print key, array(missing_values[key])
+                print summary_table
+                summary_table.add_column(key, summary[key])
+                summary_table[key][array(missing_values[key])] = ''
+            else:
+                summary_table.add_column(key, summary[key], null=missing)
+
 
         return summary_table
 

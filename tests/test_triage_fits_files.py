@@ -7,6 +7,7 @@ import gzip
 from tempfile import mkdtemp
 from numpy import where
 import numpy as np
+import pytest
 
 _n_test = {'files': 0, 'need_object':0,
            'need_filter':0, 'bias':0,
@@ -107,7 +108,12 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         for img in collection.data():
             assert isinstance(img, np.ndarray)
-    
+            
+    def test_missing_value_in_summary(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        with pytest.raises(ValueError):
+            collection.fits_summary(missing='string')
+            
         
 def setup_module():
     global _n_test
