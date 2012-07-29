@@ -140,8 +140,7 @@ class ImageFileCollection(object):
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
                 print 'Regenerating information summary table for %s' % location
-                self.summary_info = self.fits_summary(file_list=self._files,
-                                                      keywords=keywords,
+                self.summary_info = self.fits_summary(keywords=keywords,
                                                       missing=missing)
             
     @property
@@ -256,7 +255,7 @@ class ImageFileCollection(object):
 
         return self._find_keywords_by_values(keywords, values)
         
-    def fits_summary(self, file_list=[],
+    def fits_summary(self, 
                      keywords=['imagetyp'], missing=-999):
         """
         Collect information about fits files in a directory.
@@ -277,9 +276,6 @@ class ImageFileCollection(object):
 
         missing = float(missing)
         
-        if not file_list:
-            file_list = self._fits_files_in_directory()
-
         summary = OrderedDict()
         summary['file'] = []
         missing_values = OrderedDict()
@@ -289,7 +285,7 @@ class ImageFileCollection(object):
             summary[keyword] = []
             missing_values[keyword] = []
 
-        for afile in file_list:
+        for afile in self.files:
             try:
                 header = pyfits.getheader(path.join(self.location,afile))
             except IOError:
