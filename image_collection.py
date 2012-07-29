@@ -314,8 +314,6 @@ class ImageFileCollection(object):
                 data_type[key] = type('str')
                 summary[key] = [str(val) for val in summary[key]]
             if data_type[key] == type('str'):
-                print key, array(missing_values[key])
-                print summary_table
                 summary_table.add_column(key, summary[key])
                 summary_table[key][array(missing_values[key])] = ''
             else:
