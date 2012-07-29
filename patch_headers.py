@@ -193,8 +193,11 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
     for header in images.headers(save_with_name=new_file_ext,
                                  clobber=overwrite,
                                  do_not_scale_image_data=True):
+        run_time = datetime.now()
+        header.add_history('+++++ BEGIN patch_headers history on %s +++++'
+                           % run_time)
         header.add_history('patch_headers.py modified this file on %s'
-                           % datetime.now())
+                           % run_time)
         add_time_info(header)
         header.add_history('patch_headers.py updated keywords %s' %
                             keyword_names_as_string(keywords_for_all_files))
@@ -206,7 +209,9 @@ def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
-
+        header.add_history('----- END patch_headers history on %s -----'
+                           % run_time)
+               
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext=None):
     """
