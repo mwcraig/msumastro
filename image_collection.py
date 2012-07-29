@@ -233,10 +233,7 @@ class ImageFileCollection(object):
 
     def hasKey(self, keyword):
         """True if keyword is in current summary."""
-        for key in self.keywords:
-            if keyword == key:
-                return True
-        return False
+        return keyword in self.keywords
         
     def filesFiltered(self, keywords=[], values=[]):
         """Determine files whose keywords have listed values.
