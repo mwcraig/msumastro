@@ -114,6 +114,17 @@ class TestImageFileCollection(object):
         with pytest.raises(ValueError):
             collection.fits_summary(missing='string')
             
+    def test_keyword_setting(self):
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp','filter'])
+        tbl_orig = collection.summary_info
+        collection.keywords = ['imagetyp', 'object']
+        tbl_new = collection.summary_info
+        assert (tbl_orig['file'] == tbl_new['file']).all()
+        assert (tbl_orig['imagetyp'] == tbl_new['imagetyp']).all()
+        assert 'filter' not in tbl_new.keys()
+        assert 'object' not in tbl_orig.keys()
+        
         
 def setup_module():
     global _n_test

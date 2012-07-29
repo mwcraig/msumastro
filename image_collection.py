@@ -207,8 +207,7 @@ class ImageFileCollection(object):
         # since keywords are drawn from self.summary_info, setting
         # summary_info sets the keywords.
         if keywords:
-            self.summary_info = self.fits_summary(file_list=self._files,
-                                                  keywords=keywords)
+            self.summary_info = self.fits_summary(keywords=keywords)
 
     @property
     def files(self):
