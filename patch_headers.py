@@ -167,17 +167,13 @@ def read_object_list(dir='.',list='obsinfo.txt'):
 
     return (observer, objects)
     
-def patch_headers(dir='.',manifest='Manifest.txt', new_file_ext='new',
+def patch_headers(dir='.', new_file_ext='new',
                   overwrite=False):
     """
     Add minimal information to Feder FITS headers.
 
     `dir` is the directory containing the files to be patched.
     
-    `manifest` is the name of the file which should contain a listing
-    of all of the FITS files in the directory and their types. If the
-    file isn't present, the list of files is generated automatically.
-
     `new_file_ext` is the name added to the FITS files with updated
     header information. It is added to the base name of the input
     file, between the old file name and the `.fit` or `.fits` extension.
