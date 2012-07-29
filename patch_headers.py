@@ -78,11 +78,14 @@ def deg2dms(dd):
     deg,mnt = divmod(mnt,60)
     return int(deg),int(mnt),sec
 
-def add_time_info(header):
+def add_time_info(header, history=False):
     """
     Add JD, MJD, LST to FITS header; `header` should be a pyfits
     header object.
 
+    history : bool
+        If `True`, write history for each keyword changed.
+    
     Uses `feder.currentobsjd` as the date.
     """
     dateobs = parse_dateobs(header['date-obs'])
@@ -97,11 +100,14 @@ def add_time_info(header):
     LST.value = sexagesimal_string(deg2dms(LST.value))
     
     for keyword in keywords_for_all_files:
-        keyword.addToHeader(header, history=False)
+        keyword.addToHeader(header, history=history)
 
-def add_object_pos_airmass(header):
+def add_object_pos_airmass(header, history=False):
     """Add object information, such as RA/Dec and airmass.
 
+    history : bool
+        If `True`, write history for each keyword changed.
+    
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
@@ -130,7 +136,7 @@ def add_object_pos_airmass(header):
                                              0)).ra.hms)
     for keyword in keywords_for_light_files:
         if keyword.value is not None:
-            keyword.addToHeader(header, history=False)
+            keyword.addToHeader(header, history=history)
             
 
 def keyword_names_as_string(list_of_keywords):
@@ -168,7 +174,7 @@ def read_object_list(dir='.',list='obsinfo.txt'):
     return (observer, objects)
     
 def patch_headers(dir='.', new_file_ext='new',
-                  overwrite=False):
+                  overwrite=False, detailed_history=True):
     """
     Add minimal information to Feder FITS headers.
 
@@ -179,6 +185,11 @@ def patch_headers(dir='.', new_file_ext='new',
     file, between the old file name and the `.fit` or `.fits` extension.
 
     `overwrite` should be set to `True` to replace the original files.
+
+    detailed_history : bool
+        If `True`, write name and value of each keyword changed to
+        output FITS files. If `False`, write only a list of which
+        keywords changed.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -194,14 +205,17 @@ def patch_headers(dir='.', new_file_ext='new',
                            % run_time)
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
-        add_time_info(header)
-        header.add_history('patch_headers.py updated keywords %s' %
-                            keyword_names_as_string(keywords_for_all_files))
+        add_time_info(header, history=detailed_history)
+        if not detailed_history:
+            header.add_history('patch_headers.py updated keywords %s' %
+                               keyword_names_as_string(keywords_for_all_files))
         if header['imagetyp'] == 'LIGHT':
             try:
-                add_object_pos_airmass(header)
-                header.add_history('patch_headers.py updated keywords %s' %
-                                   keyword_names_as_string(keywords_for_light_files))
+                add_object_pos_airmass(header,
+                                 history=detailed_history)
+                if not detailed_history:
+                    header.add_history('patch_headers.py updated keywords %s' %
+                                       keyword_names_as_string(keywords_for_light_files))
             except ValueError:
                 print 'Skipping file %s' % image
                 continue
