@@ -291,6 +291,9 @@ def add_overscan(dir='.', new_file_ext='new',
         if not detailed_history:
             header.add_history('add_overscan updated keywords %s' %
                                keyword_names_as_string(modified_keywords))
+        header.add_history(history(add_overscan, mode='end',
+                                   time=run_time))
+
             
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext=None):
