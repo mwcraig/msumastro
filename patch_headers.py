@@ -173,6 +173,33 @@ def read_object_list(dir='.',list='obsinfo.txt'):
 
     return (observer, objects)
     
+def history(function, mode='begin', time=None):
+    """
+    Construct nicely formatted start/end markers in FITS history.
+
+    Parameters
+
+    function : func
+        Function calling `history`
+    mode : str, 'begin' or 'end'
+    time : datetime
+        If not set, defaults to current date/time.
+    """
+    if mode == 'begin':
+        marker = '+'
+    elif mode == 'end':
+        marker = '-'
+    else:
+        raise ValueError('mode must be "begin" or "end"')
+
+    if time is None:
+        time = datetime.now()    
+
+    marker *= 5
+    return "%s %s %s history on %s %s" % (marker, mode.upper(),
+                                          function.__name__, time,
+                                          marker)
+    
 def patch_headers(dir='.', new_file_ext='new',
                   overwrite=False, detailed_history=True):
     """
@@ -201,8 +228,8 @@ def patch_headers(dir='.', new_file_ext='new',
                                  clobber=overwrite,
                                  do_not_scale_image_data=True):
         run_time = datetime.now()
-        header.add_history('+++++ BEGIN patch_headers history on %s +++++'
-                           % run_time)
+        header.add_history(history(patch_headers, mode='begin',
+                                   time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
         add_time_info(header, history=detailed_history)

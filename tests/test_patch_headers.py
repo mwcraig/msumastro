@@ -3,6 +3,7 @@ from tempfile import mkdtemp
 from os import path
 from shutil import rmtree
 import numpy as np
+import pytest
 
 test_tuple = (1,2,3.1415)
 _test_dir = ''
@@ -24,7 +25,25 @@ def test_read_object_list():
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
     assert observer == 'Ima Observer'
-
+    
+def test_history_bad_mode():
+    with pytest.raises(ValueError):
+        history(test_history_bad_mode, mode='not a mode')
+        
+def test_history_begin():
+    hist = history(test_history_begin, mode='begin')
+    assert hist.find('BEGIN')>0
+    assert hist.endswith('+')
+    
+def test_history_end():
+    hist = history(test_history_end, mode='end')
+    assert hist.find('END')>0
+    assert hist.endswith('-')
+    
+def test_history_function_name():
+    hist = history(test_history_function_name, mode='begin')
+    assert hist.find('test_history_function_name') > 0
+    
 def test_data_is_unmodified_by_patch_headers():
     """No changes should be made to the data."""
     new_ext = '_new'
