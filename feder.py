@@ -64,21 +64,29 @@ class Instrument(object):
     columns
     overscan_start
     """
-    def __init__(self, name, fits_name=None,
+    def __init__(self, name, fits_names=None,
                  rows=0, columns=0,
                  overscan_start=None,
                  overscan_axis=None ):
         self.name = name
-        self.fits_name = fits_name
+        self.fits_names = fits_names
         self.rows = rows
         self.columns = columns
         self.overscan_start = overscan_start
         self.overscan_axis = overscan_axis
+        
+    def has_overscan(self, image_dimensions):
+        if (image_dimensions[self.overscan_axis-1] >
+            self.overscan_start):
+            return True
+        else:
+            return False
+        
 
 class ApogeeAltaU9(Instrument):
     def __init__(self):
         Instrument.__init__(self, "Apogee Alta U9",
-                            fits_name="Apogee Alta",
+                            fits_names=["Apogee Alta", "Apogee USB/Net"],
                             rows=2048, columns=3085,
                             overscan_start=3073,
                             overscan_axis=1)
@@ -86,7 +94,11 @@ class ApogeeAltaU9(Instrument):
 class Feder(object):
     def __init__(self):
         self.site = FederSite()
-        self.instrument = { ApogeeAltaU9().fits_name: ApogeeAltaU9() }
+        self._apogee_alta_u9 = ApogeeAltaU9()
+        self.instrument = {}
+        for name in self._apogee_alta_u9.fits_names:
+            self.instrument[name] = self._apogee_alta_u9
+
         
 keywords_for_all_files = []
 keywords_for_light_files = []
