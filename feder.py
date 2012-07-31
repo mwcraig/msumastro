@@ -130,6 +130,15 @@ keywords_for_all_files.append(latitude)
 keywords_for_all_files.append(longitude)
 keywords_for_all_files.append(obs_altitude)
 
+overscan_present = FITSKeyword(name='oscan',
+                               comment='True if image has overscan region')
+
+overscan_axis = FITSKeyword(name='oscanax',
+                            comment='Overscan axis, 1 for NAXIS1, 2 for NAXIS 2')
+
+overscan_start = FITSKeyword(name='oscanst',
+                             comment='Starting pixel of overscan region')
+
 hour_angle = FITSKeyword(name='ha',
                          comment='Hour angle')
 
