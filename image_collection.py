@@ -399,7 +399,8 @@ class ImageFileCollection(object):
     @iterate_files
     def headers(self, save_with_name='',
                 save_location='', clobber=False,
-                hdulist=None, **kwd):
+                hdulist=None, do_not_scale_image_data=True,
+                **kwd):
         """
         Generator for headers in the collection including writing of
         FITS file before moving to next item.
@@ -421,6 +422,10 @@ class ImageFileCollection(object):
         clobber : bool
             If True, overwrite input FITS files.
 
+        do_not_scale_image_data : bool
+            If true, prevents pyfits from scaling images (useful for
+            preserving unsigned int images unmodified)
+        
         **kwd : dict
             Any additional keywords are passed to `pyfits.open`
         """
