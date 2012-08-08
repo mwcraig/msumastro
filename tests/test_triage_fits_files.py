@@ -59,11 +59,9 @@ class TestImageFileCollection(object):
             assert True
 
         img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
-        print img_collection.files_filtered(keywords=['imagetyp'],
-                                                        values=['bias'])
+        print img_collection.files_filtered(imagetyp='bias')
         print _n_test
-        assert len(img_collection.files_filtered(keywords=['imagetyp'],
-                                                        values=['bias']))==_n_test['bias']
+        assert len(img_collection.files_filtered(imagetyp='bias'))==_n_test['bias']
         assert len(img_collection.files) == _n_test['files']
         assert img_collection.hasKey('filter')
         assert not img_collection.hasKey('flying monkeys')

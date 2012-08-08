@@ -42,15 +42,15 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
         raise ValueError('Correct MaxImDL-style image types before proceeding.')
         
     file_needs_filter = \
-        list(images.files_filtered(keywords=['imagetyp','filter'],
-                                     values=['light', '']))
+        list(images.files_filtered(imagetyp='light',
+                                   filter=''))
     file_needs_filter += \
-        list(images.files_filtered(keywords=['imagetyp','filter'],
-                                  values=['flat', '']))
+        list(images.files_filtered(imagetyp='flat',
+                                   filter=''))
 
     file_needs_object_name = \
-        list(images.files_filtered(keywords=['imagetyp','object'],
-                                     values=['light','']))
+        list(images.files_filtered(imagetyp='light',
+                                   object=''))
 
     lights = file_info.where(file_info['imagetyp']=='LIGHT')
     has_no_ra = array([True]*len(lights))
@@ -234,22 +234,23 @@ class ImageFileCollection(object):
         """True if keyword is in current summary."""
         return keyword in self.keywords
         
-    def files_filtered(self, keywords=[], values=[]):
+    def files_filtered(self, **kwd):
         """Determine files whose keywords have listed values.
 
-        `keywords` should be a list of keywords.
+        `**kwd` is list of keywords and values the files must have.
 
-        `values` should be a list of their values or the string '*' if
-        only the presence of the `keyword` matters.
-
-        The two lists must have the same length.
-
+        The value '*' represents any value.
+         A missing keyword is indicated by value ''
+        
+        Example:
+        >>> collection = ImageFileCollection('test/data', keywords=['imagetyp','filter'])
+        >>> collection.files_filtered(imagetyp='LIGHT', filter='R')
+        >>> collection.files_filtered(imagetyp='*', filter='')
+        
         NOTE: Value comparison is case *insensitive* for strings.
         """
-        if len(keywords) != len(values):
-            raise ValueError('keywords and values must have same length.')
 
-        return self._find_keywords_by_values(keywords, values)
+        return self._find_keywords_by_values(**kwd)
         
     def fits_summary(self, 
                      keywords=['imagetyp'], missing=-999):
@@ -321,21 +322,25 @@ class ImageFileCollection(object):
 
         return summary_table
 
-    def _find_keywords_by_values(self, keywords=[],
-                                 values=[]):
-        """Find files whose keywords have given values.
-
-        `keywords` is a list of keyword names.
-        
-        `values` should be a list desired values or '*' to match any
-        value. The latter simply checks whether the keyword is present
-        in the file with a non-trivial value.
+    def _find_keywords_by_values(self, **kwd):
         """
-        if values == '*':
-            use_values = [values] * len(keywords)
-        else:
-            use_values = values
-            
+        Find files whose keywords have given values.
+
+        `**kwd` is list of keywords and values the files must have.
+
+        The value '*' represents any value.
+         A missing keyword is indicated by value ''
+        
+        Example:
+        >>> collection = ImageFileCollection('test/data', keywords=['imagetyp','filter'])
+        >>> collection.files_filtered(imagetyp='LIGHT', filter='R')
+        >>> collection.files_filtered(imagetyp='*', filter='')
+        
+        NOTE: Value comparison is case *insensitive* for strings.
+        """
+        keywords = kwd.keys()
+        values = kwd.values()
+        
         if (set(keywords) & set(self.keywords)):
             # we already have the information in memory
             use_info = self.summary_info
@@ -345,7 +350,7 @@ class ImageFileCollection(object):
                                          keywords=keywords)
             
         matches = array([True] * len(use_info))
-        for key, value in zip(keywords, use_values):
+        for key, value in zip(keywords, values):
             if value == '*':
                 have_this_value = (use_info[key] != '')
             else:
