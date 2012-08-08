@@ -42,14 +42,14 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
         raise ValueError('Correct MaxImDL-style image types before proceeding.')
         
     file_needs_filter = \
-        list(images.filesFiltered(keywords=['imagetyp','filter'],
+        list(images.files_filtered(keywords=['imagetyp','filter'],
                                      values=['light', '']))
     file_needs_filter += \
-        list(images.filesFiltered(keywords=['imagetyp','filter'],
+        list(images.files_filtered(keywords=['imagetyp','filter'],
                                   values=['flat', '']))
 
     file_needs_object_name = \
-        list(images.filesFiltered(keywords=['imagetyp','object'],
+        list(images.files_filtered(keywords=['imagetyp','object'],
                                      values=['light','']))
 
     lights = file_info.where(file_info['imagetyp']=='LIGHT')
@@ -234,7 +234,7 @@ class ImageFileCollection(object):
         """True if keyword is in current summary."""
         return keyword in self.keywords
         
-    def filesFiltered(self, keywords=[], values=[]):
+    def files_filtered(self, keywords=[], values=[]):
         """Determine files whose keywords have listed values.
 
         `keywords` should be a list of keywords.
