@@ -78,9 +78,12 @@ from tempfile import TemporaryFile
 def iterate_files(func):
     @functools.wraps(func)
     def wrapper(self, save_with_name="", save_location='',
-                clobber=False, hdulist=None, **kwd):
+                clobber=False, hdulist=None,
+                do_not_scale_image_data=True,
+                **kwd):
         for full_path in self.paths():
-            hdulist = pyfits.open(full_path, **kwd)
+            hdulist = pyfits.open(full_path,
+                                  do_not_scale_image_data=do_not_scale_image_data)
             yield func(self, save_with_name=save_with_name,
                        save_location='', clobber=clobber, hdulist=hdulist)
             if save_location:
