@@ -350,8 +350,7 @@ class ImageFileCollection(object):
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
-            use_info = self.fits_summary(file_list=self.files,
-                                         keywords=keywords)
+            use_info = self.fits_summary(keywords=keywords)
             
         matches = array([True] * len(use_info))
         for key, value in zip(keywords, values):
