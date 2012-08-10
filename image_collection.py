@@ -143,8 +143,9 @@ class ImageFileCollection(object):
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
                 print 'Regenerating information summary table for %s' % location
-                self.summary_info = self.fits_summary(keywords=keywords,
-                                                      missing=missing)
+
+        self.summary_info = self.fits_summary(keywords=keywords,
+                                              missing=missing)
             
     @property
     def location(self):
