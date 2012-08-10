@@ -47,13 +47,15 @@ class TestImageFileCollection(object):
     
     def test_storage_dir_set(self):
         try:
-            should_work = tff.ImageFileCollection(storage_dir=_test_dir)
+            should_work = tff.ImageFileCollection(location=_test_dir,
+                                                  storage_dir=_test_dir)
             assert True
         except OSError:
             assert False
 
         try:
-            should_fail = tff.ImageFileCollection(storage_dir='/')
+            should_fail = tff.ImageFileCollection(location=_test_dir,
+                                                  storage_dir='/')
             assert False
         except OSError:
             assert True
