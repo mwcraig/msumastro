@@ -300,26 +300,22 @@ class ImageFileCollection(object):
             missing_values['file'].append(False)
             data_type['file'] = type('string')
             for keyword in keywords:
-                try:
+                if keyword in header:
                     summary[keyword].append(header[keyword])
                     missing_values[keyword].append(False)
-                    try:
-                        current_dtype = data_type[keyword]
-                    except KeyError:
+                    if (keyword in data_type): 
+                        if (type(header[keyword]) != data_type[keyword]):
+                            raise ValueError('Different data types found for keyword %s' % keyword)
+                    else:
                         data_type[keyword] = type(header[keyword])
-                        current_dtype = data_type[keyword]
-                    if current_dtype != data_type[keyword]:
-                        raise ValueError('Different data types found for keyword %s' % keyword)
-                except KeyError:
+                else:
                     summary[keyword].append(missing)
                     missing_values[keyword].append(True)
-                if keyword not in data_type.keys():
-                    data_type[keyword] = type(None)
-                    
+                                                  
         summary_table = atpy.Table()
 
         for key in summary.keys():
-            if data_type[key] == type(None):
+            if key not in data_type:
                 data_type[key] = type('str')
                 summary[key] = [str(val) for val in summary[key]]
             if data_type[key] == type('str'):
