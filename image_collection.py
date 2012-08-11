@@ -312,17 +312,19 @@ class ImageFileCollection(object):
                     summary[keyword].append(missing)
                     missing_values[keyword].append(True)
                                                   
-        summary_table = atpy.Table()
+        summary_table = atpy.Table(masked=True)
 
         for key in summary.keys():
             if key not in data_type:
                 data_type[key] = type('str')
                 summary[key] = [str(val) for val in summary[key]]
             if data_type[key] == type('str'):
-                summary_table.add_column(key, summary[key])
+                summary_table.add_column(key, summary[key], mask=missing_values[key])
                 summary_table[key][array(missing_values[key])] = ''
             else:
-                summary_table.add_column(key, summary[key], null=missing)
+                summary_table.add_column(key, summary[key],
+                                         mask=missing_values[key],
+                                         null=missing)
 
 
         return summary_table
