@@ -11,7 +11,7 @@ import pytest
 
 _n_test = {'files': 0, 'need_object':0,
            'need_filter':0, 'bias':0,
-           'compressed':0}
+           'compressed':0, 'light':0}
 
 _test_dir = ''
 _filters = []
@@ -95,6 +95,14 @@ class TestImageFileCollection(object):
                    basenames(new_collection.paths())) ==
                 _n_test['compressed'])
         rmtree(destination)
+
+    def test_headers_with_filter(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        cnt = 0
+        for header in collection.headers(imagetyp='light'):
+            assert header['imagetyp'].lower() == 'light' 
+            cnt += 1
+        assert cnt == _n_test['light']
         
     def test_generator_headers_save_with_name(self):
         collection = tff.ImageFileCollection(location=_test_dir)
@@ -144,6 +152,7 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['need_object'] += 1
     _n_test['need_filter'] += 1
+    _n_test['light'] += 1
     
     no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
@@ -156,6 +165,8 @@ def setup_module():
     filter_no_object.writeto('filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
+    _n_test['light'] += 1
+
     filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     filter_no_object.writeto('filter_no_object_bias.fit')
     _n_test['files'] += 1
@@ -168,12 +179,14 @@ def setup_module():
     filter_object.header.update('OBJCTDEC','00:00:00')
     filter_object.writeto('filter_object_light.fit')
     _n_test['files'] += 1
+    _n_test['light'] += 1
     filter_file = open('filter_object_light.fit', 'rb')
     fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
     fzipped.writelines(filter_file)
     fzipped.close()
     _n_test['files'] += 1
     _n_test['compressed'] += 1
+    _n_test['light'] += 1
     os.chdir(original_dir)
 
 def teardown_module():

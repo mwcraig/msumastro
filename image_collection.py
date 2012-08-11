@@ -81,6 +81,10 @@ def iterate_files(func):
                 clobber=False, hdulist=None,
                 do_not_scale_image_data=True,
                 **kwd):
+
+        if kwd:
+            self._find_keywords_by_values(**kwd)
+            
         for full_path in self.paths():
             hdulist = pyfits.open(full_path,
                                   do_not_scale_image_data=do_not_scale_image_data)
@@ -146,7 +150,8 @@ class ImageFileCollection(object):
 
         self.summary_info = self.fits_summary(keywords=keywords,
                                               missing=missing)
-            
+        self._mask = array([True] * len(self.summary_info))
+
     @property
     def location(self):
         """
@@ -254,7 +259,7 @@ class ImageFileCollection(object):
         NOTE: Value comparison is case *insensitive* for strings.
         """
 
-        return self._find_keywords_by_values(**kwd)
+        return self.summary_info['file'][self._find_keywords_by_values(**kwd)]
         
     def fits_summary(self, 
                      keywords=['imagetyp'], missing=-999):
@@ -370,7 +375,8 @@ class ImageFileCollection(object):
         # we need to convert the list of files to a numpy array to be
         # able to index it, but it is easier to work with an ordinary
         # list for the files.
-        return use_info['file'][matches]
+        self._mask = matches
+        return self._mask
         
     def _fits_files_in_directory(self, extensions=['fit','fits'], compressed=True):
         """
@@ -402,7 +408,7 @@ class ImageFileCollection(object):
         """
         Full path to each file.
         """
-        return [path.join(self.location, file_) for file_ in self.files]
+        return [path.join(self.location, file_) for file_ in self.summary_info['file'][self._mask]]
 
     @iterate_files
     def headers(self, save_with_name='',
