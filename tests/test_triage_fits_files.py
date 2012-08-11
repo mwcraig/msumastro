@@ -141,7 +141,6 @@ def setup_module():
     for key in _n_test.keys():
         _n_test[key] = 0
     
-    original_dir = os.getcwd()
     _test_dir = mkdtemp()
     os.chdir(_test_dir)
     img = numpy.arange(100)
@@ -187,7 +186,6 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['compressed'] += 1
     _n_test['light'] += 1
-    os.chdir(original_dir)
 
 def teardown_module():
     global _n_test
