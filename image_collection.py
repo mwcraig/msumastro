@@ -3,6 +3,7 @@ import pyfits
 from feder import RA, Dec, target_object
 from os import listdir, path
 from numpy import array, where
+import numpy.ma as ma
 from string import lower
 import atpy
 import functools
@@ -150,7 +151,6 @@ class ImageFileCollection(object):
 
         self.summary_info = self.fits_summary(keywords=keywords,
                                               missing=missing)
-        self._mask = array([True] * len(self.summary_info))
 
     @property
     def location(self):
@@ -259,7 +259,8 @@ class ImageFileCollection(object):
         NOTE: Value comparison is case *insensitive* for strings.
         """
 
-        return self.summary_info['file'][self._find_keywords_by_values(**kwd)]
+        self._find_keywords_by_values(**kwd)
+        return self.summary_info['file'].compressed()
         
     def fits_summary(self, 
                      keywords=['imagetyp'], missing=-999):
@@ -370,11 +371,9 @@ class ImageFileCollection(object):
                     have_this_value = (use_info[key] == value)
             matches &= have_this_value
             
-        # we need to convert the list of files to a numpy array to be
-        # able to index it, but it is easier to work with an ordinary
-        # list for the files.
-        self._mask = matches
-        return self._mask
+        # the numpy convention is that the mask is True for values to
+        # be omitted, hence use ~matches.
+        self.summary_info['file'][~matches] = ma.masked
         
     def _fits_files_in_directory(self, extensions=['fit','fits'], compressed=True):
         """
@@ -406,7 +405,7 @@ class ImageFileCollection(object):
         """
         Full path to each file.
         """
-        return [path.join(self.location, file_) for file_ in self.summary_info['file'][self._mask]]
+        return [path.join(self.location, file_) for file_ in self.summary_info['file'].compressed()]
 
     @iterate_files
     def headers(self, save_with_name='',
