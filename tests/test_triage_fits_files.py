@@ -104,6 +104,31 @@ class TestImageFileCollection(object):
             cnt += 1
         assert cnt == _n_test['light']
         
+    def test_headers_with_multiple_filters(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        cnt = 0
+        for header in collection.headers(imagetyp='light',
+                                         filter='R'):
+            assert header['imagetyp'].lower() == 'light'
+            assert header['filter'].lower() == 'r'
+            cnt += 1
+        assert cnt == _n_test['light'] - _n_test['need_filter']
+        
+    def test_headers_with_filter_wildcard(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        cnt = 0
+        for header in collection.headers(imagetyp='*'):
+            cnt += 1
+        assert cnt == _n_test['files']
+
+    def test_headers_with_filter_missing_keyword(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for header in collection.headers(imagetyp='light',
+                                         object=''):
+            assert header['imagetyp'].lower() == 'light'
+            with pytest.raises(KeyError):
+                header['object']
+        
     def test_generator_headers_save_with_name(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
