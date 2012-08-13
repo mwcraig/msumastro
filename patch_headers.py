@@ -296,7 +296,8 @@ def add_overscan(dir='.', new_file_ext='new',
 
             
 def add_object_info(directory='.', object_list=None,
-                    match_radius=20.0, new_file_ext=None):
+                    match_radius=20.0, new_file_ext='new',
+                    overwrite=False, detailed_history=True):
     """
     Automagically add object information to FITS files.
 
@@ -311,68 +312,45 @@ def add_object_info(directory='.', object_list=None,
     from astro_object import AstroObject
     import numpy as np
     from fitskeyword import FITSKeyword
-    from image import ImageWithWCS
     
     images = ImageFileCollection(directory,
                                      keywords=['imagetyp', 'RA',
                                                'Dec', 'object'])
     summary = images.summary_info
 
-    missing_objects = summary.where((summary['object'] == '') &
-                                    (summary['RA'] != '') &
-                                    (summary['Dec'] != ''))
-    if not missing_objects:
-        return
-        
-    ra_dec = []
-    for obj in missing_objects:
-        ra_dec.append(coords.coordsys.FK5Coordinates(obj['RA'],obj['Dec']))
-
-    ra_dec = np.array(ra_dec)
-#    missing_objects.add_column('ra_dec',ra_dec)
-    missing_objects.add_empty_column('distance', np.float32)
-    missing_objects.add_column('found_object',
-                               np.zeros_like(missing_objects['RA']),
-                               dtype=np.bool)
+    print summary['file']
     try:
-        observer, objects = read_object_list(directory)
+        observer, object_names = read_object_list(directory)
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return
         
 #    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335), 'ey uma':(135.575,49.810)}
 
-    for object_name in objects:        
-#        obj = AstroObject(object_name, ra_dec=ra_dec_obj[object_name])
+    object_names = np.array(object_names)
+    ra_dec = []
+    for object_name in object_names:        
         obj = AstroObject(object_name)
-        obj_keyword = FITSKeyword('object',value=object_name)
-        distance = ra_dec - obj.ra_dec
-        # this is dumb, should be able to do this without explicit
-        # loop:
-        for idx, dist in enumerate(distance):
-            distance[idx] = dist.arcmin
-        missing_objects['distance'] = distance
-        matches = missing_objects['distance'] < match_radius
-        if missing_objects['found_object'][matches].any():
-            print 'Damn, this image already has an object!'
+        ra_dec.append(obj.ra_dec)
+    object_ra_dec = np.array(ra_dec)
+    
+    for header in images.headers(save_with_name=new_file_ext,
+                                 clobber=overwrite,
+                                 object='', RA='*', Dec='*'):
+        image_ra_dec = coords.coordsys.FK5Coordinates(header['ra'],
+                                                      header['dec'])
+        distance = [(ra_dec - image_ra_dec).arcmin for ra_dec in object_ra_dec]
+        distance = np.array(distance)
+        matches = (distance < match_radius)
+        if matches.sum() > 1:
+            raise RuntimeError("More than one object match for image")
 
-        missing_objects['found_object'][matches] = 1
-        print 'object %s in images %s' % (object_name, ' '.join(missing_objects['file'][matches]))
-        #at the end, add object names to FITS files.
-        for image in missing_objects.where(matches):
-             full_name = path.join(directory,image['file'])
-             img = FederImage(full_name)
-             header = img.header
-             obj_keyword.addToHeader(header, history=False)
-             if new_file_ext is not None:
-                 base, ext = path.splitext(full_name)
-                 new_file_name = base+ new_file_ext + ext
-                 overwrite=False
-             else:
-                 new_file_name = full_name
-                 overwrite = True
-             img.save(new_file_name, clobber=overwrite)
-             img.close()    
+        if not matches.any():
+            raise RuntimeWarning("No object foundn for image")
+            continue
+        object_name = (object_names[matches])[0]   
+        obj_keyword = FITSKeyword('object',value=object_name)
+        obj_keyword.addToHeader(header, history=True)
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
