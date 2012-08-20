@@ -442,7 +442,14 @@ class ImageFileCollection(object):
         """
         
         return hdulist[0].header
-        
+
+    @iterate_files    
+    def hdus(self, save_with_name='',
+                save_location='', clobber=False,
+                hdulist=None, do_not_scale_image_data=True,
+                **kwd):
+        return hdulist[0]
+
     @iterate_files
     def data(self, hdulist=None, save_with_name="", save_location='', clobber=False):
         return hdulist[0].data

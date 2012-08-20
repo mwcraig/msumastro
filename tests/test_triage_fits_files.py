@@ -74,6 +74,14 @@ class TestImageFileCollection(object):
         for path, file_name in zip(collection.paths(), collection.files):
             assert path == os.path.join(_test_dir, file_name)
 
+    def test_hdus(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        n_hdus = 0
+        for header in collection.hdus():
+            assert isinstance(header, pyfits.PrimaryHDU)
+            n_hdus += 1
+        assert n_hdus == _n_test['files']
+
     def test_headers(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         n_headers = 0
