@@ -3,6 +3,6 @@ import sys
 
 for currentDir in sys.argv[1:]:
     print "working on directory: %s" % currentDir
-    patch_headers(currentDir, overwrite=True)
-    add_object_info(currentDir, overwrite=True)
+    patch_headers(currentDir, new_file_ext='', overwrite=True)
+    add_object_info(currentDir, new_file_ext='', overwrite=True)
     
