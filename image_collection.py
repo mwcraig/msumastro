@@ -324,8 +324,7 @@ class ImageFileCollection(object):
                 summary_table[key][array(missing_values[key])] = ''
             else:
                 summary_table.add_column(key, summary[key],
-                                         mask=missing_values[key],
-                                         null=missing)
+                                         mask=missing_values[key])
 
 
         return summary_table
