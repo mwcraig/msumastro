@@ -88,11 +88,13 @@ def master_bias_dark(directories):
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
+        return bias_im.data
+        
         dark_files = useful.where(((useful['imagetyp']=='DARK') |
                                    (useful['imagetyp']=='Dark Frame'))
                                    &
                                   (useful['master'] != 'Y'))
-        if dark_files:
+        if False:
             exposure_times = set(dark_files['exptime'])
             master_dark = {}
             avg_temp = {}
