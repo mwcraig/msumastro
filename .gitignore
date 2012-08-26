@@ -2,3 +2,8 @@ _build
 *.pyc
 2011-08-24
 .ropeproject
+m101-340R.fit
+test-masters.tbz2
+testing.tbz2
+no_ra_dec.zip
+obsinfo.txt
