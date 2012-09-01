@@ -20,14 +20,14 @@ def teardown():
 def test_bias():
     coll = ImageFileCollection(test_dir, keywords = ['imagetyp'])
     all_data = []
-    for hdu in coll.hdus(imagetyp='bias'):
+    for hdu in coll.hdus(imagetyp='bias',do_not_scale_image_data=False):
         all_data.append(hdu.data)
     all_data = np.array(all_data)
     admean = np.mean(all_data, axis = 0)
     admed = np.median(all_data, axis = 0)
     mbd = master_bias_dark([test_dir], type = 'bias')
-    assert(mbd == admed)
-    assert(mbd != admean)
+    assert((mbd == admed).all())
+    assert(not((mbd == admean).all()) )
 
 def test_dark():
     coll = ImageFileCollection(test_dir, keywords = ['imagetyp', 'exptime'])
@@ -49,6 +49,6 @@ def test_flat():
     all_data = np.array(all_data)
     admean = np.mean(all_data, axis = 0)
     admed = np.median(all_data, axis = 0)
-    mf = master_flat.master_flat(test_dir)
+    mf = master_flat(test_dir)
     assert(mf == admed)
     assert(mf != admean)
