@@ -88,7 +88,9 @@ def master_bias_dark(directories, type='bias'):
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
-            return bias_im.data
+            # return transpose so that data matches 
+            # order returned by pyfits
+            return bias_im.data.transpose()
 
         dark_files = useful.where(((useful['imagetyp']=='DARK') |
                                    (useful['imagetyp']=='Dark Frame'))
@@ -116,7 +118,10 @@ def master_bias_dark(directories, type='bias'):
                                                               round(avg_temp[time], 2))
                 add_files_info(dark_im,these_darks['file'])
                 dark_im.save(path.join(currentDir, dark_fn))
-                return dark_im.data
+
+                # return transpose so that data matches 
+                # order returned by pyfits
+                return dark_im.data.transpose()
                 print time, avg_temp[time], median(master_dark[time]), mean(master_dark[time])
 #            print ccd_char.ccd_dark_current(master_bias,dark_data,gain=1.5)/time
 
