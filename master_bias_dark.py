@@ -63,7 +63,7 @@ def add_files_info(fits_image, files):
     for fil in files:
         hdr.add_comment('    '+fil)
     
-def master_bias_dark(directories):
+def master_bias_dark(directories, type='bias'):
     for currentDir in directories:
         print 'Directory %s' % currentDir
         keywords = ['imagetyp', 'exptime', 'ccd-temp', 'calstat', 'master']
@@ -75,7 +75,7 @@ def master_bias_dark(directories):
         bias_files=useful.where(((useful['imagetyp']=='BIAS') |
                                  (useful['imagetyp']=='Bias Frame')) &
                                 (useful['master'] != 'Y'))
-        if bias_files:
+        if bias_files and (type=='bias'):
             combiner.method = 'median'
             master_bias = combine_from_list(currentDir,
                                             bias_files['file'], combiner)
@@ -88,11 +88,15 @@ def master_bias_dark(directories):
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
+            # return transpose so that data matches 
+            # order returned by pyfits
+            return bias_im.data.transpose()
+
         dark_files = useful.where(((useful['imagetyp']=='DARK') |
                                    (useful['imagetyp']=='Dark Frame'))
                                    &
                                   (useful['master'] != 'Y'))
-        if dark_files:
+        if dark_files and (type=='dark'):
             exposure_times = set(dark_files['exptime'])
             master_dark = {}
             avg_temp = {}
@@ -115,6 +119,9 @@ def master_bias_dark(directories):
                 add_files_info(dark_im,these_darks['file'])
                 dark_im.save(path.join(currentDir, dark_fn))
 
+                # return transpose so that data matches 
+                # order returned by pyfits
+                return dark_im.data.transpose()
                 print time, avg_temp[time], median(master_dark[time]), mean(master_dark[time])
 #            print ccd_char.ccd_dark_current(master_bias,dark_data,gain=1.5)/time
 
