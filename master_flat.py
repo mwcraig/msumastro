@@ -27,7 +27,7 @@ def master_flat(directories):
                                                    info_file=None)
         images = image_collection.summary_info
         master_dark_files = images.where((images['imagetyp'] == 'DARK') &
-                                         ('M' in images['calstat']))
+                                         (images['master'] == 'Y'))
         all_flats = images.where(((images['imagetyp'] == 'FLAT') |
                                   (images['imagetyp']=='Flat Field'))&
                                  (images['master'] != 'Y'))
@@ -63,7 +63,7 @@ def master_flat(directories):
                 flat_im.save(path.join(currentDir,flat_fn))
 
                 # return transpose so that data matches
-                order returned by pyfits
+                # order returned by pyfits
                 return flat_im.data.transpose()
 
 if __name__ == "__main__":
