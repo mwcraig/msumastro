@@ -29,16 +29,25 @@ def test_bias():
     assert((mbd == admed).all())
     assert(not((mbd == admean).all()) )
 
-def test_dark():
+current = 300.0 #setting dark current
+expotime = 30.0 #setting exposure time
+
+def create_dark():
     coll = ImageFileCollection(test_dir, keywords = ['imagetyp'])
     all_data = []
-    current = 300.0 #setting dark current
-    expotime = 30.0 #setting exposure time
     for hdu in coll.hdus(imagetyp='bias', do_not_scale_image_data=False, save_with_name = 'dark'):
         hdu.header['exptime'] = expotime
         hdu.header['exposure'] = expotime
         hdu.header['imagetyp'] = 'DARK'
         hdu.data += current*expotime #dark current multiplied by exposure time added to bias frame
+        all_data.append(hdu.data)
+    all_data = np.array(all_data)
+
+def test_dark():
+    darks = create_dark()
+    coll = ImageFileCollection(test_dir, keywords = ['imagetyp'])
+    all_data= []
+    for hdu in coll.hdus(imagetyp='dark'):
         all_data.append(hdu.data)
     all_data = np.array(all_data)
     admean = np.mean(all_data, axis = 0)
@@ -49,18 +58,23 @@ def test_dark():
     assert(not((mbd == admean).all()) )
     assert((mbd == mb + current*expotime).all())
 
-def nottest_flat():
-    coll = ImageFileCollection(test_dir, keywords = ['imagetyp'])
+def test_flat():
+    darks = create_dark()
+    coll = ImageFileCollection(test_dir, keywords = ['imagetyp', 'master'])
     all_data = []
     flt = np.linspace(0.95,1.05,10000) #creates an array of values from 0.95 to 1.05
-    np.reshape(flt,[100,100]) #reshapes the array to 100x100 to match other frames
+    flt = np.reshape(flt,[100,100]) #reshapes the array to 100x100 to match other frames
+    mbd = master_bias_dark([test_dir], type = 'dark')
     for hdu in coll.hdus(imagetyp='dark', do_not_scale_image_data = False, save_with_name = 'flat'):
+        print "moo"
         hdu.header['imagetyp'] = 'FLAT'
+        hdu.header.update('filter', 'B')
         hdu.data *= flt
-        all_data.append(hdu.data)
+        all_data.append(hdu.data - mbd) #adds dark-subtracted flats to the list
     all_data = np.array(all_data)
     admean = np.mean(all_data, axis = 0)
     admed = np.median(all_data, axis = 0)
     mf = master_flat([test_dir])
+    print mf - admed
     assert((mf == admed).all())
     assert((not(mf == admean).all()) )

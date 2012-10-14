@@ -62,6 +62,10 @@ def master_flat(directories):
                 add_files_info(flat_im, these_flats['file'])
                 flat_im.save(path.join(currentDir,flat_fn))
 
+                # return transpose so that data matches
+                order returned by pyfits
+                return flat_im.data.transpose()
+
 if __name__ == "__main__":
     from sys import argv
     master_flat(argv[1:])
