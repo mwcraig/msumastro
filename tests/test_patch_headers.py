@@ -80,26 +80,16 @@ def test_adding_object_name():
     
 def test_adding_overscan_apogee_u9():
     from ..feder import ApogeeAltaU9
+    from utilities import make_overscan_test_files
 
     apogee = ApogeeAltaU9()
-    new_ext = '_overscan_test'
-    working_dir = 'overscan_test'
-    mkdir(path.join(_test_dir,working_dir))
-    chdir(path.join(_test_dir,working_dir))
-    no_oscan = np.zeros([apogee.rows,apogee.overscan_start])
-    add_instrument = lambda hdr: hdr.update('instrume', 'Apogee Alta')
-    hdu =pyfits.PrimaryHDU(no_oscan)
-    add_instrument(hdu.header)
-    hdu.writeto('no_oscan.fit')
-    yes_oscan = np.zeros([apogee.rows,apogee.columns])
-    hdu =pyfits.PrimaryHDU(yes_oscan)
-    add_instrument(hdu.header)    
-    hdu.writeto('yes_oscan.fit')
-    add_overscan(dir='.', new_file_ext=new_ext)
+    oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(_test_dir)
+    chdir(path.join(_test_dir, oscan_dir))
+    add_overscan(dir='.', new_file_ext='', overwrite=True)
     print _test_dir
-    header_no_oscan = pyfits.getheader('no_oscan'+new_ext+'.fit')
+    header_no_oscan = pyfits.getheader(has_no_oscan)
     assert not header_no_oscan['oscan']
-    header_yes_oscan = pyfits.getheader('yes_oscan'+new_ext+'.fit')
+    header_yes_oscan = pyfits.getheader(has_oscan)
     assert header_yes_oscan['oscan']
     assert header_yes_oscan['oscanax'] == apogee.overscan_axis
     assert header_yes_oscan['oscanst'] == apogee.overscan_start
