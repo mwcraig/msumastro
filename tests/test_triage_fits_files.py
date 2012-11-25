@@ -176,7 +176,7 @@ def setup_module():
     
     _test_dir = mkdtemp()
     os.chdir(_test_dir)
-    img = numpy.arange(100)
+    img = numpy.uint16(numpy.arange(100))
 
     no_filter_no_object = pyfits.PrimaryHDU(img)
     no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
