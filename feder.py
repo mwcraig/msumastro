@@ -2,23 +2,24 @@ from astropysics import obstools
 from fitskeyword import FITSKeyword
 import numpy as np
 
+
 class FederSite(obstools.Site):
     """
     The Feder Observatory site.
 
     An astropysics site with the observatory location and name pre-set.
     """
-    
+
     def __init__(self):
         """
         Location/name information are set for Feder Observatory.
-        
+
         `lat` = 46.86678 degrees
-        
+
         `long` = -96.453278 degrees Eaast
-        
+
         `alt` = 311.8 meters
-        
+
         `name` = Feder Observatory
         """
         obstools.Site.__init__(self,
@@ -43,14 +44,16 @@ class FederSite(obstools.Site):
                                                        returntype='datetime',
                                                        **kwd)
         if seconds_decimal is not None:
-            seconds = np.round(lst.second + lst.microsecond/1e6, seconds_decimal)
+            seconds = np.round(lst.second + lst.microsecond / 1e6,
+                               seconds_decimal)
             sec = np.int(seconds)
-            microsec = np.int(np.round((seconds-sec)*1e6))
+            microsec = np.int(np.round((seconds - sec) * 1e6))
             lst = datetime.time(lst.hour, lst.minute, sec, microsec)
         if return_type == 'string':
             lst = lst.isoformat()
         return lst
-        
+
+
 class Instrument(object):
     """
     Telescope instrument with simple properties.
@@ -67,21 +70,21 @@ class Instrument(object):
     def __init__(self, name, fits_names=None,
                  rows=0, columns=0,
                  overscan_start=None,
-                 overscan_axis=None ):
+                 overscan_axis=None):
         self.name = name
         self.fits_names = fits_names
         self.rows = rows
         self.columns = columns
         self.overscan_start = overscan_start
         self.overscan_axis = overscan_axis
-        
+
     def has_overscan(self, image_dimensions):
-        if (image_dimensions[self.overscan_axis-1] >
+        if (image_dimensions[self.overscan_axis - 1] >
             self.overscan_start):
             return True
         else:
             return False
-        
+
 
 class ApogeeAltaU9(Instrument):
     def __init__(self):
@@ -90,7 +93,8 @@ class ApogeeAltaU9(Instrument):
                             rows=2048, columns=3085,
                             overscan_start=3073,
                             overscan_axis=1)
-                
+
+
 class Feder(object):
     def __init__(self):
         self.site = FederSite()
@@ -99,23 +103,11 @@ class Feder(object):
         for name in self._apogee_alta_u9.fits_names:
             self.instrument[name] = self._apogee_alta_u9
 
-        
+
 keywords_for_all_files = []
 keywords_for_light_files = []
 
-RA = FITSKeyword(name='ra',
-                 comment='Approximate RA at EQUINOX',
-                 synonyms=['objctra'])
-keywords_for_light_files.append(RA)
-
-Dec = FITSKeyword(name='DEC',
-                  comment='Approximate DEC at EQUINOX',
-                  synonyms=['objctdec'])
-keywords_for_light_files.append(Dec)
-
-target_object = FITSKeyword(name='object',
-                     comment='Target of the observations')
-keywords_for_light_files.append(target_object)
+# Keywords below are added to all FITS files
 
 latitude = FITSKeyword(name="latitude",
                        comment='[degrees] Observatory latitude',
@@ -130,33 +122,6 @@ keywords_for_all_files.append(latitude)
 keywords_for_all_files.append(longitude)
 keywords_for_all_files.append(obs_altitude)
 
-overscan_present = FITSKeyword(name='oscan',
-                               comment='True if image has overscan region')
-
-overscan_axis = FITSKeyword(name='oscanax',
-                            comment='Overscan axis, 1 for NAXIS1, 2 for NAXIS 2')
-
-overscan_start = FITSKeyword(name='oscanst',
-                             comment='Starting pixel of overscan region')
-
-hour_angle = FITSKeyword(name='ha',
-                         comment='Hour angle')
-
-airmass = FITSKeyword(name='airmass',
-                      comment='Airmass (Sec ZD) at start of observation',
-                      synonyms=['secz'])
-
-altitude = FITSKeyword(name='alt-obj',
-                      comment='[degrees] Altitude of object above the horizon')
-
-azimuth = FITSKeyword(name='az-obj',
-                      comment='[degrees] Azimuth of object')
-
-keywords_for_light_files.append(hour_angle)
-keywords_for_light_files.append(airmass)
-keywords_for_light_files.append(altitude)
-keywords_for_light_files.append(azimuth)
-
 LST = FITSKeyword(name='LST',
                   comment='Local Sidereal Time at start of observation')
 
@@ -169,3 +134,47 @@ MJD = FITSKeyword(name='mjd-obs',
 keywords_for_all_files.append(LST)
 keywords_for_all_files.append(JD)
 keywords_for_all_files.append(MJD)
+
+# Overscan is also added to all files, but as a separate pass from the
+# other all-file keywords.
+overscan_present = FITSKeyword(name='oscan',
+                               comment='True if image has overscan region')
+
+overscan_axis = FITSKeyword(name='oscanax',
+                            comment='Overscan axis, 1 is NAXIS1, 2 is NAXIS 2')
+
+overscan_start = FITSKeyword(name='oscanst',
+                             comment='Starting pixel of overscan region')
+
+# Keywords below are added only to light images
+RA = FITSKeyword(name='ra',
+                 comment='Approximate RA at EQUINOX',
+                 synonyms=['objctra'])
+keywords_for_light_files.append(RA)
+
+Dec = FITSKeyword(name='DEC',
+                  comment='Approximate DEC at EQUINOX',
+                  synonyms=['objctdec'])
+keywords_for_light_files.append(Dec)
+
+target_object = FITSKeyword(name='object',
+                            comment='Target of the observations')
+keywords_for_light_files.append(target_object)
+
+hour_angle = FITSKeyword(name='ha',
+                         comment='Hour angle')
+
+airmass = FITSKeyword(name='airmass',
+                      comment='Airmass (Sec ZD) at start of observation',
+                      synonyms=['secz'])
+
+altitude = FITSKeyword(name='alt-obj',
+                       comment='[degrees] Altitude of object above horizon')
+
+azimuth = FITSKeyword(name='az-obj',
+                      comment='[degrees] Azimuth of object')
+
+keywords_for_light_files.append(hour_angle)
+keywords_for_light_files.append(airmass)
+keywords_for_light_files.append(altitude)
+keywords_for_light_files.append(azimuth)
