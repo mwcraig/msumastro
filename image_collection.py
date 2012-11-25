@@ -76,40 +76,8 @@ def IRAF_image_type(image_type):
     return image_type.split()[0].upper()
     
 from tempfile import TemporaryFile
-def iterate_files(func):
-    @functools.wraps(func)
-    def wrapper(self, save_with_name="", save_location='',
-                clobber=False, hdulist=None,
-                do_not_scale_image_data=True,
-                **kwd):
 
-        if kwd:
-            self._find_keywords_by_values(**kwd)
-            
-        for full_path in self.paths():
-            hdulist = pyfits.open(full_path,
-                                  do_not_scale_image_data=do_not_scale_image_data)
-            yield func(self, save_with_name=save_with_name,
-                       save_location='', clobber=clobber, hdulist=hdulist)
-            if save_location:
-                destination_dir = save_location
-            else:
-                destination_dir = path.dirname(full_path)
-            basename = path.basename(full_path)
-            if save_with_name:
-                base, ext = path.splitext(basename)
-                basename = base + save_with_name + ext
-
-            new_path = path.join(destination_dir, basename)
-
-            if (new_path != full_path) or clobber:
-                try:
-                    hdulist.writeto(new_path, clobber=clobber)
-                except IOError:
-                    pass
-            hdulist.close()
-    return wrapper
-    
+  
 class ImageFileCollection(object):
     """
     Representation of a collection (usually a directory) of image
@@ -400,16 +368,57 @@ class ImageFileCollection(object):
                 
             return files
 
+
+    def _iterator(self, return_type,
+                  save_with_name="", save_location='',
+                  clobber=False, 
+                  do_not_scale_image_data=True,
+                  **kwd):
+
+        if kwd:
+            self._find_keywords_by_values(**kwd)
+
+        for full_path in self.paths():
+            hdulist = pyfits.open(full_path,
+                                  do_not_scale_image_data=do_not_scale_image_data)
+            if return_type == 'header':
+                yield hdulist[0].header
+            elif return_type == 'hdu':
+                yield hdulist[0]
+            elif return_type == 'data':
+                yield hdulist[0].data
+            else:
+                raise ValueError
+
+            if save_location:
+                destination_dir = save_location
+            else:
+                destination_dir = path.dirname(full_path)
+            basename = path.basename(full_path)
+            if save_with_name:
+                base, ext = path.splitext(basename)
+                basename = base + save_with_name + ext
+
+            new_path = path.join(destination_dir, basename)
+
+            if (new_path != full_path) or clobber:
+                try:
+                    hdulist.writeto(new_path, clobber=clobber)
+                except IOError:
+                    pass
+            hdulist.close()
+
+
     def paths(self):
         """
         Full path to each file.
         """
         return [path.join(self.location, file_) for file_ in self.summary_info['file'].compressed()]
 
-    @iterate_files
+
     def headers(self, save_with_name='',
                 save_location='', clobber=False,
-                hdulist=None, do_not_scale_image_data=True,
+                do_not_scale_image_data=True,
                 **kwd):
         """
         Generator for headers in the collection including writing of
@@ -440,15 +449,28 @@ class ImageFileCollection(object):
             Any additional keywords are passed to `pyfits.open`
         """
         
-        return hdulist[0].header
+        #return hdulist[0].header
+        return self._iterator('header', save_with_name=save_with_name,
+                       save_location=save_location, clobber=clobber,
+                       do_not_scale_image_data=do_not_scale_image_data,
+                       **kwd)
 
-    @iterate_files    
+       
     def hdus(self, save_with_name='',
-                save_location='', clobber=False,
-                hdulist=None, do_not_scale_image_data=False,
-                **kwd):
-        return hdulist[0]
+             save_location='', clobber=False,
+             do_not_scale_image_data=False,
+             **kwd):
 
-    @iterate_files
-    def data(self, hdulist=None, save_with_name="", save_location='', clobber=False):
-        return hdulist[0].data
+        return self._iterator('hdu', save_with_name=save_with_name,
+                       save_location=save_location, clobber=clobber,
+                       do_not_scale_image_data=do_not_scale_image_data,
+                       **kwd)
+
+
+    def data(self, hdulist=None, save_with_name="", save_location='',
+             do_not_scale_image_data=False,
+             clobber=False, **kwd):
+        return self._iterator('data', save_with_name=save_with_name,
+                       save_location=save_location, clobber=clobber,
+                       do_not_scale_image_data=do_not_scale_image_data,
+                       **kwd)

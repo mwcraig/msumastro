@@ -79,6 +79,7 @@ class TestImageFileCollection(object):
         n_hdus = 0
         for hdu in collection.hdus():
             assert isinstance(hdu, pyfits.PrimaryHDU)
+            data = hdu.data # must access the data to force scaling
             with pytest.raises(KeyError):
                 hdu.header['bzero']
             n_hdus += 1
@@ -89,6 +90,7 @@ class TestImageFileCollection(object):
         n_headers = 0
         for header in collection.headers():
             assert isinstance(header, pyfits.Header)
+            assert ('bzero' in header)
             n_headers += 1
         assert n_headers == _n_test['files']
 
