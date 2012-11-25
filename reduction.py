@@ -105,3 +105,31 @@ def load_masters(images, source_dir='.', type='', index_by=''):
              master_images[val] = ccd.FitsImage(path.join(source_dir,this_master['file'][0]))
 
      return master_images
+
+
+def trim(hdu):
+    """
+    Trim the overscan region from an image.
+
+    Parameters
+
+    hdu: FITS hdu
+    """
+    header = hdu.header
+
+    try:
+        overscan = header['oscan']
+    except KeyError, e:
+        return
+
+    if overscan:
+        # The conditional below IS CORRECT for selecting the case when
+        # the overscan is in the first index.  
+        if (header['oscanax'] == 2):
+            hdu.data = hdu.data[0:header['oscanst'], :]
+        else:
+            hdu.data = hdu.data[:, 0:header['oscanst']]
+        del header['oscanst']
+        del header['oscanax']
+        header['oscan'] = False
+    return hdu
