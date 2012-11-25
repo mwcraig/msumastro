@@ -248,7 +248,30 @@ def patch_headers(dir='.', new_file_ext='new',
                 continue
         header.add_history(history(patch_headers, mode='end',
                                    time=run_time))
-        
+
+
+def add_overscan_header(header, history=True):
+    """
+    Add overscan information to a FITS header.
+    """
+    feder_info = Feder()
+    image_dim = [header['naxis1'], header['naxis2']]
+    instrument = feder_info.instrument[header['instrume']]
+    overscan_present.value = instrument.has_overscan(image_dim)
+    overscan_present.addToHeader(header, history=history)
+    modified_keywords = [overscan_present]
+    if overscan_present.value:
+        overscan_axis.value = instrument.overscan_axis
+        overscan_start.value = instrument.overscan_start
+        overscan_axis.addToHeader(header,
+                                  history=history)
+        overscan_start.addToHeader(header,
+                                   history=history)
+        modified_keywords.extend([overscan_axis, overscan_start])
+
+    return modified_keywords
+
+
 def add_overscan(dir='.', new_file_ext='new',
                   overwrite=False, detailed_history=True):
     """
@@ -267,27 +290,14 @@ def add_overscan(dir='.', new_file_ext='new',
         output FITS files. If `False`, write only a list of which
         keywords changed.
     """
-    feder_info = Feder()
     images = ImageFileCollection(location=dir, keywords=['imagetyp', 'instrume'])
     for header in images.headers(save_with_name=new_file_ext,
                                  clobber=overwrite,
                                  do_not_scale_image_data=True):
-        image_dim = [header['naxis1'], header['naxis2']]
-        instrument = feder_info.instrument[header['instrume']]
         run_time = datetime.now()
         header.add_history(history(add_overscan, mode='begin',
                                    time=run_time))
-        overscan_present.value = instrument.has_overscan(image_dim)
-        overscan_present.addToHeader(header, history=detailed_history)
-        modified_keywords = [overscan_present]
-        if overscan_present.value:
-            overscan_axis.value = instrument.overscan_axis
-            overscan_start.value = instrument.overscan_start
-            overscan_axis.addToHeader(header,
-                                      history=detailed_history)
-            overscan_start.addToHeader(header,
-                                       history=detailed_history)
-            modified_keywords.extend([overscan_axis, overscan_start])
+        modified_keywords = add_overscan_header(header, history=detailed_history)
         if not detailed_history:
             header.add_history('add_overscan updated keywords %s' %
                                keyword_names_as_string(modified_keywords))
