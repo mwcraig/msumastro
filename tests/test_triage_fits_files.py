@@ -77,8 +77,10 @@ class TestImageFileCollection(object):
     def test_hdus(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         n_hdus = 0
-        for header in collection.hdus():
-            assert isinstance(header, pyfits.PrimaryHDU)
+        for hdu in collection.hdus():
+            assert isinstance(hdu, pyfits.PrimaryHDU)
+            with pytest.raises(KeyError):
+                hdu.header['bzero']
             n_hdus += 1
         assert n_hdus == _n_test['files']
 
