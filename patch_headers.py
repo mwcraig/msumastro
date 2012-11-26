@@ -244,8 +244,10 @@ def patch_headers(dir='.', new_file_ext='new',
                     header.add_history('patch_headers.py updated keywords %s' %
                                        keyword_names_as_string(keywords_for_light_files))
             except ValueError:
-                print 'Skipping file %s' % image
+                print ('Skipping file with header:')
+                print(header)
                 continue
+
         header.add_history(history(patch_headers, mode='end',
                                    time=run_time))
 
