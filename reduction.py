@@ -119,7 +119,7 @@ def trim(hdu):
 
     try:
         overscan = header['oscan']
-    except KeyError, e:
+    except KeyError:
         return
 
     if overscan:
