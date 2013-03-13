@@ -95,6 +95,15 @@ class TestImageFileCollection(object):
             n_hdus += 1
         assert n_hdus == _n_test['files']
 
+    def test_hdus_masking(self):
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp','exposure'])
+        old_data = collection.summary_info.data.copy()
+        for hdu in collection.hdus(imagetyp='bias'):
+            pass
+        new_data = collection.summary_info.data
+        assert (new_data == old_data).all()
+
     def test_headers(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         n_headers = 0
