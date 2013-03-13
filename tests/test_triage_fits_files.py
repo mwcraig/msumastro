@@ -68,7 +68,17 @@ class TestImageFileCollection(object):
         assert img_collection.hasKey('filter')
         assert not img_collection.hasKey('flying monkeys')
         assert len(img_collection.values('imagetyp',unique=True))==2
-    
+
+    def test_files_with_compressed(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        assert len(collection._fits_files_in_directory(compressed=True)) == _n_test['files']
+
+    def test_files_with_no_compressed(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        n_files_found = len(collection._fits_files_in_directory(compressed=False))
+        n_uncompressed = _n_test['files'] - _n_test['compressed']
+        assert n_files_found == n_uncompressed
+
     def test_generator_full_path(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for path, file_name in zip(collection.paths(), collection.files):
