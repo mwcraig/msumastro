@@ -361,12 +361,12 @@ class ImageFileCollection(object):
             with_gz = [extension + '.gz' for extension in extensions]
             full_extensions.extend(with_gz)
             
-            all_files = listdir(self.location)
-            files = []
-            for extension in full_extensions:
-                files.extend(fnmatch.filter(all_files, '*'+extension))
-                
-            return files
+        all_files = listdir(self.location)
+        files = []
+        for extension in full_extensions:
+            files.extend(fnmatch.filter(all_files, '*'+extension))
+            
+        return files
 
 
     def _iterator(self, return_type,
