@@ -375,6 +375,10 @@ class ImageFileCollection(object):
                   do_not_scale_image_data=True,
                   **kwd):
 
+        # store mask so we can reset at end--must COPY, otherwise 
+        # current_mask just points to the mask of summary_info
+        current_mask = self.summary_info.data.copy().mask
+
         if kwd:
             self._find_keywords_by_values(**kwd)
 
@@ -408,6 +412,8 @@ class ImageFileCollection(object):
                     pass
             hdulist.close()
 
+        # reset mask
+        self.summary_info.data.mask = current_mask
 
     def paths(self):
         """
@@ -445,7 +451,7 @@ class ImageFileCollection(object):
             If true, prevents pyfits from scaling images (useful for
             preserving unsigned int images unmodified)
         
-        **kwd : dict
+        kwd : dict
             Any additional keywords are passed to `pyfits.open`
         """
         
