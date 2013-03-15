@@ -6,6 +6,7 @@ import numpy as np
 import asciitable
 import pyfits
 from astropysics import obstools, coords
+from astropy.time import Time
 
 from feder import *
 from astrometry import add_astrometry
@@ -31,20 +32,6 @@ class FederImage(object):
     def close(self):
         self._hdulist.close()
 
-def parse_dateobs(dateobs):
-    """
-    Parse a MaximDL DATE-OBS.
-
-    `dateobs` is a DATE-OBS in the format `yyy-mm-ddThh:mm:ss`
-
-    Returns a `datetime` object with date and time.
-    """
-    date, time = dateobs.split('T')
-    date = date.split('-')
-    date = map(int, date)
-    time = map(int, time.split(':'))
-    date.extend(time)
-    return date
     
 def sexagesimal_string(dms, precision=2, sign=False):
     """Convert degrees, minutes, seconds into a string
@@ -88,9 +75,9 @@ def add_time_info(header, history=False):
     
     Uses `feder.currentobsjd` as the date.
     """
-    dateobs = parse_dateobs(header['date-obs'])
-    JD.value = round(obstools.calendar_to_jd(dateobs), 6)
-    MJD.value = round(obstools.calendar_to_jd(dateobs, mjd=True), 6)
+    dateobs = Time(header['date-obs'], scale='utc')
+    JD.value = dateobs.jd
+    MJD.value = dateobs.mjd
     
     # setting currentobsjd makes calls following it use that time
     # for calculations
