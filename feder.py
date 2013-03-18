@@ -62,7 +62,7 @@ class Instrument(object):
     __________
 
     name
-    fits_name
+    fits_names
     rows
     columns
     overscan_start
@@ -79,8 +79,9 @@ class Instrument(object):
         self.overscan_axis = overscan_axis
 
     def has_overscan(self, image_dimensions):
-        if (image_dimensions[self.overscan_axis - 1] >
-            self.overscan_start):
+        if  (image_dimensions[self.overscan_axis - 1] >
+             self.overscan_start):
+
             return True
         else:
             return False
@@ -95,6 +96,87 @@ class ApogeeAltaU9(Instrument):
                             overscan_axis=1)
 
 
+class ImageSoftware(object):
+    """
+    Represents software that takes images at telescope.
+
+    Properties
+
+    name : str
+
+        Name of the software. Can be the same is the name in the FITS file,
+        or not.
+
+    fits_keyword : str
+
+        Name of the FITS keyword that contains the name of the software.
+
+    fits_name : str
+
+        Name of the software as written in the FITS file
+
+    major_version : int
+
+        Major version number of the software.
+
+    minor_version : int
+
+        Minor version number of the software.
+
+    bad_keywords : list of strings
+
+        Names of any keywords that should be removed from the FITS before
+        further processing.
+    """
+    def __init__(self, name, fits_name=None,
+                 major_version=None,
+                 minor_version=None,
+                 bad_keywords=None,
+                 fits_keyword=None):
+        self.name = name
+        self.fits_name = fits_name
+        self.major_version = major_version
+        self.minor_version = minor_version
+        self.bad_keywords = bad_keywords
+        self.fits_keyword = fits_keyword
+
+    def is_this(self, version_string):
+        """
+        Indicate whether version string matches this software
+        """
+        return version_string == self.fits_name
+
+
+class MaximDL4(ImageSoftware):
+    """
+    Represents MaximDL version 4, all sub-versions
+    """
+    def __init__(self):
+        super(MaximDL4, self).__init__("MaxImDL",
+                                       fits_name='MaxIm DL Version 4.10',
+                                       major_version=4,
+                                       minor_version=10,
+                                       bad_keywords=None,
+                                       fits_keyword='SWCREATE')
+
+
+class MaximDL5(ImageSoftware):
+    """
+    Represents MaximDL version 5, all sub-versions
+    """
+    def __init__(self):
+        bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
+                    'OBJCTHA', 'AIRMASS']
+        fits_name = 'MaxIm DL Version 5.21 130912 01A17'
+        super(MaximDL5, self).__init__("MaxImDL",
+                                       fits_name=fits_name,
+                                       major_version=5,
+                                       minor_version=21,
+                                       bad_keywords=bad_keys,
+                                       fits_keyword='SWCREATE'
+                                       )
+
+
 class Feder(object):
     def __init__(self):
         self.site = FederSite()
@@ -102,7 +184,9 @@ class Feder(object):
         self.instrument = {}
         for name in self._apogee_alta_u9.fits_names:
             self.instrument[name] = self._apogee_alta_u9
-
+        self._maximdl4 = MaximDL4()
+        self._maximdl5 = MaximDL5()
+        self.software = [self._maximdl4, self._maximdl5]
 
 keywords_for_all_files = []
 keywords_for_light_files = []
