@@ -165,14 +165,14 @@ hour_angle = FITSKeyword(name='ha',
                          comment='Hour angle')
 
 airmass = FITSKeyword(name='airmass',
-                      comment='Airmass (Sec ZD) at start of observation',
+                      comment='Airmass (Sec(Z)) at start of observation',
                       synonyms=['secz'])
 
 altitude = FITSKeyword(name='alt-obj',
-                       comment='[degrees] Altitude of object above horizon')
+                       comment='[degrees] Altitude of object above horizon, no refraction corrections')
 
 azimuth = FITSKeyword(name='az-obj',
-                      comment='[degrees] Azimuth of object')
+                      comment='[degrees] Azimuth of object, no refraction corrections')
 
 keywords_for_light_files.append(hour_angle)
 keywords_for_light_files.append(airmass)
