@@ -3,9 +3,8 @@ from math import cos, pi
 from datetime import datetime
 import numpy as np
 
-import asciitable
 import pyfits
-from astropysics import obstools, coords
+from astropysics import coords
 from astropy.time import Time
 
 from feder import *
