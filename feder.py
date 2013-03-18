@@ -140,7 +140,7 @@ class ImageSoftware(object):
         self.bad_keywords = bad_keywords
         self.fits_keyword = fits_keyword
 
-    def is_this(self, version_string):
+    def created_this(self, version_string):
         """
         Indicate whether version string matches this software
         """
