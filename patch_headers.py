@@ -187,7 +187,7 @@ def history(function, mode='begin', time=None):
                                           marker)
     
 def patch_headers(dir='.', new_file_ext='new',
-                  overwrite=False, detailed_history=True):
+                  overwrite=False):
     """
     Add minimal information to Feder FITS headers.
 
@@ -198,11 +198,6 @@ def patch_headers(dir='.', new_file_ext='new',
     file, between the old file name and the `.fit` or `.fits` extension.
 
     `overwrite` should be set to `True` to replace the original files.
-
-    detailed_history : bool
-        If `True`, write name and value of each keyword changed to
-        output FITS files. If `False`, write only a list of which
-        keywords changed.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -218,17 +213,12 @@ def patch_headers(dir='.', new_file_ext='new',
                                    time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
-        add_time_info(header, history=detailed_history)
-        if not detailed_history:
-            header.add_history('patch_headers.py updated keywords %s' %
-                               keyword_names_as_string(keywords_for_all_files))
+        add_time_info(header, history=True)
+
         if header['imagetyp'] == 'LIGHT':
             try:
                 add_object_pos_airmass(header,
-                                 history=detailed_history)
-                if not detailed_history:
-                    header.add_history('patch_headers.py updated keywords %s' %
-                                       keyword_names_as_string(keywords_for_light_files))
+                                 history=True)
             except ValueError:
                 print ('Skipping file with header:')
                 print(header)
