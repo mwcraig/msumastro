@@ -186,7 +186,9 @@ def history(function, mode='begin', time=None):
                                           function.__name__, time,
                                           marker)
     
-def patch_headers(dir='.', new_file_ext='new',
+def patch_headers(dir='.', 
+                  new_file_ext='new',
+                  save_location=None,
                   overwrite=False):
     """
     Add minimal information to Feder FITS headers.
@@ -197,6 +199,9 @@ def patch_headers(dir='.', new_file_ext='new',
     header information. It is added to the base name of the input
     file, between the old file name and the `.fit` or `.fits` extension.
 
+    `save_location` is the directory to which the patched files 
+        should be written, if not `dir`
+
     `overwrite` should be set to `True` to replace the original files.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
@@ -206,6 +211,7 @@ def patch_headers(dir='.', new_file_ext='new',
     obs_altitude.value = feder.altitude
 
     for header in images.headers(save_with_name=new_file_ext,
+                                 save_location=save_location,
                                  clobber=overwrite,
                                  do_not_scale_image_data=True):
         run_time = datetime.now()
