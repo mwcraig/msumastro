@@ -132,13 +132,15 @@ class ImageSoftware(object):
                  major_version=None,
                  minor_version=None,
                  bad_keywords=None,
-                 fits_keyword=None):
+                 fits_keyword=None,
+                 purged_flag_keyword='PURGED'):
         self.name = name
         self.fits_name = fits_name
         self.major_version = major_version
         self.minor_version = minor_version
         self.bad_keywords = bad_keywords
         self.fits_keyword = fits_keyword
+        self.purged_flag_keyword = purged_flag_keyword
 
     def created_this(self, version_string):
         """
@@ -156,7 +158,7 @@ class MaximDL4(ImageSoftware):
                                        fits_name='MaxIm DL Version 4.10',
                                        major_version=4,
                                        minor_version=10,
-                                       bad_keywords=None,
+                                       bad_keywords=[],
                                        fits_keyword='SWCREATE')
 
 

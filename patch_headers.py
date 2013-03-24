@@ -125,10 +125,50 @@ def add_object_pos_airmass(header, history=False):
             keyword.addToHeader(header, history=history)
             
 
+def purge_bad_keywords(header, history=False, force=False):
+    """
+    Remove keywords from FITS header that may be incorrect
+
+    history : bool
+        If `True` write detailed history for each keyword removed.
+
+    force : bool
+        If `True`, force keywords to be purged even if the FITS header
+        indicates it has already been purged.
+    """
+    for software in federstuff.software:
+        if software.created_this(header[software.fits_keyword]):
+            break
+
+    try:
+        purged = header[software.purged_flag_keyword]
+    except KeyError:
+        purged = False
+
+    if purged and not force:
+        print "Not removing headers again, set force=True to force removal."
+        return
+
+    for keyword in software.bad_keywords:
+        try:
+            comment = ('Deleted keyword ' + keyword +
+                       ' with value ' + str(header[keyword]))
+        except KeyError:
+            continue
+        
+        del header[keyword]
+        if history:
+            header.add_history(comment)
+
+    header.update(software.purged_flag_keyword, True,
+                  'Have bad keywords been removed?')
+
+
 def keyword_names_as_string(list_of_keywords):
     return ' '.join([' '.join(keyword.names) for keyword in list_of_keywords])
 
-def read_object_list(dir='.',list='obsinfo.txt'):
+
+def read_object_list(dir='.', list='obsinfo.txt'):
     """
     Read a list of objects from a text file.
 
@@ -142,7 +182,7 @@ def read_object_list(dir='.',list='obsinfo.txt'):
         + Remaining line(s) are name(s) of object(s), one per line
     """
     try:
-        object_file = open(path.join(dir,list),'rb')
+        object_file = open(path.join(dir, list), 'rb')
     except IOError:
         raise IOError('File %s in directory %s not found.' % (list, dir))
 
@@ -158,6 +198,7 @@ def read_object_list(dir='.',list='obsinfo.txt'):
                     objects.append(line.strip())
 
     return (observer, objects)
+
     
 def history(function, mode='begin', time=None):
     """
@@ -179,14 +220,15 @@ def history(function, mode='begin', time=None):
         raise ValueError('mode must be "begin" or "end"')
 
     if time is None:
-        time = datetime.now()    
+        time = datetime.now()
 
     marker *= 5
     return "%s %s %s history on %s %s" % (marker, mode.upper(),
                                           function.__name__, time,
                                           marker)
+
     
-def patch_headers(dir='.', 
+def patch_headers(dir='.',
                   new_file_ext='new',
                   save_location=None,
                   overwrite=False,
