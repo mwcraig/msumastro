@@ -270,7 +270,7 @@ def patch_headers(dir='.',
                            % run_time)
 
         if purge_bad:
-            pass  # need to write this still..
+            purge_bad_keywords(header, history=True)
 
         if add_time:
             add_time_info(header, history=True)
