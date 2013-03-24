@@ -77,21 +77,41 @@ def test_adding_object_name():
     with_name = pyfits.open(fname+'.fit')
     print 'add object name: %s' % fname
     assert (with_name[0].header['object'] == 'm101')
+
     
 def test_writing_patched_files_to_directory():
     from glob import glob
-    files = glob(path.join(_test_dir,'*.fit*'))
-    n_files_init = len(glob(path.join(_test_dir,'*.fit*')))
+    files = glob(path.join(_test_dir, '*.fit*'))
+    n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
     dest_dir = mkdtemp()
     patch_headers(_test_dir, new_file_ext=None, save_location=dest_dir)
     print files
-    n_files_after = len(glob(path.join(_test_dir,'*.fit*')))
+    n_files_after = len(glob(path.join(_test_dir, '*.fit*')))
     print n_files_after
-    n_files_destination = len(glob(path.join(dest_dir,'*.fit*')))
+    n_files_destination = len(glob(path.join(dest_dir, '*.fit*')))
     print dest_dir
     rmtree(dest_dir)
     assert ((n_files_init == n_files_after) &
             (n_files_init == n_files_destination))
+
+
+def test_purging_maximdl5_keywords():
+    from ..feder import Feder
+    from shutil import copy
+    
+    feder = Feder()
+    mdl5_name = 'maximdl5_header.fit'
+    copy(path.join('data', mdl5_name), _test_dir)
+    hdr5 = pyfits.getheader(path.join(_test_dir, mdl5_name))
+    purge_bad_keywords(hdr5, history=True, force=False)
+    for software in feder.software:
+        if software.created_this(hdr5[software.fits_keyword]):
+            break
+    keyword_present = False
+    for keyword in software.bad_keywords:
+        keyword_present = (keyword_present or (keyword in hdr5))
+    assert not keyword_present
+
 
 def test_adding_overscan_apogee_u9():
     from ..feder import ApogeeAltaU9
