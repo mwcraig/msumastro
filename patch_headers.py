@@ -189,7 +189,11 @@ def history(function, mode='begin', time=None):
 def patch_headers(dir='.', 
                   new_file_ext='new',
                   save_location=None,
-                  overwrite=False):
+                  overwrite=False,
+                  purge_bad=True,
+                  add_time=True,
+                  add_apparent_pos=True,
+                  add_overscan=True):
     """
     Add minimal information to Feder FITS headers.
 
@@ -203,6 +207,9 @@ def patch_headers(dir='.',
         should be written, if not `dir`
 
     `overwrite` should be set to `True` to replace the original files.
+
+    `purge_bad`, `add_time`, `add_apparent_pos` and `add_overscan` are flags
+    that control which aspect of the headers is modified. 
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -219,9 +226,14 @@ def patch_headers(dir='.',
                                    time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
-        add_time_info(header, history=True)
 
-        if header['imagetyp'] == 'LIGHT':
+        if purge_bad:
+            pass  # need to write this still..
+
+        if add_time:
+            add_time_info(header, history=True)
+
+        if add_apparent_pos and (header['imagetyp'] == 'LIGHT'):
             try:
                 add_object_pos_airmass(header,
                                  history=True)
@@ -229,6 +241,9 @@ def patch_headers(dir='.',
                 print ('Skipping file with header:')
                 print(header)
                 continue
+
+        if add_overscan:
+            add_overscan_header(header, history=True)
 
         header.add_history(history(patch_headers, mode='end',
                                    time=run_time))
