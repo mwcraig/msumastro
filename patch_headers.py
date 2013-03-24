@@ -199,7 +199,7 @@ def patch_headers(dir='.',
     header information. It is added to the base name of the input
     file, between the old file name and the `.fit` or `.fits` extension.
 
-    `save_location` is the directory to which the patched files 
+    `save_location` is the directory to which the patched files
         should be written, if not `dir`
 
     `overwrite` should be set to `True` to replace the original files.
