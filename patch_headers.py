@@ -270,39 +270,6 @@ def add_overscan_header(header, history=True):
 
     return modified_keywords
 
-
-def add_overscan(dir='.', new_file_ext='new',
-                  overwrite=False, detailed_history=True):
-    """
-    Add overscan information to Feder FITS headers.
-
-    `dir` is the directory containing the files to be patched.
-    
-    `new_file_ext` is the name added to the FITS files with updated
-    header information. It is added to the base name of the input
-    file, between the old file name and the `.fit` or `.fits` extension.
-
-    `overwrite` should be set to `True` to replace the original files.
-
-    detailed_history : bool
-        If `True`, write name and value of each keyword changed to
-        output FITS files. If `False`, write only a list of which
-        keywords changed.
-    """
-    images = ImageFileCollection(location=dir, keywords=['imagetyp', 'instrume'])
-    for header in images.headers(save_with_name=new_file_ext,
-                                 clobber=overwrite,
-                                 do_not_scale_image_data=True):
-        run_time = datetime.now()
-        header.add_history(history(add_overscan, mode='begin',
-                                   time=run_time))
-        modified_keywords = add_overscan_header(header, history=detailed_history)
-        if not detailed_history:
-            header.add_history('add_overscan updated keywords %s' %
-                               keyword_names_as_string(modified_keywords))
-        header.add_history(history(add_overscan, mode='end',
-                                   time=run_time))
-
             
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext='new',

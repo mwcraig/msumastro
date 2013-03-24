@@ -90,7 +90,7 @@ def test_writing_patched_files_to_directory():
     n_files_destination = len(glob(path.join(dest_dir,'*.fit*')))
     print dest_dir
     rmtree(dest_dir)
-    assert ((n_files_init == n_files_after) & 
+    assert ((n_files_init == n_files_after) &
             (n_files_init == n_files_destination))
 
 def test_adding_overscan_apogee_u9():
@@ -100,7 +100,9 @@ def test_adding_overscan_apogee_u9():
     apogee = ApogeeAltaU9()
     oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(_test_dir)
     chdir(path.join(_test_dir, oscan_dir))
-    add_overscan(dir='.', new_file_ext='', overwrite=True)
+    patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
+                  add_time=False, add_apparent_pos=False,
+                  add_overscan=True)
     print _test_dir
     header_no_oscan = pyfits.getheader(has_no_oscan)
     assert not header_no_oscan['oscan']
