@@ -132,4 +132,5 @@ def trim(hdu):
         del header['oscanst']
         del header['oscanax']
         header['oscan'] = False
+        header.update('trimmed', True, 'Has overscan been trimmed from image?')
     return hdu
