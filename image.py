@@ -1,6 +1,6 @@
 import numpy as np
 from astropysics import ccd
-import pywcs
+from astropy import wcs as pywcs
 
 class ImageWithWCS(ccd.FitsImage):
      """Astropysics FitsImage with astrometric functions"""
