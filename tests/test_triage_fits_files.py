@@ -22,7 +22,8 @@ def test_triage():
     print "number of files should be %i" % _n_test['files']
     print file_info['files']['file']
     assert len(file_info['files']['file']) == _n_test['files']
-    assert len(file_info['needs_pointing']) == _n_test['need_object']
+    assert len(file_info['needs_pointing']) == _n_test['need_pointing']
+    assert len(file_info['needs_object_name']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
     assert len(where(file_info['files']['imagetyp'] == tff.IRAF_image_type('bias'))[0]) == 2
     
@@ -208,6 +209,7 @@ def setup_module():
     _n_test['need_object'] += 1
     _n_test['need_filter'] += 1
     _n_test['light'] += 1
+    _n_test['need_pointing'] += 1
     
     no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
@@ -221,6 +223,7 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['need_object'] += 1
     _n_test['light'] += 1
+    _n_test['need_pointing'] += 1
 
     filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
     filter_no_object.writeto('filter_no_object_bias.fit')
@@ -235,6 +238,7 @@ def setup_module():
     filter_object.writeto('filter_object_light.fit')
     _n_test['files'] += 1
     _n_test['light'] += 1
+    _n_test['need_object'] += 1
     filter_file = open('filter_object_light.fit', 'rb')
     fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
     fzipped.writelines(filter_file)
@@ -242,6 +246,7 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['compressed'] += 1
     _n_test['light'] += 1
+    _n_test['need_object'] += 1
 
 def teardown_module():
     global _n_test
