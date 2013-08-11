@@ -2,8 +2,6 @@ import image_collection as tff
 import sys
 import os
 
-#import pdb 
-
 object_name_file_name = 'NEEDS_OBJECT_NAME.txt'
 pointing_file_name = 'NEEDS_POINTING_INFO.txt'
 filter_file_name = 'NEEDS_FILTER.txt'
@@ -16,7 +14,6 @@ def write_list(dir, file, info):
 def triage_directories(directories,
                        extra_keywords=[]):
     for currentDir in directories:
-#    pdb.set_trace()
         moo = tff.triage_fits_files(currentDir,
                                     file_info_to_keep=['imagetyp',
                                                        'filter',
@@ -28,7 +25,7 @@ def triage_directories(directories,
                 os.remove(os.path.join(currentDir,fil))
             except OSError:
                 pass
-            
+
         need_pointing = moo['needs_pointing']
         if need_pointing:
             write_list(currentDir, pointing_file_name, need_pointing)
