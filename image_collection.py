@@ -340,6 +340,7 @@ class ImageFileCollection(object):
             
         # the numpy convention is that the mask is True for values to
         # be omitted, hence use ~matches.
+        self.summary_info['file'].mask = ma.nomask
         self.summary_info['file'][~matches] = ma.masked
         
     def _fits_files_in_directory(self, extensions=['fit','fits'], compressed=True):

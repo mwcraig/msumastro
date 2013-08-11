@@ -9,9 +9,10 @@ from numpy import where
 import numpy as np
 import pytest
 
-_n_test = {'files': 0, 'need_object':0,
-           'need_filter':0, 'bias':0,
-           'compressed':0, 'light':0}
+_n_test = {'files': 0, 'need_object': 0,
+           'need_filter': 0, 'bias': 0,
+           'compressed': 0, 'light': 0,
+           'need_pointing': 0}
 
 _test_dir = ''
 _filters = []
@@ -162,13 +163,17 @@ class TestImageFileCollection(object):
                 header['object']
         
     def test_generator_headers_save_with_name(self):
+        from glob import iglob, glob
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, pyfits.Header)
         new_collection = tff.ImageFileCollection(location=_test_dir)
         assert (len(new_collection.paths()) ==
                 2*(_n_test['files'])-_n_test['compressed'])
-        
+        print glob(_test_dir+'/*_new*')
+        [os.remove(fil) for fil in iglob(_test_dir+'/*_new*')]
+        print glob(_test_dir+'/*_new*')
+
     def test_generator_data(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for img in collection.data():
@@ -178,7 +183,19 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         with pytest.raises(ValueError):
             collection.fits_summary(missing='string')
-            
+
+    def test_consecutive_fiilters(self):
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp',
+                                                       'filter',
+                                                       'object'])
+        no_files_match = collection.files_filtered(object='fdsafs')
+        assert(len(no_files_match) == 0)
+        some_files_should_match = collection.files_filtered(object='',
+                                                            imagetyp='light')
+        print some_files_should_match
+        assert(len(some_files_should_match) == _n_test['need_object'])
+
     def test_keyword_setting(self):
         collection = tff.ImageFileCollection(location=_test_dir,
                                              keywords=['imagetyp','filter'])
