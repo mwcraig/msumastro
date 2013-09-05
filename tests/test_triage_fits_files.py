@@ -125,8 +125,8 @@ class TestImageFileCollection(object):
         basenames = lambda paths: set([os.path.basename(file) for file in paths])
 
         assert (len(basenames(collection.paths())-
-                   basenames(new_collection.paths())) ==
-                _n_test['compressed'])
+                   basenames(new_collection.paths())) == 0)
+                #_n_test['compressed'])
         rmtree(destination)
 
     def test_headers_with_filter(self):
