@@ -46,9 +46,8 @@ def master_frame(data, T, Terr, sample=None,combiner=None,img_type=''):
     if sample is not None:
         if not isinstance(sample, Header):
             raise TypeError
-        cards = sample.ascard
         for key in copy_from_sample:
-            hdr.update(key,cards[key].value,cards[key].comment)
+            hdr.update(key,sample[key], sample.comments[key])
     else:
         if img_type:
             hdr.update('imagetyp',img_type)
