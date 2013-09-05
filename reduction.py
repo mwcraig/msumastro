@@ -125,7 +125,6 @@ def trim(hdu):
     if overscan:
         # The conditional below IS CORRECT for selecting the case when
         # the overscan is in the first FITS axis.
-        print ('oscanst' in header)
         if not(('oscanst' in header) and ('oscanax' in header)):
             raise RuntimeError('Overscan keywords missing from header, cannot trim')
 
