@@ -5,6 +5,8 @@ import numpy as np
 import pyfits
 from tempfile import mkdtemp
 from os import path, chdir
+import pytest
+
 test_dir = ''
 
 
@@ -40,6 +42,16 @@ def test_trim():
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.columns)
     trim(hdu)
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
+    with pytest.raises(RuntimeError):
+        hdus = pyfits.open(has_oscan)
+        hdu = hdus[0]
+        hdr = hdu.header
+        try:
+            del hdr['oscanax']
+            del hdr['oscanst']
+        except KeyError:
+            pass
+        trim(hdu)
 
 
 def teardown():
