@@ -44,8 +44,8 @@ class TestGoodFITSKeyword(object):
 
     def test_add_header_history(self):
         self.keyword.addToHeader(self.hdu, history=True)
-        print self.hdu.header.get_history()
-        assert (len(self.hdu.header.get_history()) ==
+        print self.hdu.header['history']
+        assert (len(self.hdu.header['history']) ==
                 (1+len(self.keyword.synonyms)))
 
     def test_add_header_no_synonyms(self):
