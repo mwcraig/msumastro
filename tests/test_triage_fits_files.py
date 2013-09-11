@@ -1,7 +1,7 @@
 from .. import image_collection as tff
 import os
 import numpy
-import pyfits
+import astropy.io.fits as fits
 from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
@@ -90,7 +90,7 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         n_hdus = 0
         for hdu in collection.hdus():
-            assert isinstance(hdu, pyfits.PrimaryHDU)
+            assert isinstance(hdu, fits.PrimaryHDU)
             data = hdu.data # must access the data to force scaling
             with pytest.raises(KeyError):
                 hdu.header['bzero']
@@ -110,7 +110,7 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         n_headers = 0
         for header in collection.headers():
-            assert isinstance(header, pyfits.Header)
+            assert isinstance(header, fits.Header)
             assert ('bzero' in header)
             n_headers += 1
         assert n_headers == _n_test['files']
@@ -166,7 +166,7 @@ class TestImageFileCollection(object):
         from glob import iglob, glob
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
-            assert isinstance(header, pyfits.Header)
+            assert isinstance(header, fits.Header)
         new_collection = tff.ImageFileCollection(location=_test_dir)
         assert (len(new_collection.paths()) ==
                 2*(_n_test['files'])-_n_test['compressed'])
@@ -219,7 +219,7 @@ def setup_module():
     os.chdir(_test_dir)
     img = numpy.uint16(numpy.arange(100))
 
-    no_filter_no_object = pyfits.PrimaryHDU(img)
+    no_filter_no_object = fits.PrimaryHDU(img)
     no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
     no_filter_no_object.writeto('no_filter_no_object_light.fit')
     _n_test['files'] += 1
@@ -233,7 +233,7 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
-    filter_no_object = pyfits.PrimaryHDU(img)
+    filter_no_object = fits.PrimaryHDU(img)
     filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
     filter_no_object.header['filter'] = 'R'
     filter_no_object.writeto('filter_no_object_light.fit')
@@ -247,7 +247,7 @@ def setup_module():
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
-    filter_object = pyfits.PrimaryHDU(img)
+    filter_object = fits.PrimaryHDU(img)
     filter_object.header['imagetyp'] = tff.IRAF_image_type('light')
     filter_object.header['filter'] ='R'
     filter_object.header['OBJCTRA'] = '00:00:00'

@@ -1,5 +1,5 @@
 import fnmatch
-import pyfits
+import astropy.io.fits as fits
 from feder import RA, Dec, target_object
 from os import listdir, path
 from numpy import array, where
@@ -262,7 +262,7 @@ class ImageFileCollection(object):
 
         for afile in self.files:
             try:
-                header = pyfits.getheader(path.join(self.location,afile))
+                header = fits.getheader(path.join(self.location,afile))
             except IOError:
                 continue
             summary['file'].append(afile)
@@ -384,7 +384,7 @@ class ImageFileCollection(object):
             self._find_keywords_by_values(**kwd)
 
         for full_path in self.paths():
-            hdulist = pyfits.open(full_path,
+            hdulist = fits.open(full_path,
                                   do_not_scale_image_data=do_not_scale_image_data)
             if return_type == 'header':
                 yield hdulist[0].header
@@ -449,11 +449,11 @@ class ImageFileCollection(object):
             If True, overwrite input FITS files.
 
         do_not_scale_image_data : bool
-            If true, prevents pyfits from scaling images (useful for
+            If true, prevents fits from scaling images (useful for
             preserving unsigned int images unmodified)
         
         kwd : dict
-            Any additional keywords are passed to `pyfits.open`
+            Any additional keywords are passed to `fits.open`
         """
         
         #return hdulist[0].header

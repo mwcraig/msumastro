@@ -3,7 +3,7 @@ from math import cos, pi
 from datetime import datetime
 import numpy as np
 
-import pyfits
+import astropy.io.fits as fits
 from astropysics import coords
 from astropy.time import Time
 
@@ -18,7 +18,7 @@ feder = federstuff.site
 class FederImage(object):
     """Unsigned integer image for which no data modification is allowed"""
     def __init__(self, fname):
-        self._hdulist = pyfits.open(fname, do_not_scale_image_data=True)
+        self._hdulist = fits.open(fname, do_not_scale_image_data=True)
         self._hdulist.verify('fix')
         
     @property
@@ -66,7 +66,7 @@ def deg2dms(dd):
 
 def add_time_info(header, history=False):
     """
-    Add JD, MJD, LST to FITS header; `header` should be a pyfits
+    Add JD, MJD, LST to FITS header; `header` should be a fits
     header object.
 
     history : bool
@@ -396,7 +396,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
         these_files = missing_dec.where(missing_dec['object'] == object_name)
         for image in these_files:
             full_name = path.join(directory,image['file'])
-            hdulist = pyfits.open(full_name)
+            hdulist = fits.open(full_name)
             header = hdulist[0].header
             int16 = (header['bitpix'] == 16)
             RA.addToHeader(header, history=True)
@@ -430,7 +430,7 @@ def fix_int16_images(directory='.', new_file_ext=None):
     
     for to_fix in bad:
         full_name = path.join(directory, to_fix['file'])
-        hdulist = pyfits.open(full_name)
+        hdulist = fits.open(full_name)
         dat = np.int32(hdulist[0].data)
         negs = (dat < 0)
         if negs.any():
@@ -455,8 +455,8 @@ def compare_data_in_fits(file1, file2):
     """
     Compare the image data in two FITS files.
     """
-    hdu1 = pyfits.open(file1)
-    hdu2 = pyfits.open(file2)
+    hdu1 = fits.open(file1)
+    hdu2 = fits.open(file2)
 
     identical = (hdu1[0].data == hdu2[0].data).all()
     hdu1.close()

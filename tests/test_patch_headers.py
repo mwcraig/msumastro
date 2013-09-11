@@ -62,9 +62,9 @@ def test_data_is_unmodified_by_patch_headers():
     patch_headers(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext
-    orig = pyfits.open(fname + '.fit',
+    orig = fits.open(fname + '.fit',
                        do_not_scale_image_data=True)
-    modified = pyfits.open(fname_new + '.fit',
+    modified = fits.open(fname_new + '.fit',
                            do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
 
@@ -75,9 +75,9 @@ def test_data_is_unmodified_by_adding_object():
     add_object_info(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext + new_ext
-    orig = pyfits.open(fname + '.fit',
+    orig = fits.open(fname + '.fit',
                        do_not_scale_image_data=True)
-    modified = pyfits.open(fname_new + '.fit',
+    modified = fits.open(fname_new + '.fit',
                            do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
 
@@ -88,7 +88,7 @@ def test_adding_object_name():
     add_object_info(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir, 'uint16')
     fname += new_ext + new_ext
-    with_name = pyfits.open(fname + '.fit')
+    with_name = fits.open(fname + '.fit')
     print 'add object name: %s' % fname
     assert (with_name[0].header['object'] == 'm101')
 
@@ -116,7 +116,7 @@ def test_purging_maximdl5_keywords():
     feder = Feder()
     mdl5_name = 'maximdl5_header.fit'
     copy(path.join('data', mdl5_name), _test_dir)
-    hdr5 = pyfits.getheader(path.join(_test_dir, mdl5_name))
+    hdr5 = fits.getheader(path.join(_test_dir, mdl5_name))
     purge_bad_keywords(hdr5, history=True, force=False)
     for software in feder.software:
         if software.created_this(hdr5[software.fits_keyword]):
@@ -138,9 +138,9 @@ def test_adding_overscan_apogee_u9():
                   add_time=False, add_apparent_pos=False,
                   add_overscan=True)
     print _test_dir
-    header_no_oscan = pyfits.getheader(has_no_oscan)
+    header_no_oscan = fits.getheader(has_no_oscan)
     assert not header_no_oscan['oscan']
-    header_yes_oscan = pyfits.getheader(has_oscan)
+    header_yes_oscan = fits.getheader(has_oscan)
     assert header_yes_oscan['oscan']
     assert header_yes_oscan['oscanax'] == apogee.overscan_axis
     assert header_yes_oscan['oscanst'] == apogee.overscan_start

@@ -2,7 +2,7 @@ import image_collection as tff
 import ccd_characterization as ccd_char
 from astropysics import ccd
 from os import path
-import pyfits
+import astropy.io.fits as fits
 from datetime import datetime
 import numpy as np
 from master_bias_dark import master_frame, add_files_info
@@ -54,7 +54,7 @@ def master_flat(directories):
                 master_flat = combiner.combineImages(flats)
                 avg_temp = these_flats['ccd-temp'].mean()
                 temp_dev = these_flats['ccd-temp'].std()
-                sample = pyfits.open(path.join(currentDir,these_flats['file'][0]))
+                sample = fits.open(path.join(currentDir,these_flats['file'][0]))
                 flat_im = master_frame(master_flat, avg_temp,
                                        temp_dev, sample=sample[0].header,
                                        combiner=combiner)

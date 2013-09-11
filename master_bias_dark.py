@@ -4,8 +4,8 @@ from astropysics import ccd
 from os import path
 from numpy import median, mean
 from datetime import datetime
-from pyfits import Header
-import pyfits
+# from fits import Header
+import astropy.io.fits as fits
 
 temperature_tolerance = 2 #degree C
 combiner = ccd.ImageCombiner()
@@ -44,7 +44,7 @@ def master_frame(data, T, Terr, sample=None,combiner=None,img_type=''):
                    'Combination method for producing master')
         
     if sample is not None:
-        if not isinstance(sample, Header):
+        if not isinstance(sample, fits.Header):
             raise TypeError
         for key in copy_from_sample:
             hdr[key] = (sample[key], sample.comments[key])
@@ -80,7 +80,7 @@ def master_bias_dark(directories):
                                             bias_files['file'], combiner)
             avg_temp = bias_files['ccd-temp'].mean()
             temp_dev = bias_files['ccd-temp'].std()
-            sample = pyfits.open(path.join(currentDir,bias_files['file'][0]))
+            sample = fits.open(path.join(currentDir,bias_files['file'][0]))
             bias_im = master_frame(master_bias, avg_temp,
                                    temp_dev, sample=sample[0].header,
                                    combiner=combiner)
@@ -105,7 +105,7 @@ def master_bias_dark(directories):
                 combiner.method = 'median'
                 master_dark = combine_from_list(currentDir,
                                                 these_darks['file'], combiner)
-                sample = pyfits.open(path.join(currentDir,these_darks['file'][0]))
+                sample = fits.open(path.join(currentDir,these_darks['file'][0]))
                 dark_im = master_frame(master_dark, avg_temp[time],
                                        temp_dev, sample=sample[0].header,
                                        combiner=combiner)

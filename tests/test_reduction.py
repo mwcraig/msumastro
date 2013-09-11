@@ -2,7 +2,7 @@ from ..image_collection import ImageFileCollection
 from ..reduction import trim
 from ..patch_headers import patch_headers
 import numpy as np
-import pyfits
+import astropy.io.fits as fits
 from tempfile import mkdtemp
 from os import path, chdir
 import pytest
@@ -29,21 +29,21 @@ def test_trim():
                   add_overscan=True)
     apogee = ApogeeAltaU9()
     # files without overscan should not be changed by trim
-    hdus = pyfits.open(has_no_oscan)
+    hdus = fits.open(has_no_oscan)
     hdu = hdus[0]
     hdr = hdu.header
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
     trim(hdu)
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
     # files with overscan should have overscan region removed
-    hdus = pyfits.open(has_oscan)
+    hdus = fits.open(has_oscan)
     hdu = hdus[0]
     hdr = hdu.header
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.columns)
     trim(hdu)
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
     with pytest.raises(RuntimeError):
-        hdus = pyfits.open(has_oscan)
+        hdus = fits.open(has_oscan)
         hdu = hdus[0]
         hdr = hdu.header
         try:

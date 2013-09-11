@@ -1,5 +1,5 @@
-from pyfits import Header
-from pyfits import PrimaryHDU
+from astropy.io.fits import Header
+from astropy.io.fits import PrimaryHDU
 
 class FITSKeyword(object):
     """
@@ -103,7 +103,7 @@ class FITSKeyword(object):
         """
         Method to add keyword to FITS header.
 
-        `hdu_or_header` can be either a pyfits `PrimaryHDU` or a
+        `hdu_or_header` can be either a astropy.io.fits `PrimaryHDU` or a
         pytfits `Header` object.
         `with_synonyms` determines whether the keyword's synonynms are
         also added to the header.j
@@ -130,7 +130,7 @@ class FITSKeyword(object):
         """
         Determine value of keyword from FITS header.
 
-        `hdu_or_header` can be either a pyfits `PrimaryHDU` or a
+        `hdu_or_header` can be either a astropy.io.fits `PrimaryHDU` or a
         pytfits `Header` object.
 
         If both the primary name of the keyword and its synonyms are

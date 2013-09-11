@@ -20,7 +20,7 @@ def make_overscan_test_files(test_dir):
     """
     from ..feder import ApogeeAltaU9
     from os import path, mkdir, chdir
-    import pyfits
+    import astropy.io.fits as fits
     import numpy as np
 
     has_oscan = 'yes_oscan.fit'
@@ -31,11 +31,11 @@ def make_overscan_test_files(test_dir):
     chdir(path.join(test_dir, working_dir))
     no_oscan = np.zeros([apogee.rows, apogee.overscan_start])
     add_instrument = lambda hdr: hdr.set('instrume', 'Apogee Alta')
-    hdu = pyfits.PrimaryHDU(no_oscan)
+    hdu = fits.PrimaryHDU(no_oscan)
     add_instrument(hdu.header)
     hdu.writeto(has_no_oscan)
     yes_oscan = np.zeros([apogee.rows, apogee.columns])
-    hdu = pyfits.PrimaryHDU(yes_oscan)
+    hdu = fits.PrimaryHDU(yes_oscan)
     add_instrument(hdu.header)
     hdu.writeto(has_oscan)
     chdir(test_dir)
