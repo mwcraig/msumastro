@@ -160,7 +160,7 @@ def purge_bad_keywords(header, history=False, force=False):
         if history:
             header.add_history(comment)
 
-    header.update(software.purged_flag_keyword, True,
+    header[software.purged_flag_keyword] = (True,
                   'Have bad keywords been removed?')
 
 
