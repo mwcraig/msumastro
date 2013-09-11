@@ -28,35 +28,35 @@ def master_frame(data, T, Terr, sample=None,combiner=None,img_type=''):
         calstat += 'M'
     except KeyError:
         calstat = 'M'
-    hdr.update('calstat',calstat,
+    hdr['calstat'] = (calstat,
                'Calibrations applied, MaximDL style')
-    hdr.update('master','Y','Is this a master frame?')
+    hdr['master'] = ('Y','Is this a master frame?')
     
     now = datetime.utcnow()
     now = now.replace(microsecond=0)
-    hdr.update('date', now.isoformat(),
+    hdr['date'] = (now.isoformat(),
                'Creation date of file')
-    hdr.update('ccd-temp', T, 'Average temperature of CCD')
-    hdr.update('temp-dev', Terr,
+    hdr['ccd-temp'] = (T, 'Average temperature of CCD')
+    hdr['temp-dev'] = (Terr,
                'Standard deviation of CCD temperature')
     if combiner is not None:
-        hdr.update('cmbn-mth',combiner.method,
+        hdr['cmbn-mth'] = (combiner.method,
                    'Combination method for producing master')
         
     if sample is not None:
         if not isinstance(sample, Header):
             raise TypeError
         for key in copy_from_sample:
-            hdr.update(key,sample[key], sample.comments[key])
+            hdr[key] = (sample[key], sample.comments[key])
     else:
         if img_type:
-            hdr.update('imagetyp',img_type)
+            hdr['imagetyp'] = img_type
 
     return img
 
 def add_files_info(fits_image, files):
     hdr = fits_image.fitsfile[0].header
-    hdr.update('n-files',len(files),
+    hdr['n-files'] = (len(files),
                'Number of files combined to make master')
     hdr.add_comment('This master produced by combining the files below:')
     for fil in files:
