@@ -220,7 +220,7 @@ def setup_module():
     img = numpy.uint16(numpy.arange(100))
 
     no_filter_no_object = pyfits.PrimaryHDU(img)
-    no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
+    no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
     no_filter_no_object.writeto('no_filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
@@ -228,30 +228,30 @@ def setup_module():
     _n_test['light'] += 1
     _n_test['need_pointing'] += 1
     
-    no_filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
+    no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('bias')
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
     filter_no_object = pyfits.PrimaryHDU(img)
-    filter_no_object.header.update('imagetyp', tff.IRAF_image_type('light'))
-    filter_no_object.header.update('filter','R')
+    filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
+    filter_no_object.header['filter'] = 'R'
     filter_no_object.writeto('filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
     _n_test['light'] += 1
     _n_test['need_pointing'] += 1
 
-    filter_no_object.header.update('imagetyp', tff.IRAF_image_type('bias'))
+    filter_no_object.header['imagetyp'] = tff.IRAF_image_type('bias')
     filter_no_object.writeto('filter_no_object_bias.fit')
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
     filter_object = pyfits.PrimaryHDU(img)
-    filter_object.header.update('imagetyp', tff.IRAF_image_type('light'))
-    filter_object.header.update('filter','R')
-    filter_object.header.update('OBJCTRA','00:00:00')
-    filter_object.header.update('OBJCTDEC','00:00:00')
+    filter_object.header['imagetyp'] = tff.IRAF_image_type('light')
+    filter_object.header['filter'] ='R'
+    filter_object.header['OBJCTRA'] = '00:00:00'
+    filter_object.header['OBJCTDEC'] = '00:00:00'
     filter_object.writeto('filter_object_light.fit')
     _n_test['files'] += 1
     _n_test['light'] += 1
