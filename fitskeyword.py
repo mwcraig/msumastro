@@ -74,7 +74,7 @@ class FITSKeyword(object):
         if keyword_name is not None:
             dummy_value = 0
             try:
-                self._hdr.update(keyword_name,dummy_value)
+                self._hdr[keyword_name] = dummy_value
             except ValueError:
                 raise
             return True
@@ -117,12 +117,12 @@ class FITSKeyword(object):
         else:
             raise ValueError('argument must be a fits Primary HDU or header')
 
-        header.update(self.name, self.value, self.comment)
+        header[self.name] = (self.value, self.comment)
         if history:
             header.add_history(self.historyComment())
         if with_synonyms and self.synonyms:
             for synonym in self.synonyms:
-                header.update(synonym, self.value, self.comment)
+                header[synonym] = (self.value, self.comment)
                 if history:
                     header.add_history(self.historyComment(with_name=synonym))
 
