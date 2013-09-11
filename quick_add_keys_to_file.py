@@ -26,5 +26,5 @@ def add_keys(file_list, keys=''):
         hdr = fil_fits[0].header
         for key, val in key_table:
             print key, val
-            hdr.update(key, val)
+            hdr[key] = val
         fil_fits.close()
