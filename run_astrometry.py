@@ -94,8 +94,8 @@ for currentDir in sys.argv[1:]:
             #rename( astrometry_fname, new_fname)
             img_new = ImageWithWCS(original_fname)
             ra_dec = img_new.wcs_pix2sky(np.trunc(np.array(img_new.shape)/2))
-            img_new.header.update('RA',ra_dec[0])
-            img_new.header.update('DEC',ra_dec[1])
+            img_new.header['RA'] = ra_dec[0]
+            img_new.header['DEC'] = ra_dec[1]
             img_new.save(img_new.fitsfile.filename(), clobber=True)
             
 
