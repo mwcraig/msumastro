@@ -30,7 +30,7 @@ def make_overscan_test_files(test_dir):
     mkdir(path.join(test_dir, working_dir))
     chdir(path.join(test_dir, working_dir))
     no_oscan = np.zeros([apogee.rows, apogee.overscan_start])
-    add_instrument = lambda hdr: hdr.update('instrume', 'Apogee Alta')
+    add_instrument = lambda hdr: hdr.set('instrume', 'Apogee Alta')
     hdu = pyfits.PrimaryHDU(no_oscan)
     add_instrument(hdu.header)
     hdu.writeto(has_no_oscan)
