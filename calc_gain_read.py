@@ -19,10 +19,10 @@ def calc_gain_read(src_dir):
                                    keywords=['imagetyp', 'filter'],
                                    info_file=None)
      img_tbl = img_col.summary_info
-     bias_tbl = img_tbl.where(img_tbl['imagetyp']=='BIAS')
+     bias_tbl = img_tbl[(img_tbl['imagetyp']=='BIAS')]
      biases = as_images(bias_tbl, src_dir)
-     r_flat_tbl = img_tbl.where((img_tbl['imagetyp']=='FLAT') &
-                                (img_tbl['filter']=='R'))
+     r_flat_tbl = img_tbl[((img_tbl['imagetyp']=='FLAT') &
+                                (img_tbl['filter']=='R'))]
      r_flats = as_images(r_flat_tbl, src_dir)
      n_files = len(biases)
      n_pairs = int(n_files/2)

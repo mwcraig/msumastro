@@ -52,8 +52,8 @@ for currentDir in sys.argv[1:]:
     summary = images.summary_info
     if len(summary) == 0:
         continue
-    lights = summary.where((summary['imagetyp'] == 'LIGHT') &
-                           (summary['wcsaxes'] == ''))
+    lights = summary[((summary['imagetyp'] == 'LIGHT') &
+                           (summary['wcsaxes'] == ''))]
 
     print lights['file']
     can_group = ((lights['object'] != '') &
@@ -61,13 +61,13 @@ for currentDir in sys.argv[1:]:
                  (lights['dec'] != ''))
 
     if can_group.any():
-        groupable = lights.where(can_group)
+        groupable = lights[can_group]
         objects = np.unique(groupable['object'])
         for obj in objects:
-            astrometry_img_group(groupable.where(groupable['object']==obj),
+            astrometry_img_group(groupable[(groupable['object']==obj)],
                                  directory=currentDir)
     
-    for light_file in lights.where(np.logical_not(can_group)):
+    for light_file in lights[np.logical_not(can_group)]:
         img = ImageWithWCS(path.join(currentDir,light_file['file']))
         try:
             ra = img.header['ra']

@@ -382,9 +382,9 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
                                      keywords=['imagetyp', 'RA',
                                                'Dec', 'object'])
     summary = images.summary_info
-    missing_dec = summary.where((summary['object'] != '') &
-                                (summary['RA'] == '') &
-                                (summary['Dec'] == ''))
+    missing_dec = summary[(summary['object'] != '') &
+                            (summary['RA'] == '') &
+                            (summary['Dec'] == '')]
     if not missing_dec:
         return
         
@@ -393,7 +393,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
         obj = AstroObject(object_name)
         RA.value = obj.ra_dec.ra.getHmsStr(canonical=True)
         Dec.value = obj.ra_dec.dec.getDmsStr(canonical=True)
-        these_files = missing_dec.where(missing_dec['object'] == object_name)
+        these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
             full_name = path.join(directory,image['file'])
             hdulist = fits.open(full_name)
@@ -421,8 +421,8 @@ def fix_int16_images(directory='.', new_file_ext=None):
     images = ImageFileCollection(directory,
                                      keywords=['imagetyp', 'bitpix', 'bzero'])
     summary = images.summary_info
-    bad = summary.where((summary['bitpix'] == 16) &
-                        (summary['bzero'] == ''))
+    bad = summary[((summary['bitpix'] == 16) &
+                   (summary['bzero'] == ''))]
 
     print 'Potentially fixing %d files in %s' % (len(bad), directory)
 

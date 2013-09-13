@@ -71,9 +71,9 @@ def master_bias_dark(directories):
                                          missing=-999)
         useful = images.summary_info
         #print useful.data
-        bias_files=useful.where(((useful['imagetyp']=='BIAS') |
+        bias_files=useful[(((useful['imagetyp']=='BIAS') |
                                  (useful['imagetyp']=='Bias Frame')) &
-                                (useful['master'] != 'Y'))
+                                (useful['master'] != 'Y'))]
         if bias_files:
             combiner.method = 'median'
             master_bias = combine_from_list(currentDir,
@@ -87,16 +87,16 @@ def master_bias_dark(directories):
             add_files_info(bias_im,bias_files['file'])
             bias_im.save(path.join(currentDir, 'Master_Bias.fit'))
 
-        dark_files = useful.where(((useful['imagetyp']=='DARK') |
+        dark_files = useful[(((useful['imagetyp']=='DARK') |
                                    (useful['imagetyp']=='Dark Frame'))
                                    &
-                                  (useful['master'] != 'Y'))
+                                  (useful['master'] != 'Y'))]
         if dark_files:
             exposure_times = set(dark_files['exptime'])
             master_dark = {}
             avg_temp = {}
             for time in exposure_times:
-                these_darks=dark_files.where(dark_files['exptime']==time)
+                these_darks=dark_files[(dark_files['exptime']==time)]
                 avg_temp[time] = these_darks['ccd-temp'].mean()
                 temp_dev = these_darks['ccd-temp'].std()
                 good_darks = abs(these_darks['ccd-temp'] - avg_temp[time]) < temperature_tolerance

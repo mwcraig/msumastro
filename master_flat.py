@@ -26,22 +26,22 @@ def master_flat(directories):
                                                    keywords=keywords,
                                                    info_file=None)
         images = image_collection.summary_info
-        master_dark_files = images.where((images['imagetyp'] == 'DARK') &
-                                         ('M' in images['calstat']))
-        all_flats = images.where(((images['imagetyp'] == 'FLAT') |
+        master_dark_files = images[((images['imagetyp'] == 'DARK') &
+                                         ('M' in images['calstat']))]
+        all_flats = images[(((images['imagetyp'] == 'FLAT') |
                                   (images['imagetyp']=='Flat Field'))&
-                                 (images['master'] != 'Y'))
+                                 (images['master'] != 'Y'))]
         exposure_times = set(all_flats['exptime'])
         print exposure_times
         for time in exposure_times:
-            flats_time = all_flats.where(all_flats['exptime'] == time)
+            flats_time = all_flats[(all_flats['exptime'] == time)]
             filters = np.unique(flats_time['filter'])
             for flat_filter in filters:
-                these_flats = flats_time.where(flats_time['filter'] == flat_filter)
+                these_flats = flats_time[(flats_time['filter'] == flat_filter)]
                 same_filter = (these_flats['filter'] == flat_filter)
                 if not same_filter.all():
                     raise RuntimeError('Holy crap, my flats have mixed filters!')
-                master_dark = master_dark_files.where(master_dark_files['exptime']==time)
+                master_dark = master_dark_files[(master_dark_files['exptime']==time)]
                 if not master_dark:
                     print 'Sorry, no dark for the exposure %f, skipping....' %time
                     continue

@@ -57,10 +57,10 @@ def reduce(files, source_dir, destination=None,
     exposure_times = set(file_info['exptime'].reshape(len(file_info)))
     filters = set(file_info['filter'].reshape(len(file_info)))
     for time in exposure_times:
-        files_this_exposure = file_info.where(file_info['exptime']==time)
+        files_this_exposure = file_info[file_info['exptime']==time]
         dark_subtractor.biasframe = master_darks[time].data
         for filter_band in filters:
-            files_this_filter = files_this_exposure.where(files_this_exposure['filter']==filter_band)
+            files_this_filter = files_this_exposure[files_this_exposure['filter']==filter_band]
             flattener.flatfield = master_flats[filter_band].data
             for img in files_this_filter['file']:
                 pipe.feed(ccd.FitsImage(path.join(source_dir,img)))
@@ -87,7 +87,7 @@ def load_masters(images, source_dir='.', type='', index_by=''):
      if not set(['BIAS', 'DARK', 'FLAT']).issuperset(set([type.upper()])):
          raise ValueError('Read the docstring, chump! You gave me a bad type.')
 
-     masters = images.where(images['imagetyp']=='MASTER '+type.upper())
+     masters = images[images['imagetyp']=='MASTER '+type.upper()]
      if not masters:
          raise ValueError('Sorry, no master files of that type are present')
 
@@ -98,7 +98,7 @@ def load_masters(images, source_dir='.', type='', index_by=''):
      else:
          master_images = {}
          for val in masters[index_by]:
-             this_master = masters.where(masters[index_by]==val)
+             this_master = masters[masters[index_by]==val]
              if len(this_master) != 1:
                  raise RuntimeError('Do not know how to group these masters')
 
