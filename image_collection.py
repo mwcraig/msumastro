@@ -53,7 +53,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
         list(images.files_filtered(imagetyp='light',
                                    object=''))
 
-    lights = file_info.where(file_info['imagetyp']=='LIGHT')
+    lights = file_info[file_info['imagetyp'] == 'LIGHT']
     has_no_ra = array([True]*len(lights))
     for ra_name in RA.names:
         has_no_ra &= (lights[ra_name] == '')
