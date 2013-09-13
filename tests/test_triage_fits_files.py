@@ -39,8 +39,9 @@ def test_fits_summary():
     assert len(summary['file']) == _n_test['files']
     for keyword in keywords:
         assert len(summary[keyword]) == _n_test['files']
-    print summary['file'] == 'no_filter_no_object_bias.fit'
-    print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
+    # explicit conversion to array is needed to avoid astropy Table bug in 0.2.4
+    print np.array(summary['file'] == 'no_filter_no_object_bias.fit')
+    #print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
     assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
 
 
@@ -100,10 +101,10 @@ class TestImageFileCollection(object):
     def test_hdus_masking(self):
         collection = tff.ImageFileCollection(location=_test_dir,
                                              keywords=['imagetyp','exposure'])
-        old_data = collection.summary_info.data.copy()
+        old_data = np.array(collection.summary_info)
         for hdu in collection.hdus(imagetyp='bias'):
             pass
-        new_data = collection.summary_info.data
+        new_data = np.array(collection.summary_info)
         assert (new_data == old_data).all()
 
     def test_headers(self):

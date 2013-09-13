@@ -5,7 +5,7 @@ from os import listdir, path
 from numpy import array, where
 import numpy.ma as ma
 from string import lower
-import atpy
+from astropy.table import Table
 import functools
 
 def contains_maximdl_imagetype(image_collection):
@@ -107,7 +107,7 @@ class ImageFileCollection(object):
 
         if info_file is not None:
             try:
-                self.summary_info = atpy.Table(path.join(self.location,info_file),
+                self.summary_info = Table(path.join(self.location,info_file),
                                                type='ascii',
                                                delimiter=',')
             except Exception:
@@ -245,9 +245,10 @@ class ImageFileCollection(object):
         `missing` is the numerical value to be substituted if a particular file
         doesn't have a keyword. =
         
-        Returns an ATpy table.
+        Returns an Astropy table.
         """
         from collections import OrderedDict
+        from astropy.table import MaskedColumn
 
         missing = float(missing)
         
@@ -281,19 +282,20 @@ class ImageFileCollection(object):
                     summary[keyword].append(missing)
                     missing_values[keyword].append(True)
                                                   
-        summary_table = atpy.Table(masked=True)
+        summary_table = Table(masked=True)
 
         for key in summary.keys():
             if key not in data_type:
                 data_type[key] = type('str')
                 summary[key] = [str(val) for val in summary[key]]
-            if data_type[key] == type('str'):
-                summary_table.add_column(key, summary[key], mask=missing_values[key])
-                summary_table[key][array(missing_values[key])] = ''
-            else:
-                summary_table.add_column(key, summary[key],
-                                         mask=missing_values[key])
 
+            new_column = MaskedColumn(name=key, data=summary[key],
+                                      mask=missing_values[key])
+            summary_table.add_column(new_column)
+            #summary_table.add_column(key, summary[key], mask=missing_values[key])
+
+            if data_type[key] == type('str'):
+                summary_table[key][array(missing_values[key])] = ''
 
         return summary_table
 
@@ -378,7 +380,9 @@ class ImageFileCollection(object):
 
         # store mask so we can reset at end--must COPY, otherwise 
         # current_mask just points to the mask of summary_info
-        current_mask = self.summary_info.data.copy().mask
+        current_mask = {}
+        for col in self.summary_info.columns:
+            current_mask[col] = self.summary_info[col].mask
 
         if kwd:
             self._find_keywords_by_values(**kwd)
@@ -414,7 +418,8 @@ class ImageFileCollection(object):
             hdulist.close()
 
         # reset mask
-        self.summary_info.data.mask = current_mask
+        for col in self.summary_info.columns:
+            self.summary_info[col].mask = current_mask[col]
 
     def paths(self):
         """
