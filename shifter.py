@@ -1,5 +1,4 @@
 from image import ImageWithWCS
-import image_collection as tff
 import numpy as np
 from os import path
 
