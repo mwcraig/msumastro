@@ -1,9 +1,7 @@
 import image_collection as tff
-import ccd_characterization as ccd_char
 from astropysics import ccd
 from os import path
 import astropy.io.fits as fits
-from datetime import datetime
 import numpy as np
 from master_bias_dark import master_frame, add_files_info
 

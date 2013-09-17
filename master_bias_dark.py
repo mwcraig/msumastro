@@ -1,5 +1,4 @@
 import image_collection as tff
-import ccd_characterization as ccd_char
 from astropysics import ccd
 from os import path
 from numpy import median, mean

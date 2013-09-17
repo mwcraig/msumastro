@@ -1,12 +1,10 @@
 import fnmatch
 import astropy.io.fits as fits
-from feder import RA, Dec, target_object
+from feder import RA
 from os import listdir, path
-from numpy import array, where
+from numpy import array
 import numpy.ma as ma
-from string import lower
 from astropy.table import Table
-import functools
 
 
 def contains_maximdl_imagetype(image_collection):
