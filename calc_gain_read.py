@@ -27,7 +27,6 @@ def calc_gain_read(src_dir):
                           (img_tbl['filter'] == 'R'))]
     r_flats = as_images(r_flat_tbl, src_dir)
     n_files = len(biases)
-    n_pairs = int(n_files / 2)
     gain = []
     read_noise = []
     for i in range(0, n_files, 2):
