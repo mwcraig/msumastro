@@ -7,11 +7,11 @@ def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
 
     `bias` should be either a single bias array or a numpy array of arrays. A
     list will be combined before subtraction from the dark.
-    `dark` should be either a single dark array or a numpy array of arrays. 
+    `dark` should be either a single dark array or a numpy array of arrays.
     `gain` is the gain of the CCD.
     `average_dark` should be `True` if the return value should be the
     average of the dark currents form the individual frames.
-    
+
     Returns the current in electrons/pixel
     """
     if len(bias.shape) == 3:
@@ -29,7 +29,7 @@ def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     working_dark = zeros(dark_array.shape[1:2])
     dark_current = zeros(dark_array.shape[0])
     for i in range(0, dark_array.shape[0]):
-        working_dark = dark_array[i,:,:] - average_bias
+        working_dark = dark_array[i, :, :] - average_bias
         dark_current[i] = gain * working_dark.mean()
 
     if average_dark:
