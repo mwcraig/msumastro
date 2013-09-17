@@ -60,12 +60,8 @@ class TestImageFileCollection(object):
         except OSError:
             assert False
 
-        try:
-            should_fail = tff.ImageFileCollection(location=_test_dir,
-                                                  storage_dir='/')
-            assert False
-        except OSError:
-            assert True
+        with pytest.raises(OSError):
+            tff.ImageFileCollection(location=_test_dir, storage_dir='/')
 
         img_collection = tff.ImageFileCollection(
             location=_test_dir, keywords=['imagetyp', 'filter'])
