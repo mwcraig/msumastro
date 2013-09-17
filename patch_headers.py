@@ -8,7 +8,6 @@ from astropysics import coords
 from astropy.time import Time
 
 from feder import *
-from astrometry import add_astrometry
 
 from image_collection import ImageFileCollection
 
@@ -335,7 +334,6 @@ def add_object_info(directory='.', object_list=None,
     considered an image of that object.
     """
     from astro_object import AstroObject
-    import numpy as np
     from fitskeyword import FITSKeyword
 
     images = ImageFileCollection(directory,
@@ -365,7 +363,7 @@ def add_object_info(directory='.', object_list=None,
                                  object='', RA='*', Dec='*'):
         image_ra_dec = coords.coordsys.FK5Coordinates(header['ra'],
                                                       header['dec'])
-        distance = [(ra_dec - image_ra_dec).arcmin for ra_dec in object_ra_dec]
+        distance = [(rd_tmp - image_ra_dec).arcmin for rd_tmp in object_ra_dec]
         distance = np.array(distance)
         matches = (distance < match_radius)
         if matches.sum() > 1:
