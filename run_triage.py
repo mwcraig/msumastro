@@ -6,23 +6,25 @@ object_name_file_name = 'NEEDS_OBJECT_NAME.txt'
 pointing_file_name = 'NEEDS_POINTING_INFO.txt'
 filter_file_name = 'NEEDS_FILTER.txt'
 file_list = 'Manifest.txt'
+
+
 def write_list(dir, file, info):
-    out = open(os.path.join(dir,file), 'wb')
+    out = open(os.path.join(dir, file), 'wb')
     out.write('\n'.join(info))
     out.close()
+
 
 def triage_directories(directories,
                        extra_keywords=[]):
     for currentDir in directories:
+        all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
+        all_keywords.extend(extra_keywords)
         moo = tff.triage_fits_files(currentDir,
-                                    file_info_to_keep=['imagetyp',
-                                                       'filter',
-                                                       'exptime',
-                                                       'ccd-temp']+extra_keywords)
+                                    file_info_to_keep=all_keywords)
         for fil in [pointing_file_name, filter_file_name,
-                       object_name_file_name, file_list]:
+                    object_name_file_name, file_list]:
             try:
-                os.remove(os.path.join(currentDir,fil))
+                os.remove(os.path.join(currentDir, fil))
             except OSError:
                 pass
 
@@ -36,8 +38,9 @@ def triage_directories(directories,
                        moo['needs_object_name'])
         tbl = moo['files']
         if len(tbl) > 0:
-            tbl.write(os.path.join(currentDir, file_list), format='ascii', delimiter=',')
-                 
+            tbl.write(os.path.join(currentDir, file_list),
+                      format='ascii', delimiter=',')
+
 if __name__ == "__main__":
     dirs = sys.argv[1:]
     triage_directories(dirs, extra_keywords=['object'])

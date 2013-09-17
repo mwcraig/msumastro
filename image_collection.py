@@ -8,6 +8,7 @@ from string import lower
 from astropy.table import Table
 import functools
 
+
 def contains_maximdl_imagetype(image_collection):
     """
     Check an image file collection for MaxImDL-style image types
@@ -19,7 +20,8 @@ def contains_maximdl_imagetype(image_collection):
         return True
     else:
         return False
-    
+
+
 def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
                                                   'object',
                                                   'filter']):
@@ -34,14 +36,15 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
 
     all_file_info = file_info_to_keep
     all_file_info.extend(RA.names)
-    
+
     images = ImageFileCollection(dir, keywords=all_file_info)
     file_info = images.fits_summary(keywords=all_file_info)
 
     # check for bad image type and halt until that is fixed.
     if contains_maximdl_imagetype(images):
-        raise ValueError('Correct MaxImDL-style image types before proceeding.')
-        
+        raise ValueError(
+            'Correct MaxImDL-style image types before proceeding.')
+
     file_needs_filter = \
         list(images.files_filtered(imagetyp='light',
                                    filter=''))
@@ -54,51 +57,55 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
                                    object=''))
 
     lights = file_info[file_info['imagetyp'] == 'LIGHT']
-    has_no_ra = array([True]*len(lights))
+    has_no_ra = array([True] * len(lights))
     for ra_name in RA.names:
         has_no_ra &= (lights[ra_name] == '')
-    needs_minimal_pointing = (lights['object'] == '') & has_no_ra    
-    
+    needs_minimal_pointing = (lights['object'] == '') & has_no_ra
+
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
                 'needs_pointing': list(lights['file'][needs_minimal_pointing]),
                 'needs_object_name': file_needs_object_name}
     return dir_info
-    
+
+
 def IRAF_image_type(image_type):
     """Convert MaximDL default image type names to IRAF
 
     `image_type` is the value of the FITS header keyword IMAGETYP.
-    
+
     MaximDL default is, e.g. 'Bias Frame', which IRAF calls
     'BIAS'. Can safely be called with an IRAF-style image_type.
     """
     return image_type.split()[0].upper()
-    
+
 from tempfile import TemporaryFile
 
-  
+
 class ImageFileCollection(object):
+
     """
     Representation of a collection (usually a directory) of image
     files.
 
-    :attrib summary_info: An ATpy table of information about the FITS files in the direction.
+    :attrib summary_info: An ATpy table of information about the FITS files in
+    the direction.
 
     :param missing: Value to be used for missing entries.
-    
+
     To extract a desired set of files::
-    
+
         import image_collection as tff
         my_files = tff.ImageFileCollection('my_directory',keywords=['object'])
         summary = my_files.summary_info
         m101 = (summary['object'] == 'm101')
         m101_files = summary['file'][m101]
-    
+
     *TODO:* Correctly handle case when keywords is a single value
     instead of a list.
     """
-    def __init__(self,location='.', storage_dir=None, keywords=[],
+
+    def __init__(self, location='.', storage_dir=None, keywords=[],
                  missing=-999, info_file='Manifest.txt'):
         self._location = location
         self.storage_dir = storage_dir
@@ -107,15 +114,17 @@ class ImageFileCollection(object):
 
         if info_file is not None:
             try:
-                self.summary_info = Table(path.join(self.location,info_file),
-                                               type='ascii',
-                                               delimiter=',')
+                self.summary_info = Table(path.join(self.location, info_file),
+                                          type='ascii',
+                                          delimiter=',')
             except Exception:
-                print 'Unable to read file %s, will regenerate table' % info_file
+                print ('Unable to read file %s, will regenerate table' %
+                       info_file)
 
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
-                print 'Regenerating information summary table for %s' % location
+                print ('Regenerating information summary table for %s' %
+                       location)
 
         self.summary_info = self.fits_summary(keywords=keywords,
                                               missing=missing)
@@ -134,10 +143,10 @@ class ImageFileCollection(object):
         """
         Directory information about this collection should be stored.
 
-        `None` or `False` means it is not stored on disk; `True` means the storage is
-        in the same place as `self.location`; a `string` is interpreted as the
-        full path name of the directory where information should be
-        stored.
+        `None` or `False` means it is not stored on disk; `True` means the
+        storage is in the same place as `self.location`; a `string` is
+        interpreted as the full path name of the directory where information
+        should be stored.
 
         The storage location must be writeable by the user; this is
         automatically checked when the property is set.
@@ -151,7 +160,7 @@ class ImageFileCollection(object):
         On setting, check that `loc` is writable.
         """
         if ((isinstance(loc, bool) and not loc) or
-            (loc is None)):
+                (loc is None)):
             self._storage = loc
             return
 
@@ -159,8 +168,8 @@ class ImageFileCollection(object):
             temp_storage = loc
         else:
             temp_storage = self.location
-            
-        #try writing a file to this location...
+
+        # try writing a file to this location...
         try:
             tmpfile = TemporaryFile(dir=temp_storage)
         except OSError:
@@ -178,7 +187,7 @@ class ImageFileCollection(object):
             return self.summary_info.keys()
         else:
             return []
-            
+
     @keywords.setter
     def keywords(self, keywords=[]):
         # since keywords are drawn from self.summary_info, setting
@@ -200,7 +209,8 @@ class ImageFileCollection(object):
         If `unique` is `True` then only the unique values are returned.
         """
         if not self.hasKey(keyword):
-            raise ValueError('keyword %s is not in the current summary' % keyword)
+            raise ValueError(
+                'keyword %s is not in the current summary' % keyword)
 
         if unique:
             return list(set(self.summary_info[keyword]))
@@ -210,7 +220,7 @@ class ImageFileCollection(object):
     def hasKey(self, keyword):
         """True if keyword is in current summary."""
         return keyword in self.keywords
-        
+
     def files_filtered(self, **kwd):
         """Determine files whose keywords have listed values.
 
@@ -218,19 +228,20 @@ class ImageFileCollection(object):
 
         The value '*' represents any value.
          A missing keyword is indicated by value ''
-        
+
         Example:
-        >>> collection = ImageFileCollection('test/data', keywords=['imagetyp','filter'])
+        >>> keys = ['imagetyp','filter']
+        >>> collection = ImageFileCollection('test/data', keywords=keys)
         >>> collection.files_filtered(imagetyp='LIGHT', filter='R')
         >>> collection.files_filtered(imagetyp='*', filter='')
-        
+
         NOTE: Value comparison is case *insensitive* for strings.
         """
 
         self._find_keywords_by_values(**kwd)
         return self.summary_info['file'].compressed()
-        
-    def fits_summary(self, 
+
+    def fits_summary(self,
                      keywords=['imagetyp'], missing=-999):
         """
         Collect information about fits files in a directory.
@@ -244,14 +255,14 @@ class ImageFileCollection(object):
 
         `missing` is the numerical value to be substituted if a particular file
         doesn't have a keyword. =
-        
+
         Returns an Astropy table.
         """
         from collections import OrderedDict
         from astropy.table import MaskedColumn
 
         missing = float(missing)
-        
+
         summary = OrderedDict()
         summary['file'] = []
         missing_values = OrderedDict()
@@ -263,7 +274,7 @@ class ImageFileCollection(object):
 
         for afile in self.files:
             try:
-                header = fits.getheader(path.join(self.location,afile))
+                header = fits.getheader(path.join(self.location, afile))
             except IOError:
                 continue
             summary['file'].append(afile)
@@ -273,15 +284,17 @@ class ImageFileCollection(object):
                 if keyword in header:
                     summary[keyword].append(header[keyword])
                     missing_values[keyword].append(False)
-                    if (keyword in data_type): 
+                    if (keyword in data_type):
                         if (type(header[keyword]) != data_type[keyword]):
-                            raise ValueError('Different data types found for keyword %s' % keyword)
+                            raise ValueError(
+                                'Different data types found for keyword %s' %
+                                keyword)
                     else:
                         data_type[keyword] = type(header[keyword])
                 else:
                     summary[keyword].append(missing)
                     missing_values[keyword].append(True)
-                                                  
+
         summary_table = Table(masked=True)
 
         for key in summary.keys():
@@ -292,7 +305,6 @@ class ImageFileCollection(object):
             new_column = MaskedColumn(name=key, data=summary[key],
                                       mask=missing_values[key])
             summary_table.add_column(new_column)
-            #summary_table.add_column(key, summary[key], mask=missing_values[key])
 
             if data_type[key] == type('str'):
                 summary_table[key][array(missing_values[key])] = ''
@@ -307,24 +319,25 @@ class ImageFileCollection(object):
 
         The value '*' represents any value.
          A missing keyword is indicated by value ''
-        
+
         Example:
-        >>> collection = ImageFileCollection('test/data', keywords=['imagetyp','filter'])
+        >>> keys = ['imagetyp','filter']
+        >>> collection = ImageFileCollection('test/data', keywords=keys)
         >>> collection.files_filtered(imagetyp='LIGHT', filter='R')
         >>> collection.files_filtered(imagetyp='*', filter='')
-        
+
         NOTE: Value comparison is case *insensitive* for strings.
         """
         keywords = kwd.keys()
         values = kwd.values()
-        
+
         if (set(keywords) & set(self.keywords)):
             # we already have the information in memory
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
             use_info = self.fits_summary(keywords=keywords)
-            
+
         matches = array([True] * len(use_info))
         for key, value in zip(keywords, values):
             if value == '*':
@@ -335,26 +348,29 @@ class ImageFileCollection(object):
                     # where to correctly do string comparison.
                     have_this_value = array([False] * len(use_info))
                     for idx, file_key_value in enumerate(use_info[key]):
-                        have_this_value[idx] = (file_key_value.lower() == value.lower())
+                        have_this_value[idx] = (
+                            file_key_value.lower() == value.lower())
                 else:
                     have_this_value = (use_info[key] == value)
             matches &= have_this_value
-            
+
         # the numpy convention is that the mask is True for values to
         # be omitted, hence use ~matches.
         self.summary_info['file'].mask = ma.nomask
         self.summary_info['file'][~matches] = ma.masked
-        
-    def _fits_files_in_directory(self, extensions=['fit','fits'], compressed=True):
+
+    def _fits_files_in_directory(self, extensions=['fit', 'fits'],
+                                 compressed=True):
         """
         Get names of FITS files in directory, based on filename extension.
-        
+
         `extension` is a list of filename extensions that are FITS files.
-        
+
         `compressed` should be true if compressed files should be included
         in the list (e.g. `.fits.gz`)
-        
-        Returns only the *names* of the files (with extension), not the full pathname.
+
+        Returns only the *names* of the files (with extension), not the full
+        pathname.
         """
         # trick below is necessary to make sure we start with a clean copy of
         # extensions each time
@@ -363,22 +379,21 @@ class ImageFileCollection(object):
         if compressed:
             with_gz = [extension + '.gz' for extension in extensions]
             full_extensions.extend(with_gz)
-            
+
         all_files = listdir(self.location)
         files = []
         for extension in full_extensions:
-            files.extend(fnmatch.filter(all_files, '*'+extension))
-            
-        return files
+            files.extend(fnmatch.filter(all_files, '*' + extension))
 
+        return files
 
     def _iterator(self, return_type,
                   save_with_name="", save_location='',
-                  clobber=False, 
+                  clobber=False,
                   do_not_scale_image_data=True,
                   **kwd):
 
-        # store mask so we can reset at end--must COPY, otherwise 
+        # store mask so we can reset at end--must COPY, otherwise
         # current_mask just points to the mask of summary_info
         current_mask = {}
         for col in self.summary_info.columns:
@@ -388,8 +403,9 @@ class ImageFileCollection(object):
             self._find_keywords_by_values(**kwd)
 
         for full_path in self.paths():
+            no_scale = do_not_scale_image_data
             hdulist = fits.open(full_path,
-                                  do_not_scale_image_data=do_not_scale_image_data)
+                                do_not_scale_image_data=no_scale)
             if return_type == 'header':
                 yield hdulist[0].header
             elif return_type == 'hdu':
@@ -425,8 +441,8 @@ class ImageFileCollection(object):
         """
         Full path to each file.
         """
-        return [path.join(self.location, file_) for file_ in self.summary_info['file'].compressed()]
-
+        unmasked_files = self.summary_info['file'].compressed()
+        return [path.join(self.location, file_) for file_ in unmasked_files]
 
     def headers(self, save_with_name='',
                 save_location='', clobber=False,
@@ -443,7 +459,7 @@ class ImageFileCollection(object):
             FITS file should be saved after iteration. Unless
             `save_location` is set, files will be saved to location of
             the source files `self.location`
-        
+
         save_location : str
             Directory in which to save FITS files; implies that FITS
             files will be saved. Note this provides an easy way to
@@ -456,33 +472,31 @@ class ImageFileCollection(object):
         do_not_scale_image_data : bool
             If true, prevents fits from scaling images (useful for
             preserving unsigned int images unmodified)
-        
+
         kwd : dict
             Any additional keywords are passed to `fits.open`
         """
-        
-        #return hdulist[0].header
-        return self._iterator('header', save_with_name=save_with_name,
-                       save_location=save_location, clobber=clobber,
-                       do_not_scale_image_data=do_not_scale_image_data,
-                       **kwd)
 
-       
+        # return hdulist[0].header
+        return self._iterator('header', save_with_name=save_with_name,
+                              save_location=save_location, clobber=clobber,
+                              do_not_scale_image_data=do_not_scale_image_data,
+                              **kwd)
+
     def hdus(self, save_with_name='',
              save_location='', clobber=False,
              do_not_scale_image_data=False,
              **kwd):
 
         return self._iterator('hdu', save_with_name=save_with_name,
-                       save_location=save_location, clobber=clobber,
-                       do_not_scale_image_data=do_not_scale_image_data,
-                       **kwd)
-
+                              save_location=save_location, clobber=clobber,
+                              do_not_scale_image_data=do_not_scale_image_data,
+                              **kwd)
 
     def data(self, hdulist=None, save_with_name="", save_location='',
              do_not_scale_image_data=False,
              clobber=False, **kwd):
         return self._iterator('data', save_with_name=save_with_name,
-                       save_location=save_location, clobber=clobber,
-                       do_not_scale_image_data=do_not_scale_image_data,
-                       **kwd)
+                              save_location=save_location, clobber=clobber,
+                              do_not_scale_image_data=do_not_scale_image_data,
+                              **kwd)

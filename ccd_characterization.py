@@ -1,5 +1,6 @@
 from numpy import array, zeros, sqrt, ndarray
 
+
 def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     """
     Calculate the average dark current given bias and dark frames.
@@ -27,13 +28,14 @@ def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
 
     working_dark = zeros(dark_array.shape[1:2])
     dark_current = zeros(dark_array.shape[0])
-    for i in range(0,dark_array.shape[0]):
+    for i in range(0, dark_array.shape[0]):
         working_dark = dark_array[i,:,:] - average_bias
-        dark_current[i] = gain*working_dark.mean()
+        dark_current[i] = gain * working_dark.mean()
 
     if average_dark:
         dark_current = dark_current.mean()
     return dark_current
+
 
 def ccd_bias(bias):
     """
@@ -45,13 +47,14 @@ def ccd_bias(bias):
     import sherpa.ui as ui
     from numpy import histogram, arange
 
-    values, bins = histogram(bias, bins=arange(bias.min(),bias.max()+1))
-    ui.load_arrays(1, bins[:-1],values)
+    values, bins = histogram(bias, bins=arange(bias.min(), bias.max() + 1))
+    ui.load_arrays(1, bins[:-1], values)
     ui.set_model(ui.gauss1d.g1)
     g1.pos = bias.mean()
     g1.fwhm = bias.std()
     ui.fit()
     return g1
+
 
 def ccd_read_noise(bias, gain=None, flat=None):
     """
@@ -72,7 +75,8 @@ def ccd_read_noise(bias, gain=None, flat=None):
             raise ValueError('Must specify either gain or flat frames.')
         gain = ccd_gain(bias, flat)
 
-    return gain/sqrt(2)*(bias[0]-bias[1]).std()    
+    return gain / sqrt(2) * (bias[0] - bias[1]).std()
+
 
 def ccd_gain(bias, flat):
     """
@@ -89,7 +93,8 @@ def ccd_gain(bias, flat):
     """
 
     if len(bias) != 2 or len(flat) != 2:
-        raise ValueError('bias and flat must each be two element tuple or list')
+        raise ValueError(
+            'bias and flat must each be two element tuple or list')
 
     b1 = bias[0]
     b2 = bias[1]
@@ -100,7 +105,5 @@ def ccd_gain(bias, flat):
     bias_diff = b1 - b2
 
     gain = (((f1.mean() + f2.mean()) - (b1.mean() + b2.mean())) /
-            ((f1-f2).var() - (b1-b2).var()))
+            ((f1 - f2).var() - (b1 - b2).var()))
     return gain
-
-    

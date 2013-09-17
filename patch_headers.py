@@ -15,12 +15,15 @@ from image_collection import ImageFileCollection
 federstuff = Feder()
 feder = federstuff.site
 
+
 class FederImage(object):
+
     """Unsigned integer image for which no data modification is allowed"""
+
     def __init__(self, fname):
         self._hdulist = fits.open(fname, do_not_scale_image_data=True)
         self._hdulist.verify('fix')
-        
+
     @property
     def header(self):
         return self._hdulist[0].header
@@ -31,16 +34,16 @@ class FederImage(object):
     def close(self):
         self._hdulist.close()
 
-    
+
 def sexagesimal_string(dms, precision=2, sign=False):
     """Convert degrees, minutes, seconds into a string
 
     `dms` should be a list or tuple of (degrees or hours, minutes,
     seconds)
-    
+
     `precision` is the number of digits to be kept to the right of the
     decimal in the seconds (default is 2)
-    
+
     Set `sign` to `True` if a leading sign should be displayed for
     positive values.
     """
@@ -50,19 +53,22 @@ def sexagesimal_string(dms, precision=2, sign=False):
         degree_format = '{0[0]:02}'
 
     seconds_width = str(precision + 3)
-    format_string = degree_format+':{0[1]:02}:{0[2]:0'+seconds_width+'.'+str(precision)+'f}'
+    format_string = degree_format + \
+        ':{0[1]:02}:{0[2]:0' + seconds_width + '.' + str(precision) + 'f}'
     return format_string.format(dms)
+
 
 def deg2dms(dd):
     """Convert decimal degrees to degrees, minutes, seconds.
 
     `dd` is decimal degrees.
-    
+
     Poached from stackoverflow.
     """
-    mnt,sec = divmod(dd*3600,60)
-    deg,mnt = divmod(mnt,60)
-    return int(deg),int(mnt),sec
+    mnt, sec = divmod(dd * 3600, 60)
+    deg, mnt = divmod(mnt, 60)
+    return int(deg), int(mnt), sec
+
 
 def add_time_info(header, history=False):
     """
@@ -71,29 +77,30 @@ def add_time_info(header, history=False):
 
     history : bool
         If `True`, write history for each keyword changed.
-    
+
     Uses `feder.currentobsjd` as the date.
     """
     dateobs = Time(header['date-obs'], scale='utc')
     JD.value = dateobs.jd
     MJD.value = dateobs.mjd
-    
+
     # setting currentobsjd makes calls following it use that time
     # for calculations
-    
+
     feder.currentobsjd = JD.value
     LST.value = feder.localSiderialTime()
     LST.value = sexagesimal_string(deg2dms(LST.value))
-    
+
     for keyword in keywords_for_all_files:
         keyword.addToHeader(header, history=history)
+
 
 def add_object_pos_airmass(header, history=False):
     """Add object information, such as RA/Dec and airmass.
 
     history : bool
         If `True`, write history for each keyword changed.
-    
+
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
@@ -109,21 +116,21 @@ def add_object_pos_airmass(header, history=False):
         return
 
     Dec.setValueFromHeader(header)
-    RA.value = RA.value.replace(' ',':')
-    Dec.value = Dec.value.replace(' ',':')
+    RA.value = RA.value.replace(' ', ':')
+    Dec.value = Dec.value.replace(' ', ':')
     object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
     alt_az = feder.apparentCoordinates(object_coords, refraction=False)
     altitude.value = round(alt_az.alt.d, 5)
     azimuth.value = round(alt_az.az.d, 5)
-    airmass.value = round(1/cos(pi/2 - alt_az.alt.r),3)
+    airmass.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
     hour_angle.value = sexagesimal_string(
-        coords.EquatorialCoordinatesEquinox((feder.localSiderialTime()-
+        coords.EquatorialCoordinatesEquinox((feder.localSiderialTime() -
                                             object_coords.ra.hours,
                                              0)).ra.hms)
     for keyword in keywords_for_light_files:
         if keyword.value is not None:
             keyword.addToHeader(header, history=history)
-            
+
 
 def purge_bad_keywords(header, history=False, force=False):
     """
@@ -155,13 +162,13 @@ def purge_bad_keywords(header, history=False, force=False):
                        ' with value ' + str(header[keyword]))
         except KeyError:
             continue
-        
+
         del header[keyword]
         if history:
             header.add_history(comment)
 
     header[software.purged_flag_keyword] = (True,
-                  'Have bad keywords been removed?')
+                                            'Have bad keywords been removed?')
 
 
 def keyword_names_as_string(list_of_keywords):
@@ -199,7 +206,7 @@ def read_object_list(dir='.', list='obsinfo.txt'):
 
     return (observer, objects)
 
-    
+
 def history(function, mode='begin', time=None):
     """
     Construct nicely formatted start/end markers in FITS history.
@@ -227,7 +234,7 @@ def history(function, mode='begin', time=None):
                                           function.__name__, time,
                                           marker)
 
-    
+
 def patch_headers(dir='.',
                   new_file_ext='new',
                   save_location=None,
@@ -240,7 +247,7 @@ def patch_headers(dir='.',
     Add minimal information to Feder FITS headers.
 
     `dir` is the directory containing the files to be patched.
-    
+
     `new_file_ext` is the name added to the FITS files with updated
     header information. It is added to the base name of the input
     file, between the old file name and the `.fit` or `.fits` extension.
@@ -251,7 +258,7 @@ def patch_headers(dir='.',
     `overwrite` should be set to `True` to replace the original files.
 
     `purge_bad`, `add_time`, `add_apparent_pos` and `add_overscan` are flags
-    that control which aspect of the headers is modified. 
+    that control which aspect of the headers is modified.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -278,7 +285,7 @@ def patch_headers(dir='.',
         if add_apparent_pos and (header['imagetyp'] == 'LIGHT'):
             try:
                 add_object_pos_airmass(header,
-                                 history=True)
+                                       history=True)
             except ValueError:
                 print ('Skipping file with header:')
                 print(header)
@@ -312,7 +319,7 @@ def add_overscan_header(header, history=True):
 
     return modified_keywords
 
-            
+
 def add_object_info(directory='.', object_list=None,
                     match_radius=20.0, new_file_ext='new',
                     overwrite=False, detailed_history=True):
@@ -330,10 +337,10 @@ def add_object_info(directory='.', object_list=None,
     from astro_object import AstroObject
     import numpy as np
     from fitskeyword import FITSKeyword
-    
+
     images = ImageFileCollection(directory,
-                                     keywords=['imagetyp', 'RA',
-                                               'Dec', 'object'])
+                                 keywords=['imagetyp', 'RA',
+                                           'Dec', 'object'])
     summary = images.summary_info
 
     print summary['file']
@@ -342,16 +349,17 @@ def add_object_info(directory='.', object_list=None,
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return
-        
-#    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335), 'ey uma':(135.575,49.810)}
+
+#    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335),
+#                  'ey uma':(135.575,49.810)}
 
     object_names = np.array(object_names)
     ra_dec = []
-    for object_name in object_names:        
+    for object_name in object_names:
         obj = AstroObject(object_name)
         ra_dec.append(obj.ra_dec)
     object_ra_dec = np.array(ra_dec)
-    
+
     for header in images.headers(save_with_name=new_file_ext,
                                  clobber=overwrite,
                                  object='', RA='*', Dec='*'):
@@ -366,28 +374,28 @@ def add_object_info(directory='.', object_list=None,
         if not matches.any():
             raise RuntimeWarning("No object foundn for image")
             continue
-        object_name = (object_names[matches])[0]   
-        obj_keyword = FITSKeyword('object',value=object_name)
+        object_name = (object_names[matches])[0]
+        obj_keyword = FITSKeyword('object', value=object_name)
         obj_keyword.addToHeader(header, history=True)
+
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
-    
     """
     from numpy import unique
     from astro_object import AstroObject
 
     images = ImageFileCollection(directory,
-                                     keywords=['imagetyp', 'RA',
-                                               'Dec', 'object'])
+                                 keywords=['imagetyp', 'RA',
+                                           'Dec', 'object'])
     summary = images.summary_info
     missing_dec = summary[(summary['object'] != '') &
-                            (summary['RA'] == '') &
-                            (summary['Dec'] == '')]
+                          (summary['RA'] == '') &
+                          (summary['Dec'] == '')]
     if not missing_dec:
         return
-        
+
     objects = unique(missing_dec['object'])
     for object_name in objects:
         obj = AstroObject(object_name)
@@ -395,7 +403,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
         Dec.value = obj.ra_dec.dec.getDmsStr(canonical=True)
         these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
-            full_name = path.join(directory,image['file'])
+            full_name = path.join(directory, image['file'])
             hdulist = fits.open(full_name)
             header = hdulist[0].header
             int16 = (header['bitpix'] == 16)
@@ -403,23 +411,24 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             Dec.addToHeader(header, history=True)
             if new_file_ext is not None:
                 base, ext = path.splitext(full_name)
-                new_file_name = base+ new_file_ext + ext
-                overwrite=False
+                new_file_name = base + new_file_ext + ext
+                overwrite = False
             else:
                 new_file_name = full_name
                 overwrite = True
             if int16:
                 hdulist[0].scale('int16')
             hdulist.writeto(new_file_name, clobber=overwrite)
-            hdulist.close()    
-             
+            hdulist.close()
+
+
 def fix_int16_images(directory='.', new_file_ext=None):
     """Repair unsigned int16 images saved as signed.
 
     Use with care; if your data really is signed int16 this will corrupt it.
     """
     images = ImageFileCollection(directory,
-                                     keywords=['imagetyp', 'bitpix', 'bzero'])
+                                 keywords=['imagetyp', 'bitpix', 'bzero'])
     summary = images.summary_info
     bad = summary[((summary['bitpix'] == 16) &
                    (summary['bzero'] == ''))]
@@ -427,30 +436,31 @@ def fix_int16_images(directory='.', new_file_ext=None):
     print 'Potentially fixing %d files in %s' % (len(bad), directory)
 
     fix_needed = 0
-    
+
     for to_fix in bad:
         full_name = path.join(directory, to_fix['file'])
         hdulist = fits.open(full_name)
         dat = np.int32(hdulist[0].data)
         negs = (dat < 0)
         if negs.any():
-            dat[negs] += 2**16
+            dat[negs] += 2 ** 16
             fix_needed += 1
-        
+
         hdulist[0].data = np.uint16(dat)
 
         if new_file_ext is not None:
             base, ext = path.splitext(full_name)
-            new_file_name = base+ new_file_ext + ext
-            overwrite=False
+            new_file_name = base + new_file_ext + ext
+            overwrite = False
         else:
             new_file_name = full_name
             overwrite = True
 
         hdulist.writeto(new_file_name, clobber=overwrite)
+    result_message = 'Changed values in  %d files out of %d that were fixed'
+    print result_message % (fix_needed, len(bad))
 
-    print 'Changed values in  %d files out of %d that were fixed' % (fix_needed, len(bad))
-    
+
 def compare_data_in_fits(file1, file2):
     """
     Compare the image data in two FITS files.
@@ -462,4 +472,3 @@ def compare_data_in_fits(file1, file2):
     hdu1.close()
     hdu2.close()
     return identical
-

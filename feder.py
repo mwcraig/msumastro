@@ -4,6 +4,7 @@ import numpy as np
 
 
 class FederSite(obstools.Site):
+
     """
     The Feder Observatory site.
 
@@ -55,6 +56,7 @@ class FederSite(obstools.Site):
 
 
 class Instrument(object):
+
     """
     Telescope instrument with simple properties.
 
@@ -67,6 +69,7 @@ class Instrument(object):
     columns
     overscan_start
     """
+
     def __init__(self, name, fits_names=None,
                  rows=0, columns=0,
                  overscan_start=None,
@@ -79,8 +82,8 @@ class Instrument(object):
         self.overscan_axis = overscan_axis
 
     def has_overscan(self, image_dimensions):
-        if  (image_dimensions[self.overscan_axis - 1] >
-             self.overscan_start):
+        if (image_dimensions[self.overscan_axis - 1] >
+                self.overscan_start):
 
             return True
         else:
@@ -88,6 +91,7 @@ class Instrument(object):
 
 
 class ApogeeAltaU9(Instrument):
+
     def __init__(self):
         Instrument.__init__(self, "Apogee Alta U9",
                             fits_names=["Apogee Alta", "Apogee USB/Net"],
@@ -97,6 +101,7 @@ class ApogeeAltaU9(Instrument):
 
 
 class ImageSoftware(object):
+
     """
     Represents software that takes images at telescope.
 
@@ -128,6 +133,7 @@ class ImageSoftware(object):
         Names of any keywords that should be removed from the FITS before
         further processing.
     """
+
     def __init__(self, name, fits_name=None,
                  major_version=None,
                  minor_version=None,
@@ -150,9 +156,11 @@ class ImageSoftware(object):
 
 
 class MaximDL4(ImageSoftware):
+
     """
     Represents MaximDL version 4, all sub-versions
     """
+
     def __init__(self):
         super(MaximDL4, self).__init__("MaxImDL",
                                        fits_name='MaxIm DL Version 4.10',
@@ -163,9 +171,11 @@ class MaximDL4(ImageSoftware):
 
 
 class MaximDL5(ImageSoftware):
+
     """
     Represents MaximDL version 5, all sub-versions
     """
+
     def __init__(self):
         bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
                     'OBJCTHA', 'AIRMASS']
@@ -180,6 +190,7 @@ class MaximDL5(ImageSoftware):
 
 
 class Feder(object):
+
     def __init__(self):
         self.site = FederSite()
         self._apogee_alta_u9 = ApogeeAltaU9()

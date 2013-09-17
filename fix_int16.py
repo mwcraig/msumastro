@@ -10,18 +10,21 @@ raw_vol = '/Volumes/feder_data_originals/ast390/raw'
 
 dirs_to_fix = listdir(fix_vol)
 
+begin_dir = '----------------- processing directory %s -----------------------'
+bad_end = '================>>>>>> One or more failures in directory %s'
+good_end = '++++++++++++++++++ success in directory %s +++++++++++++++++++++++'
+
 for current_dir in dirs_to_fix:
     current_proc = path.join(fix_vol, current_dir)
     current_raw = path.join(raw_vol, current_dir)
-
-    print '----------------- processing directory %s -----------------------' % current_proc
+    print begin_dir % current_proc
     try:
-        test = open(path.join(current_proc,'FIXED_YAY'),'rb')
+        test = open(path.join(current_proc, 'FIXED_YAY'), 'rb')
         print '    >>>>>>>>>>>>>>>>>>skipping this directory, already done.'
         continue
     except IOError:
         pass
-        
+
     fix_int16_images(current_proc)
     files_to_check = ImageFileCollection(current_proc, keywords=['imagetyp'])
     files_to_check = files_to_check.summary_info['file']
@@ -34,12 +37,10 @@ for current_dir in dirs_to_fix:
             print '****************-------> FAIL on file %s' % fixed_name
 
     if not files_match.all():
-        print '================>>>>>> One or more failures in directory %s' % current_proc
-        crap = open(path.join(current_proc,'FAILED'),'wb')
+        print bad_end % current_proc
+        crap = open(path.join(current_proc, 'FAILED'), 'wb')
     else:
-        print '++++++++++++++++++ success in directory %s ++++++++++++++++++++++++' % current_proc
-        crap = open(path.join(current_proc,'FIXED_YAY'),'wb')
+        print good_end % current_proc
+        crap = open(path.join(current_proc, 'FIXED_YAY'), 'wb')
 
     crap.close()
-        
-        

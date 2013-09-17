@@ -1,14 +1,14 @@
 import subprocess
 from os import path, remove, rename
 
+
 def call_astrometry(filename, sextractor=False, feder_settings=True,
                     no_plots=True, minimal_output=True,
                     save_wcs=False, verify=None,
                     ra_dec=None, overwrite=False,
                     wcs_reference_image_center=True):
-    
     """Wrapper around astrometry.net solve-field.
-    
+
     :param sextractor:
         True to use `sextractor`, or a string with the
         path to sextractor.
@@ -44,10 +44,11 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
 
     option_list.append("--obj 40 --depth 20,40")
     if feder_settings:
-        option_list.append("--scale-low 0.4 --scale-high 0.56 --scale-units arcsecperpix")
+        option_list.append(
+            "--scale-low 0.4 --scale-high 0.56 --scale-units arcsecperpix")
 
     if isinstance(sextractor, basestring):
-        option_list.append("--sextractor-path "+sextractor)
+        option_list.append("--sextractor-path " + sextractor)
     elif sextractor:
         option_list.append("--use-sextractor")
 
@@ -58,30 +59,32 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         option_list.append("--corr none --rdls none --match none")
         if not save_wcs:
             option_list.append("--wcs none")
-        
+
     if ra_dec is not None:
         option_list.append("--ra %s --dec %s --radius 0.5" % ra_dec)
-        
+
     if overwrite:
         option_list.append("--overwrite")
 
     if wcs_reference_image_center:
         option_list.append("--crpix-center")
-        
+
     options = " ".join(option_list)
 
     solve_field.extend(options.split())
 
-    # kludge to handle case when path of verify file contains a space--split above does not work
-    # for that case.
+    # kludge to handle case when path of verify file contains a space--split
+    # above does not work for that case.
+
     if verify is not None:
-       solve_field.append("--verify")
-       solve_field.append("%s" %verify)
+        solve_field.append("--verify")
+        solve_field.append("%s" % verify)
 
     solve_field.extend([filename])
     print solve_field
     return subprocess.call(solve_field)
-        
+
+
 def add_astrometry(filename, overwrite=False, ra_dec=None,
                    note_failure=False, save_wcs=False,
                    verify=None, try_builtin_source_finder=False):
@@ -101,9 +104,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
 
     If `try_biultin_source_finder` is true, try using astrometry.net's
     built-in source id routines instead of sextractor.
-    
+
     Returns `True` on success.
-    
+
     Tries a couple strategies before giving up: first sextractor,
     then, if that fails, astrometry.net's built-in soure extractor.
 
@@ -121,36 +124,34 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                     == 0)
 
     if (not solved_field) and try_builtin_source_finder:
-            solved_field = (call_astrometry(filename, ra_dec=ra_dec,
-                                            overwrite=True,
-                                            save_wcs=save_wcs, verify=verify)
-                            == 0)
+        solved_field = (call_astrometry(filename, ra_dec=ra_dec,
+                                        overwrite=True,
+                                        save_wcs=save_wcs, verify=verify)
+                        == 0)
 
     if overwrite and solved_field:
         try:
-            rename(base+'.new', filename)
+            rename(base + '.new', filename)
         except OSError:
             return False
 
     # whether we succeeded or failed, clean up
     try:
-        remove(base+'.axy')
+        remove(base + '.axy')
     except OSError:
         pass
-        
+
     if solved_field:
         try:
-            remove(base+'-indx.xyls')
+            remove(base + '-indx.xyls')
         except OSError:
             pass
-        
+
     if note_failure and not solved_field:
         try:
             f = open(base + '.failed', 'wb')
             f.close()
         except IOError:
             pass
-            
+
     return solved_field
-    
-        

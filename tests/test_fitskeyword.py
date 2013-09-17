@@ -3,6 +3,7 @@ from astropy.io.fits.hdu import PrimaryHDU
 
 
 class TestGoodFITSKeyword(object):
+
     def setup_method(self, method):
         self.keyword = FITSKeyword(name="kwd", value=12,
                                    comment='This is a comment',
@@ -46,7 +47,7 @@ class TestGoodFITSKeyword(object):
         self.keyword.addToHeader(self.hdu, history=True)
         print self.hdu.header['history']
         assert (len(self.hdu.header['history']) ==
-                (1+len(self.keyword.synonyms)))
+                (1 + len(self.keyword.synonyms)))
 
     def test_add_header_no_synonyms(self):
         clean_hdu = PrimaryHDU()

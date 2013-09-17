@@ -1,7 +1,9 @@
 from astropy.io.fits import Header
 from astropy.io.fits import PrimaryHDU
 
+
 class FITSKeyword(object):
+
     """
     Represents a FITS keyword.
 
@@ -10,6 +12,7 @@ class FITSKeyword(object):
 
     Checks whether the keyword is a valid FITS keyword when initialized.
     """
+
     def __init__(self, name=None, value=None, comment=None, synonyms=None):
         """
         All inputs are optional.
@@ -96,8 +99,10 @@ class FITSKeyword(object):
         Method to add HISTORY line to header.
         Use `with_name` to override the name of the keyword object.
         """
-        if with_name is None: with_name = self.name
-        return "Updated keyword %s to value %s" % (with_name.upper(), self.value)
+        if with_name is None:
+            with_name = self.name
+        return "Updated keyword %s to value %s" % (with_name.upper(),
+                                                   self.value)
 
     def addToHeader(self, hdu_or_header, with_synonyms=True, history=False):
         """
@@ -151,11 +156,9 @@ class FITSKeyword(object):
                 continue
         if values:
             if len(set(values)) > 1:
-                raise ValueError('Found more than one value for keyword %s:\n Values found are: %s'
-                                 % (','.join(self.names), ','.join(values)))
+                error_msg = 'Found multiple values for keyword %s:\nValues: %s'
+                raise ValueError(error_msg %
+                                 (','.join(self.names), ','.join(values)))
             self.value = values[0]
         else:
             raise ValueError('Keyword not found in header: %s' % self)
-        
-                        
-

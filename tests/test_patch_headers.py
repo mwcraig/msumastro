@@ -63,9 +63,9 @@ def test_data_is_unmodified_by_patch_headers():
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext
     orig = fits.open(fname + '.fit',
-                       do_not_scale_image_data=True)
+                     do_not_scale_image_data=True)
     modified = fits.open(fname_new + '.fit',
-                           do_not_scale_image_data=True)
+                         do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
 
 
@@ -76,9 +76,9 @@ def test_data_is_unmodified_by_adding_object():
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext + new_ext
     orig = fits.open(fname + '.fit',
-                       do_not_scale_image_data=True)
+                     do_not_scale_image_data=True)
     modified = fits.open(fname_new + '.fit',
-                           do_not_scale_image_data=True)
+                         do_not_scale_image_data=True)
     assert np.all(orig[0].data == modified[0].data)
 
 

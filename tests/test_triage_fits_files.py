@@ -26,8 +26,10 @@ def test_triage():
     assert len(file_info['needs_pointing']) == _n_test['need_pointing']
     assert len(file_info['needs_object_name']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
-    assert len(where(file_info['files']['imagetyp'] == tff.IRAF_image_type('bias'))[0]) == 2
-    
+    bias_check = where(file_info['files']['imagetyp'] ==
+                       tff.IRAF_image_type('bias'))
+    assert (len(bias_check[0]) == 2)
+
 
 def test_fits_summary():
     keywords = ['imagetyp', 'filter']
@@ -39,15 +41,17 @@ def test_fits_summary():
     assert len(summary['file']) == _n_test['files']
     for keyword in keywords:
         assert len(summary[keyword]) == _n_test['files']
-    # explicit conversion to array is needed to avoid astropy Table bug in 0.2.4
+    # explicit conversion to array is needed to avoid astropy Table bug in
+    # 0.2.4
     print np.array(summary['file'] == 'no_filter_no_object_bias.fit')
-    #print summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit']
-    assert summary['filter'][summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
-
+    # print summary['filter'][summary['file'] ==
+    # 'no_filter_no_object_bias.fit']
+    assert summary['filter'][
+        summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
 
 
 class TestImageFileCollection(object):
-    
+
     def test_storage_dir_set(self):
         try:
             should_work = tff.ImageFileCollection(location=_test_dir,
@@ -63,22 +67,26 @@ class TestImageFileCollection(object):
         except OSError:
             assert True
 
-        img_collection = tff.ImageFileCollection(location=_test_dir, keywords=['imagetyp','filter'])
+        img_collection = tff.ImageFileCollection(
+            location=_test_dir, keywords=['imagetyp', 'filter'])
         print img_collection.files_filtered(imagetyp='bias')
         print _n_test
-        assert len(img_collection.files_filtered(imagetyp='bias'))==_n_test['bias']
+        assert len(img_collection.files_filtered(
+            imagetyp='bias')) == _n_test['bias']
         assert len(img_collection.files) == _n_test['files']
         assert img_collection.hasKey('filter')
         assert not img_collection.hasKey('flying monkeys')
-        assert len(img_collection.values('imagetyp',unique=True))==2
+        assert len(img_collection.values('imagetyp', unique=True)) == 2
 
     def test_files_with_compressed(self):
         collection = tff.ImageFileCollection(location=_test_dir)
-        assert len(collection._fits_files_in_directory(compressed=True)) == _n_test['files']
+        assert len(collection._fits_files_in_directory(
+            compressed=True)) == _n_test['files']
 
     def test_files_with_no_compressed(self):
         collection = tff.ImageFileCollection(location=_test_dir)
-        n_files_found = len(collection._fits_files_in_directory(compressed=False))
+        n_files_found = len(
+            collection._fits_files_in_directory(compressed=False))
         n_uncompressed = _n_test['files'] - _n_test['compressed']
         assert n_files_found == n_uncompressed
 
@@ -92,7 +100,7 @@ class TestImageFileCollection(object):
         n_hdus = 0
         for hdu in collection.hdus():
             assert isinstance(hdu, fits.PrimaryHDU)
-            data = hdu.data # must access the data to force scaling
+            data = hdu.data  # must access the data to force scaling
             with pytest.raises(KeyError):
                 hdu.header['bzero']
             n_hdus += 1
@@ -100,7 +108,7 @@ class TestImageFileCollection(object):
 
     def test_hdus_masking(self):
         collection = tff.ImageFileCollection(location=_test_dir,
-                                             keywords=['imagetyp','exposure'])
+                                             keywords=['imagetyp', 'exposure'])
         old_data = np.array(collection.summary_info)
         for hdu in collection.hdus(imagetyp='bias'):
             pass
@@ -121,12 +129,13 @@ class TestImageFileCollection(object):
         destination = mkdtemp()
         for header in collection.headers(save_location=destination):
             pass
-        new_collection = tff.ImageFileCollection(location =
+        new_collection = tff.ImageFileCollection(location=
                                                  destination)
-        basenames = lambda paths: set([os.path.basename(file) for file in paths])
+        basenames = lambda paths: set(
+            [os.path.basename(file) for file in paths])
 
-        assert (len(basenames(collection.paths())-
-                   basenames(new_collection.paths())) == 0)
+        assert (len(basenames(collection.paths()) -
+                    basenames(new_collection.paths())) == 0)
                 #_n_test['compressed'])
         rmtree(destination)
 
@@ -134,10 +143,10 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         cnt = 0
         for header in collection.headers(imagetyp='light'):
-            assert header['imagetyp'].lower() == 'light' 
+            assert header['imagetyp'].lower() == 'light'
             cnt += 1
         assert cnt == _n_test['light']
-        
+
     def test_headers_with_multiple_filters(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         cnt = 0
@@ -147,7 +156,7 @@ class TestImageFileCollection(object):
             assert header['filter'].lower() == 'r'
             cnt += 1
         assert cnt == _n_test['light'] - _n_test['need_filter']
-        
+
     def test_headers_with_filter_wildcard(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         cnt = 0
@@ -162,7 +171,7 @@ class TestImageFileCollection(object):
             assert header['imagetyp'].lower() == 'light'
             with pytest.raises(KeyError):
                 header['object']
-        
+
     def test_generator_headers_save_with_name(self):
         from glob import iglob, glob
         collection = tff.ImageFileCollection(location=_test_dir)
@@ -170,16 +179,16 @@ class TestImageFileCollection(object):
             assert isinstance(header, fits.Header)
         new_collection = tff.ImageFileCollection(location=_test_dir)
         assert (len(new_collection.paths()) ==
-                2*(_n_test['files'])-_n_test['compressed'])
-        print glob(_test_dir+'/*_new*')
-        [os.remove(fil) for fil in iglob(_test_dir+'/*_new*')]
-        print glob(_test_dir+'/*_new*')
+                2 * (_n_test['files']) - _n_test['compressed'])
+        print glob(_test_dir + '/*_new*')
+        [os.remove(fil) for fil in iglob(_test_dir + '/*_new*')]
+        print glob(_test_dir + '/*_new*')
 
     def test_generator_data(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for img in collection.data():
             assert isinstance(img, np.ndarray)
-            
+
     def test_missing_value_in_summary(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         with pytest.raises(ValueError):
@@ -199,7 +208,7 @@ class TestImageFileCollection(object):
 
     def test_keyword_setting(self):
         collection = tff.ImageFileCollection(location=_test_dir,
-                                             keywords=['imagetyp','filter'])
+                                             keywords=['imagetyp', 'filter'])
         tbl_orig = collection.summary_info
         collection.keywords = ['imagetyp', 'object']
         tbl_new = collection.summary_info
@@ -207,15 +216,15 @@ class TestImageFileCollection(object):
         assert (tbl_orig['imagetyp'] == tbl_new['imagetyp']).all()
         assert 'filter' not in tbl_new.keys()
         assert 'object' not in tbl_orig.keys()
-        
-        
+
+
 def setup_module():
     global _n_test
     global _test_dir
-    
+
     for key in _n_test.keys():
         _n_test[key] = 0
-    
+
     _test_dir = mkdtemp()
     os.chdir(_test_dir)
     img = numpy.uint16(numpy.arange(100))
@@ -228,7 +237,7 @@ def setup_module():
     _n_test['need_filter'] += 1
     _n_test['light'] += 1
     _n_test['need_pointing'] += 1
-    
+
     no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('bias')
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
     _n_test['files'] += 1
@@ -250,7 +259,7 @@ def setup_module():
 
     filter_object = fits.PrimaryHDU(img)
     filter_object.header['imagetyp'] = tff.IRAF_image_type('light')
-    filter_object.header['filter'] ='R'
+    filter_object.header['filter'] = 'R'
     filter_object.header['OBJCTRA'] = '00:00:00'
     filter_object.header['OBJCTDEC'] = '00:00:00'
     filter_object.writeto('filter_object_light.fit')
@@ -266,10 +275,10 @@ def setup_module():
     _n_test['light'] += 1
     _n_test['need_object'] += 1
 
+
 def teardown_module():
     global _n_test
 
     for key in _n_test.keys():
         _n_test[key] = 0
     rmtree(_test_dir)
-
