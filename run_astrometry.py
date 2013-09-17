@@ -1,6 +1,5 @@
 import astrometry as ast
-from astropysics import ccd
-from os import path, rename
+from os import path
 import sys
 import numpy as np
 import image_collection as tff
