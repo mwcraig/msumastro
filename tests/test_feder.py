@@ -1,5 +1,4 @@
 from ..feder import *
-from astropysics.obstools import calendar_to_jd
 
 # def test_localSiderialTime():
 #    feder_site = FederSite()

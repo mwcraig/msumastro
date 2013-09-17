@@ -1,7 +1,5 @@
-from ..image_collection import ImageFileCollection
 from ..reduction import trim
 from ..patch_headers import patch_headers
-import numpy as np
 import astropy.io.fits as fits
 from tempfile import mkdtemp
 from os import path, chdir
