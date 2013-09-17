@@ -2,3 +2,5 @@ _build
 *.pyc
 2011-08-24
 .ropeproject
+images_for_testing
+quick_reduce.py
