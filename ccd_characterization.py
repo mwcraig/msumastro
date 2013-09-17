@@ -101,9 +101,6 @@ def ccd_gain(bias, flat):
     f1 = flat[0]
     f2 = flat[1]
 
-    flat_diff = f1 - f2
-    bias_diff = b1 - b2
-
     gain = (((f1.mean() + f2.mean()) - (b1.mean() + b2.mean())) /
             ((f1 - f2).var() - (b1 - b2).var()))
     return gain
