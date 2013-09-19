@@ -4,3 +4,4 @@ _build
 .ropeproject
 images_for_testing
 quick_reduce.py
+.cache
