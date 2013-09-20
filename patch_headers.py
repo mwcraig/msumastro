@@ -170,10 +170,6 @@ def purge_bad_keywords(header, history=False, force=False):
                                             'Have bad keywords been removed?')
 
 
-def keyword_names_as_string(list_of_keywords):
-    return ' '.join([' '.join(keyword.names) for keyword in list_of_keywords])
-
-
 def read_object_list(dir='.', list='obsinfo.txt'):
     """
     Read a list of objects from a text file.
