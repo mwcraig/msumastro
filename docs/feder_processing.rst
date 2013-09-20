@@ -1,8 +1,8 @@
 Processing Feder Image Files
 =============================
 
-Introduction
--------------
+Overview
+--------
 
 How header processing occurs
 +++++++++++++++++++++++++++++
@@ -49,3 +49,42 @@ The underlying python functions are run with a few convenience scripts to accomp
   look-up of object coordinates from Simbad) and that there be
   pointing information in the file; adding astrometry will do that. 
 * If desired run ``python run_triage.py <directory>`` again to regenerate the table of image information.
+
+Details
+-------
+
+Header patching
+++++++++++++++++
+
+The keywords that are currently added/modified by ``patch_headers``  for **all files** are::
+
+  LATITUDE: [degrees] Observatory latitude
+  LONGITUD: [degrees east] Observatory longitude
+  ALTITUDE: [meters] Observatory altitude
+  LST: Local Sidereal Time at start of observation
+  JD-OBS: Julian Date at start of observation
+  MJD-OBS: Modified Julian date at start of observation
+  OSCAN: True if image has overscan region
+  OSCANAX: Overscan axis, 1 is NAXIS1, 2 is NAXIS 2
+  OSCANST: Starting pixel of overscan region
+
+The keywords that are currently added/modified by ``patch_header`` for **light files only** are::
+
+  RA: Approximate RA at EQUINOX
+  DEC: Approximate DEC at EQUINOX
+  OBJECT: Target of the observations
+  HA: Hour angle
+  AIRMASS: Airmass (Sec(Z)) at start of observation
+  ALT-OBJ: [degrees] Altitude of object, no refraction
+  AZ-OBJ: [degrees] Azimuth of object, no refraction
+
+Some **keywords are purged** from the original headers because I don't trust the values that MaxImDL v5 puts in::
+
+  OBJECT
+  JD
+  JD-HELIO
+  OBJCTALT
+  OBJCTAZ
+  OBJCTHA
+  AIRMASS
+
