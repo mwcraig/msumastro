@@ -42,24 +42,30 @@ EXAMPLES
 
         from run_patch import patch_directories
         patch_directories('/my/folder/of/images')
+
+
 """
 
 from patch_headers import patch_headers, add_object_info
 
 
-def patch_directories(directories):
+def patch_directories(directories, verbose=False):
     for currentDir in directories:
-        print "working on directory: %s" % currentDir
+        if verbose:
+            print "working on directory: %s" % currentDir
         patch_headers(currentDir, new_file_ext='', overwrite=True)
         add_object_info(currentDir, new_file_ext='', overwrite=True)
 
 if __name__ == "__main__":
+    import script_helpers
     import argparse
-    raw_help_format = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(epilog=__doc__,
-                                     formatter_class=raw_help_format)
+
+    parser = argparse.ArgumentParser()
+    script_helpers.setup_parser_help(parser, __doc__)
+    script_helpers.add_verbose(parser)
+
     parser.add_argument("directories", metavar='dir', nargs='+')
     parser.parse_args()
 
     args = parser.parse_args()
-    patch_directories(args.directories)
+    patch_directories(args.directories, verbose=args.verbose)
