@@ -1,6 +1,6 @@
 import numpy as np
 from astropysics import ccd
-from astropy import wcs as pywcs
+from astropy import wcs
 
 
 class ImageWithWCS(ccd.FitsImage):
@@ -18,7 +18,7 @@ class ImageWithWCS(ccd.FitsImage):
 
     @property
     def wcs(self):
-        """pyWCS object for this file"""
+        """WCS object for this file"""
         return self._wcs
 
     def shift(self, int_shift, in_place=False):
@@ -52,7 +52,7 @@ class ImageWithWCS(ccd.FitsImage):
 
     def wcs_pix2sky(self, pix, **kwargs):
         """
-         Wrapper around pywcs function that handles a single tuple
+         Wrapper around astropy.wcs function that handles a single tuple
         gracefully.
 
         `pix` must be a numpy array either of dimension 2
@@ -61,7 +61,8 @@ class ImageWithWCS(ccd.FitsImage):
 
         Returns a numpy array of the same format as `pix`,
 
-        TO DO: always  in the order (ra, dec). pywcs ra_dec_order is broken?
+        TO DO: always  in the order (ra, dec). astropy.wcs ra_dec_order is
+        broken?
         """
 
         return self._wcs_wrapper(pix, self.wcs.wcs_pix2sky, **kwargs)
@@ -76,7 +77,7 @@ class ImageWithWCS(ccd.FitsImage):
 
         Returns a numpy array of the same format as `pix`,
 
-        TO DO: always  in the order (ra, dec). pywcs ra_dec_order is
+        TO DO: always  in the order (ra, dec). astropy.wcs ra_dec_order is
         broken?
         """
 
