@@ -34,7 +34,7 @@ def astrometry_img_group(img_group, directory='.'):
             # add_astrometry/call_astrometry to allow this)
         # save name of this wcs file.
     print idx, len(img_group)
-    for img in img_group.rows(range(idx + 1, len(img_group))):
+    for img in img_group[range(idx + 1, len(img_group))]:
         img_file = path.join(directory, img['file'])
         astrometry = ast.add_astrometry(img_file, ra_dec=ra_dec,
                                         note_failure=True,
