@@ -16,7 +16,8 @@ def shift_images(files, source_dir, output_file='_shifted'):
         img = ImageWithWCS(path.join(source_dir, fil))
         ra_dec_pix = img.wcs_sky2pix(ref_ra_dec)
         shift = ref_pix - np.int32(ra_dec_pix)
-        print shift
+        # FITS order of axes opposite of numpy, so swap:
+        shift = shift[::-1]
         img.shift(shift, in_place=True)
         base, ext = path.splitext(fil)
         img.save(path.join(source_dir, base + output_file + ext))
