@@ -1,15 +1,28 @@
 import numpy as np
-from astropysics import ccd
 from astropy import wcs
+from astropy.io import fits
 
 
-class ImageWithWCS(ccd.FitsImage):
+class ImageWithWCS(object):
 
-    """Astropysics FitsImage with astrometric functions"""
+    """FITS image with WCS"""
 
-    def __init__(self, fnordata):
-        ccd.FitsImage.__init__(self, fnordata)
-        self._wcs = pywcs.WCS(self.header)
+    def __init__(self, filepath, **kwd):
+        """
+        A FITS images with a few convenience methods defined, including easy
+        access to WCS transforms.
+
+        Parameters
+        ----------
+
+        filepath : str
+            Path to the FITS file.
+
+        kwd : dict, optional
+            All keywords are passed through to astropy.io.fits.open
+        """
+        self.fitsfile = fits.open(filepath, **kwd)
+        self._wcs = wcs.WCS(self.header)
 
     @property
     def header(self):
@@ -21,6 +34,16 @@ class ImageWithWCS(ccd.FitsImage):
         """WCS object for this file"""
         return self._wcs
 
+    @property
+    def data(self):
+        """Image data; will be scaled by default using BZERO and BSCALE"""
+        return self.fitsfile[0].data
+
+    @data.setter
+    def data(self, array):
+        """Set image data to numpy array"""
+        self.fitsfile[0].data = array
+
     def shift(self, int_shift, in_place=False):
         """
         Shift image by an integer number of pixels without
@@ -29,7 +52,7 @@ class ImageWithWCS(ccd.FitsImage):
         `int_shift` is a tuple, numpy array or list of integers
         (floats will be rounded).
 
-        If `in_place` is true the image is shifted in place, and the
+        If `in_place` is True the image is shifted in place, and the
         wcs reference pixel is updated appropriately.
         """
         from scipy import ndimage
@@ -41,11 +64,12 @@ class ImageWithWCS(ccd.FitsImage):
         res = ndimage.shift(self.data, int_shift, order=0)
 
         if in_place:
-            self._applyArray(None, res)
-            self.header['crpix1'] += int_shift[0]
-            self.header['crpix2'] += int_shift[1]
-            self._wcs = pywcs.WCS(self.header)
-
+            self.fitsfile[0].data = res
+            # Indices for int_shift below ARE CORRECT because FITS axis
+            # order is opposite that of numpy.
+            self.header['crpix1'] += int_shift[1]
+            self.header['crpix2'] += int_shift[0]
+            self._wcs = wcs.WCS(self.header)
             res = None
 
         return res
@@ -109,4 +133,9 @@ class ImageWithWCS(ccd.FitsImage):
 
         `clobber` should be `True` to overwrite an existing file.
         """
-        ccd.FitsImage.save(self, fname, clobber=clobber)
+        self.fitsfile.writeto(fname, clobber=clobber)
+
+    def close(self):
+        """Close the file associated with this FITS image."""
+
+        self.fitsfile.close()
