@@ -75,7 +75,6 @@ def construct_parser():
 
 if __name__ == "__main__":
     parser = construct_parser()
-    parser.parse_args()
     args = parser.parse_args()
 
     patch_directories(args.dir, verbose=args.verbose)

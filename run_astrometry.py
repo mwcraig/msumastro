@@ -180,7 +180,6 @@ def construct_parser():
 
 if __name__ == "__main__":
     parser = construct_parser()
-    parser.parse_args()
     args = parser.parse_args()
     print dir(args)
     astrometry_for_directory(args.directories,
