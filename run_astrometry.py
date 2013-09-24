@@ -159,15 +159,11 @@ def astrometry_for_directory(directories,
                 img_new.header['DEC'] = ra_dec[1]
                 img_new.save(img_new.fitsfile.filename(), clobber=True)
 
+from script_helpers import construct_default_parser
+
 
 def construct_parser():
-    import script_helpers
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    script_helpers.setup_parser_help(parser, __doc__)
-    script_helpers.add_verbose(parser)
-    script_helpers.add_directories(parser)
+    parser = construct_default_parser(__doc__)
 
     group_help = 'attempt to speed up astrometry by using WCS from one image '
     group_help += 'of an object as initial guess for others; may very well '

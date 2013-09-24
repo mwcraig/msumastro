@@ -52,3 +52,16 @@ def add_directories(parser):
 
     parser.add_argument("dir", metavar='dir', nargs='+',
                         help="Directory to process")
+
+
+def construct_default_parser(docstring=None):
+    #import script_helpers
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    if docstring is not None:
+        setup_parser_help(parser, docstring)
+    add_verbose(parser)
+    add_directories(parser)
+
+    return parser

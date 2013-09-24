@@ -66,16 +66,11 @@ def patch_directories(directories, verbose=False):
         patch_headers(currentDir, new_file_ext='', overwrite=True)
         add_object_info(currentDir, new_file_ext='', overwrite=True)
 
+from script_helpers import construct_default_parser
+
 
 def construct_parser():
-    import script_helpers
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    script_helpers.setup_parser_help(parser, __doc__)
-    script_helpers.add_verbose(parser)
-    script_helpers.add_directories(parser)
-
+    parser = construct_default_parser(__doc__)
     return parser
 
 if __name__ == "__main__":
