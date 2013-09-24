@@ -6,36 +6,33 @@ DESCRIPTION
     The columns are FITS keywords extracted from the header of each
     file.
 
-    By default, astrometry is added only for those files with pointing
-    information in the header (specifically, RA and Dec) because blind
-    astrometry is fairly slow. It may be faster to insert RA/Dec into
-    those files before doing astrometry.
+    The list of default keywords extracted is available through the command
+    line option ``--list-default``.
 
-    The functions called by this script set the WCS reference pixel
-    to the center of the image, which turns out to make aligning images
-    a little easier.
+    .. Note::
+        This feature is available only from the command line.
 
-    For more control over the parameters see :func:`add_astrometry`
-    and for even more control, :func:`call_astrometry`.
+    For more control over the parameters see :func:`image_collection.triage_fits_files`
 
     .. Note::
         This script is **NOT RECURSIVE**; it will not process files in
         subdirectories of the the directories supplied on the command line.
 
-    .. WARNING::
-        This script OVERWRITES the image files in the directories
-        specified on the command line.
 
 EXAMPLES
 --------
 
     Invoking this script from the command line::
 
-        python run_astrometry.py /my/folder/of/images
+        python run_triage.py /my/folder/of/images
+
+    Get list of default keywords included in summary table::
+
+        python run_triage.py --list-default
 
     To work on the same folder from within python, do this::
 
-        from run_astrometry import astrometry_for_directory
+        from run_triage import triage_directories
         astrometry_for_directory('/my/folder/of/images')
 
 
@@ -43,10 +40,13 @@ EXAMPLES
 import image_collection as tff
 import os
 
-object_name_file_name = 'NEEDS_OBJECT_NAME.txt'
-pointing_file_name = 'NEEDS_POINTING_INFO.txt'
-filter_file_name = 'NEEDS_FILTER.txt'
-file_list = 'Manifest.txt'
+
+class DefaultFileNames(object):
+    def __init__(self):
+        self.object_file_name = 'NEEDS_OBJECT_NAME.txt'
+        self.pointing_file_name = 'NEEDS_POINTING_INFO.txt'
+        self.filter_file_name = 'NEEDS_FILTER.txt'
+        self.output_table = 'Manifest.txt'
 
 
 def write_list(dir, file, info):
@@ -56,56 +56,124 @@ def write_list(dir, file, info):
 
 
 def triage_directories(directories,
-                       extra_keywords=None):
-    if extra_keywords is not None:
-        more_keys = extra_keywords
+                       keywords=None,
+                       object_file_name=None,
+                       pointing_file_name=None,
+                       filter_file_name=None,
+                       output_table=None):
+
+    use_keys = []
+    if keywords is not None:
+        use_keys = keywords
 
     for currentDir in directories:
-        all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
-        all_keywords.extend(more_keys)
-        moo = tff.triage_fits_files(currentDir,
-                                    file_info_to_keep=all_keywords)
+        result = tff.triage_fits_files(currentDir,
+                                       file_info_to_keep=use_keys)
         for fil in [pointing_file_name, filter_file_name,
-                    object_name_file_name, file_list]:
+                    object_file_name, output_table]:
             try:
                 os.remove(os.path.join(currentDir, fil))
             except OSError:
                 pass
 
-        need_pointing = moo['needs_pointing']
+        need_pointing = result['needs_pointing']
         if need_pointing:
             write_list(currentDir, pointing_file_name, need_pointing)
-        if moo['needs_filter']:
-            write_list(currentDir, filter_file_name, moo['needs_filter'])
-        if moo['needs_object_name']:
-            write_list(currentDir, object_name_file_name,
-                       moo['needs_object_name'])
-        tbl = moo['files']
-        if len(tbl) > 0:
-            tbl.write(os.path.join(currentDir, file_list),
+        if result['needs_filter']:
+            write_list(currentDir, filter_file_name, result['needs_filter'])
+        if result['needs_object_name']:
+            write_list(currentDir, object_file_name,
+                       result['needs_object_name'])
+        tbl = result['files']
+        if ((len(tbl) > 0) and (output_table is not None)):
+            tbl.write(os.path.join(currentDir, output_table),
                       format='ascii', delimiter=',')
-
-from script_helpers import construct_default_parser
 
 
 def construct_parser():
-    parser = construct_default_parser(__doc__)
+    from argparse import ArgumentParser
+    import script_helpers
 
-    key_help = 'FITS keyword to add to table; for multiple keywords use '
-    key_help += 'this option multiple times.'
+    parser = ArgumentParser()
+    script_helpers.setup_parser_help(parser, __doc__)
+    # allow for no directories below so that -l option
+    # can be used without needing to specify a directory
+    script_helpers.add_directories(parser, '*')
+    script_helpers.add_verbose(parser)
+
+    key_help = 'FITS keyword to add to table in addition to the defaults; '
+    key_help += 'for multiple keywords use this option multiple times.'
     parser.add_argument('-k', '--key', action='append',
                         help=key_help)
+
+    no_default_help = 'Do not include default list of keywords in table'
+    parser.add_argument('-n', '--no-default', action='store_true',
+                        help=no_default_help)
+
+    list_help = 'Print default list keywords put into table and exit'
+    parser.add_argument('-l', '--list-default', action='store_true',
+                        help=list_help)
+
+    default_names = DefaultFileNames()
+    output_file_help = 'Name of file in which table is saved; default is '
+    output_file_help += default_names.output_table
+    parser.add_argument('-t', '--table-name',
+                        default=default_names.output_table,
+                        help=output_file_help)
+
+    needs_object_help = 'Name of file to which list of files that need '
+    needs_object_help += 'object name is saved; default is '
+    needs_object_help += default_names.object_file_name
+    parser.add_argument('-o', '--object-needed-list',
+                        default=default_names.object_file_name,
+                        help=needs_object_help)
+
+    needs_pointing_help = 'Name of file to which list of files that need '
+    needs_pointing_help += 'pointing name is saved; default is '
+    needs_pointing_help += default_names.pointing_file_name
+    parser.add_argument('-p', '--pointing-needed-list',
+                        default=default_names.pointing_file_name,
+                        help=needs_pointing_help)
+
+    needs_filter_help = 'Name of file to which list of files that need '
+    needs_filter_help += 'filter is saved; default is '
+    needs_filter_help += default_names.filter_file_name
+    parser.add_argument('-f', '--filter-needed-list',
+                        default=default_names.filter_file_name,
+                        help=needs_filter_help)
 
     return parser
 
 if __name__ == "__main__":
+    from sys import exit
     parser = construct_parser()
     args = parser.parse_args()
-    always_include_keys = ['object', 'observer', 'airmass', 'instrument']
+
+    all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
+
+    always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
+                           'object', 'observer', 'airmass', 'instrument',
+                           'RA', 'Dec']
 
     try:
         always_include_keys.extend(args.key)
     except TypeError as e:
         pass
 
-    triage_directories(args.dir, extra_keywords=always_include_keys)
+    if args.no_default:
+        always_include_keys = None
+
+    if args.list_default:
+        print 'Keys included by default are:\n'
+        keys_print = [key.upper() for key in always_include_keys]
+        print ', '.join(keys_print)
+        exit(0)
+
+    if not args.dir:
+        parser.error('No directory specified')
+
+    triage_directories(args.dir, keywords=always_include_keys,
+                       object_file_name=args.object_needed_list,
+                       pointing_file_name=args.pointing_needed_list,
+                       filter_file_name=args.filter_needed_list,
+                       output_table=args.table_name)
