@@ -33,7 +33,8 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     """
 
     all_file_info = file_info_to_keep
-    all_file_info.extend(RA.names)
+    if 'ra' not in [key.lower() for key in all_file_info]:
+        all_file_info.extend(RA.names)
 
     images = ImageFileCollection(dir, keywords=all_file_info)
     file_info = images.fits_summary(keywords=all_file_info)
@@ -57,7 +58,11 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     lights = file_info[file_info['imagetyp'] == 'LIGHT']
     has_no_ra = array([True] * len(lights))
     for ra_name in RA.names:
-        has_no_ra &= (lights[ra_name] == '')
+        try:
+            has_no_ra &= (lights[ra_name] == '')
+        except KeyError as e:
+            pass
+
     needs_minimal_pointing = (lights['object'] == '') & has_no_ra
 
     dir_info = {'files': file_info,
