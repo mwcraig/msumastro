@@ -39,7 +39,7 @@ def add_verbose(parser):
                         action="store_true")
 
 
-def add_directories(parser):
+def add_directories(parser, nargs_in='+'):
     """
     Add a positional argument that is one or more directories.
 
@@ -50,7 +50,7 @@ def add_directories(parser):
 
     """
 
-    parser.add_argument("dir", metavar='dir', nargs='+',
+    parser.add_argument("dir", metavar='dir', nargs=nargs_in,
                         help="Directory to process")
 
 
