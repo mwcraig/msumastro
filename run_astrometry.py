@@ -26,6 +26,7 @@ DESCRIPTION
         specified on the command line.
 
 EXAMPLES
+--------
 
     Invoking this script from the command line::
 
@@ -33,8 +34,8 @@ EXAMPLES
 
     To work on the same folder from within python, do this::
 
-        from run_patch import patch_directories
-        patch_directories('/my/folder/of/images')
+        from run_astrometry import astrometry_for_directory
+        astrometry_for_directory('/my/folder/of/images')
 
 
 """
@@ -87,6 +88,24 @@ def astrometry_img_group(img_group, directory='.'):
 def astrometry_for_directory(directories,
                              group_by_object=False,
                              blind=False):
+    """
+    Add astrometry to files in list of directories
+
+    Parameters
+    ----------
+
+    directories : str or list of str
+        Directory or directories whose FITS files are to be processed.
+
+    group_by_object : bool, optional
+        attempt to speed up astrometry by using WCS from one image
+        of an object as initial guess for others; may very well NOT
+        speed things up. Default is False.
+
+    blind : bool, optional
+        Set to True to force blind astrometry. False by default because
+        blind astrometry is slow.
+    """
     for currentDir in directories:
         images = tff.ImageFileCollection(currentDir,
                                          keywords=['imagetyp', 'object',

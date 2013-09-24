@@ -48,6 +48,18 @@ from patch_headers import patch_headers, add_object_info
 
 
 def patch_directories(directories, verbose=False):
+    """
+    Patch all of the files in each of a list of directories.
+
+    Parameters
+    ----------
+
+    directories : str or list of str
+        Directory or directories whose FITS files are to be processed.
+
+    verbose : bool, optional
+        Control amount of logging output.
+    """
     for currentDir in directories:
         if verbose:
             print "working on directory: %s" % currentDir
