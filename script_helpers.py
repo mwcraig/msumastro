@@ -31,8 +31,24 @@ def add_verbose(parser):
     -----------
 
     parser : `ArgumentParser`
+
     """
 
     verbose_help = "provide more information during processing"
     parser.add_argument("-v", "--verbose", help=verbose_help,
                         action="store_true")
+
+
+def add_directories(parser):
+    """
+    Add a positional argument that is one or more directories.
+
+    Parameters
+    ----------
+
+    parser : `ArgumentParser`
+
+    """
+
+    parser.add_argument("dir", metavar='dir', nargs='+',
+                        help="Directory to process")
