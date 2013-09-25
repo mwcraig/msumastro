@@ -42,8 +42,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Matt\'s astro python toolbox'
-copyright = u'2011, Matt Craig'
+project = u'MSUMastro toolbox'
+copyright = u'2011-2013, Matt Craig'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
