@@ -32,26 +32,27 @@ Running the software
 
 The underlying python functions are run with a few convenience scripts to accomplish each of the steps above. They would typically be run in this order:
 
-*  ``python run_patch.py <directory>`` to do a first round of header
+*  ``run_patch`` to do a first round of header
    patching that puts site information, LST, airmass (where
-   appropriate) and RA/Dec information (where appropriate) into the files.
-*  ``python run_triage.py <directory>`` to:
+   appropriate) and RA/Dec information (where appropriate) into the files. See :ref:`header-patching` for details.
+*  ``run_triage`` (details at :ref:`summary-table`) to:
 
-  + generate a text list used by later stages to identify what actions are needed on the FITS files in ``<directory>``.
+  + generate a table summarizing properties of images in a directory. Each image is one row in the table and the columns are keywords from the FITS headers.
   + create files with lists of images missing key information.
-
-*  ``python run_astrometry.py <directory>`` to use `astrometry.net
-   <http://astrometry.net>`_ to add WCS (astrometry) information to the file. **Note
+* Fix any problems identified by ``run_triage``. The script ``quick_add_keys_to_file`` may be useful for this; it is an easy way to add/modify the values of keywords in FITS headers from the command line; see details at :ref:`header-quick-fix`. After fixing these problems you may need to re-run patch, particularly if you have added pointing information or changed the ``IMAGETYP`` of any of the images.
+*  ``run_astrometry`` to use `astrometry.net
+   <http://astrometry.net>`_ to add WCS (astrometry) information to the file. See :ref:`apply-astrometry` for details. **Note
    that this requires a local installation** of `astrometry.net
    <http://astrometry.net>`_.
-* ``python run_add_object.py <directory>`` to add object information
-  to appropriate files. This requires an Internet connection (for
-  look-up of object coordinates from Simbad) and that there be
-  pointing information in the file; adding astrometry will do that. 
-* If desired run ``python run_triage.py <directory>`` again to regenerate the table of image information.
+
+* If desired, ``run_triage`` again to regenerate the table of image information.
+
+Detailed documentation of the individual scripts is :doc:`available here. <scripts>`
 
 Details
 -------
+
+.. _header-patch-detail:
 
 Header patching
 ++++++++++++++++
