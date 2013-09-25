@@ -21,6 +21,12 @@ DESCRIPTION
     see the documentation for ``patch_headers`` at
     :func:`patch_headers.patch_headers`.
 
+    ``run_patch`` also adds the name of the object being observed when
+    appropriate (i.e. only for light files) and possible. It needs to be
+    given a list of objects; looking up the coordinates for those objects
+    requires an Internet connection. See :func:`patch_headers.add_object_info`
+    for details.
+
     .. Note::
         This script is **NOT RECURSIVE**; it will not process files in
         subdirectories of the the directories supplied on the command line.
