@@ -96,6 +96,8 @@ class ImageFileCollection(object):
         """
         On setting, check that `loc` is writable.
         """
+        from tempfile import TemporaryFile
+
         if ((isinstance(loc, bool) and not loc) or
                 (loc is None)):
             self._storage = loc
