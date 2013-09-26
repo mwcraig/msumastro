@@ -48,8 +48,7 @@ class FITSKeyword(object):
 
     @name.setter
     def name(self, keyword_name):
-        if self._keyword_is_valid(keyword_name):
-            self._name = self._set_keyword_case(keyword_name)
+        self._name = self._set_keyword_case(keyword_name)
 
     @property
     def synonyms(self):
@@ -69,20 +68,8 @@ class FITSKeyword(object):
             raise ValueError(
                 'Synonyms must either be a string or a list of strings')
         for synonym in synonym_list:
-            if self._keyword_is_valid(synonym):
-                self._synonyms.append(self._set_keyword_case(synonym))
+            self._synonyms.append(self._set_keyword_case(synonym))
         return
-
-    def _keyword_is_valid(self, keyword_name):
-        if keyword_name is not None:
-            dummy_value = 0
-            try:
-                self._hdr[keyword_name] = dummy_value
-            except ValueError:
-                raise
-            return True
-        else:
-            return False
 
     @property
     def names(self):
