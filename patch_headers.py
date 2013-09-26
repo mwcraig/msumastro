@@ -69,6 +69,17 @@ def deg2dms(dd):
     return int(deg), int(mnt), sec
 
 
+def IRAF_image_type(image_type):
+    """Convert MaximDL default image type names to IRAF
+
+    `image_type` is the value of the FITS header keyword IMAGETYP.
+
+    MaximDL default is, e.g. 'Bias Frame', which IRAF calls
+    'BIAS'. Can safely be called with an IRAF-style image_type.
+    """
+    return image_type.split()[0].upper()
+
+
 def add_time_info(header, history=False):
     """
     Add JD, MJD, LST to FITS header; `header` should be a fits

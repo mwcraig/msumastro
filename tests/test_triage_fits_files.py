@@ -1,5 +1,6 @@
 from .. import image_collection as tff
 from ..run_triage import triage_fits_files
+from ..patch_headers import IRAF_image_type
 import os
 import numpy
 import astropy.io.fits as fits
@@ -28,7 +29,7 @@ def test_triage():
     assert len(file_info['needs_object_name']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
     bias_check = where(file_info['files']['imagetyp'] ==
-                       tff.IRAF_image_type('bias'))
+                       IRAF_image_type('bias'))
     assert (len(bias_check[0]) == 2)
 
 
@@ -227,7 +228,7 @@ def setup_module():
     img = numpy.uint16(numpy.arange(100))
 
     no_filter_no_object = fits.PrimaryHDU(img)
-    no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
+    no_filter_no_object.header['imagetyp'] = IRAF_image_type('light')
     no_filter_no_object.writeto('no_filter_no_object_light.fit')
     _n_test['files'] += 1
     _n_test['need_object'] += 1
@@ -235,13 +236,13 @@ def setup_module():
     _n_test['light'] += 1
     _n_test['need_pointing'] += 1
 
-    no_filter_no_object.header['imagetyp'] = tff.IRAF_image_type('bias')
+    no_filter_no_object.header['imagetyp'] = IRAF_image_type('bias')
     no_filter_no_object.writeto('no_filter_no_object_bias.fit')
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
     filter_no_object = fits.PrimaryHDU(img)
-    filter_no_object.header['imagetyp'] = tff.IRAF_image_type('light')
+    filter_no_object.header['imagetyp'] = IRAF_image_type('light')
     filter_no_object.header['filter'] = 'R'
     filter_no_object.writeto('filter_no_object_light.fit')
     _n_test['files'] += 1
@@ -249,13 +250,13 @@ def setup_module():
     _n_test['light'] += 1
     _n_test['need_pointing'] += 1
 
-    filter_no_object.header['imagetyp'] = tff.IRAF_image_type('bias')
+    filter_no_object.header['imagetyp'] = IRAF_image_type('bias')
     filter_no_object.writeto('filter_no_object_bias.fit')
     _n_test['files'] += 1
     _n_test['bias'] += 1
 
     filter_object = fits.PrimaryHDU(img)
-    filter_object.header['imagetyp'] = tff.IRAF_image_type('light')
+    filter_object.header['imagetyp'] = IRAF_image_type('light')
     filter_object.header['filter'] = 'R'
     filter_object.header['OBJCTRA'] = '00:00:00'
     filter_object.header['OBJCTDEC'] = '00:00:00'
