@@ -1,75 +1,9 @@
 import fnmatch
 import astropy.io.fits as fits
-from feder import RA
 from os import listdir, path
 from numpy import array
 import numpy.ma as ma
 from astropy.table import Table
-
-
-def contains_maximdl_imagetype(image_collection):
-    """
-    Check an image file collection for MaxImDL-style image types
-    """
-    import re
-    file_info = image_collection.summary_info
-    image_types = ' '.join([typ for typ in file_info['imagetyp']])
-    if re.search('[fF]rame', image_types) is not None:
-        return True
-    else:
-        return False
-
-
-def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
-                                                  'object',
-                                                  'filter']):
-    """
-    Check FITS files in a directory for deficient headers
-
-    `dir` is the name of the directory to search for files.
-
-    `file_info_to_keep` is a list of the FITS keywords to get values
-    for for each FITS file in `dir`.
-    """
-
-    all_file_info = file_info_to_keep
-    if 'ra' not in [key.lower() for key in all_file_info]:
-        all_file_info.extend(RA.names)
-
-    images = ImageFileCollection(dir, keywords=all_file_info)
-    file_info = images.fits_summary(keywords=all_file_info)
-
-    # check for bad image type and halt until that is fixed.
-    if contains_maximdl_imagetype(images):
-        raise ValueError(
-            'Correct MaxImDL-style image types before proceeding.')
-
-    file_needs_filter = \
-        list(images.files_filtered(imagetyp='light',
-                                   filter=''))
-    file_needs_filter += \
-        list(images.files_filtered(imagetyp='flat',
-                                   filter=''))
-
-    file_needs_object_name = \
-        list(images.files_filtered(imagetyp='light',
-                                   object=''))
-
-    lights = file_info[file_info['imagetyp'] == 'LIGHT']
-    has_no_ra = array([True] * len(lights))
-    for ra_name in RA.names:
-        try:
-            has_no_ra &= (lights[ra_name] == '')
-        except KeyError as e:
-            pass
-
-    needs_minimal_pointing = (lights['object'] == '') & has_no_ra
-
-    dir_info = {'files': file_info,
-                'needs_filter': file_needs_filter,
-                'needs_pointing': list(lights['file'][needs_minimal_pointing]),
-                'needs_object_name': file_needs_object_name}
-    return dir_info
 
 
 def IRAF_image_type(image_type):

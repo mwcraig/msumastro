@@ -12,7 +12,7 @@ DESCRIPTION
     .. Note::
         This feature is available only from the command line.
 
-    For more control over the parameters see :func:`image_collection.triage_fits_files`
+    For more control over the parameters see :func:`triage_fits_files`
 
     .. Note::
         This script is **NOT RECURSIVE**; it will not process files in
@@ -37,8 +37,8 @@ EXAMPLES
 
 
 """
-import image_collection as tff
 import os
+import numpy as np
 
 
 class DefaultFileNames(object):
@@ -55,6 +55,73 @@ def write_list(dir, file, info):
     out.close()
 
 
+def contains_maximdl_imagetype(image_collection):
+    """
+    Check an image file collection for MaxImDL-style image types
+    """
+    import re
+    file_info = image_collection.summary_info
+    image_types = ' '.join([typ for typ in file_info['imagetyp']])
+    if re.search('[fF]rame', image_types) is not None:
+        return True
+    else:
+        return False
+
+
+def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
+                                                  'object',
+                                                  'filter']):
+    """
+    Check FITS files in a directory for deficient headers
+
+    `dir` is the name of the directory to search for files.
+
+    `file_info_to_keep` is a list of the FITS keywords to get values
+    for for each FITS file in `dir`.
+    """
+    from feder import RA
+    from image_collection import ImageFileCollection
+
+    all_file_info = file_info_to_keep
+    if 'ra' not in [key.lower() for key in all_file_info]:
+        all_file_info.extend(RA.names)
+
+    images = ImageFileCollection(dir, keywords=all_file_info)
+    file_info = images.fits_summary(keywords=all_file_info)
+
+    # check for bad image type and halt until that is fixed.
+    if contains_maximdl_imagetype(images):
+        raise ValueError(
+            'Correct MaxImDL-style image types before proceeding.')
+
+    file_needs_filter = \
+        list(images.files_filtered(imagetyp='light',
+                                   filter=''))
+    file_needs_filter += \
+        list(images.files_filtered(imagetyp='flat',
+                                   filter=''))
+
+    file_needs_object_name = \
+        list(images.files_filtered(imagetyp='light',
+                                   object=''))
+
+    lights = file_info[file_info['imagetyp'] == 'LIGHT']
+    has_no_ra = np.array([True] * len(lights))
+    for ra_name in RA.names:
+        try:
+            has_no_ra &= (lights[ra_name] == '')
+        except KeyError as e:
+            pass
+
+    needs_minimal_pointing = (lights['object'] == '') & has_no_ra
+
+    dir_info = {'files': file_info,
+                'needs_filter': file_needs_filter,
+                'needs_pointing': list(lights['file'][needs_minimal_pointing]),
+                'needs_object_name': file_needs_object_name}
+    return dir_info
+
+
 def triage_directories(directories,
                        keywords=None,
                        object_file_name=None,
@@ -67,8 +134,7 @@ def triage_directories(directories,
         use_keys = keywords
 
     for currentDir in directories:
-        result = tff.triage_fits_files(currentDir,
-                                       file_info_to_keep=use_keys)
+        result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         for fil in [pointing_file_name, filter_file_name,
                     object_file_name, output_table]:
             try:

@@ -1,4 +1,5 @@
 from .. import image_collection as tff
+from ..run_triage import triage_fits_files
 import os
 import numpy
 import astropy.io.fits as fits
@@ -19,7 +20,7 @@ _filters = []
 
 
 def test_triage():
-    file_info = tff.triage_fits_files(_test_dir)
+    file_info = triage_fits_files(_test_dir)
     print "number of files should be %i" % _n_test['files']
     print file_info['files']['file']
     assert len(file_info['files']['file']) == _n_test['files']
