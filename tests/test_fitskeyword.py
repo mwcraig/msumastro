@@ -32,26 +32,26 @@ class TestGoodFITSKeyword(object):
                 self.keyword.synonyms[0], self.keyword.synonyms[1]])
 
     def test_history_comment(self):
-        assert (self.keyword.historyComment() ==
+        assert (self.keyword.history_comment() ==
                 "Updated keyword KWD to value 12")
-        assert (self.keyword.historyComment(with_name=self.keyword.synonyms[0])
-                == "Updated keyword KWDALT1 to value 12")
+        assert(self.keyword.history_comment(with_name=self.keyword.synonyms[0])
+               == "Updated keyword KWDALT1 to value 12")
 
     def test_add_header(self):
-        self.keyword.addToHeader(self.hdu)
+        self.keyword.add_to_header(self.hdu)
         assert self.hdu.header[self.keyword.name] == self.keyword.value
         for synonym in self.keyword.synonyms:
             assert self.hdu.header[synonym] == self.keyword.value
 
     def test_add_header_history(self):
-        self.keyword.addToHeader(self.hdu, history=True)
+        self.keyword.add_to_header(self.hdu, history=True)
         print self.hdu.header['history']
         assert (len(self.hdu.header['history']) ==
                 (1 + len(self.keyword.synonyms)))
 
     def test_add_header_no_synonyms(self):
         clean_hdu = PrimaryHDU()
-        self.keyword.addToHeader(clean_hdu, with_synonyms=False)
+        self.keyword.add_to_header(clean_hdu, with_synonyms=False)
         for synonym in self.keyword.synonyms:
             try:
                 clean_hdu.header[synonym]
@@ -61,6 +61,6 @@ class TestGoodFITSKeyword(object):
 
     def test_add_header_from_header(self):
         clean_hdu = PrimaryHDU()
-        self.keyword.addToHeader(clean_hdu.header)
+        self.keyword.add_to_header(clean_hdu.header)
         for name in self.keyword.names:
             assert clean_hdu.header[name] == self.keyword.value

@@ -91,7 +91,7 @@ def add_time_info(header, history=False):
     LST.value = sexagesimal_string(deg2dms(LST.value))
 
     for keyword in keywords_for_all_files:
-        keyword.addToHeader(header, history=history)
+        keyword.add_to_header(header, history=history)
 
 
 def add_object_pos_airmass(header, history=False):
@@ -109,12 +109,12 @@ def add_object_pos_airmass(header, history=False):
         raise ValueError('Need to set JD.value before calling.')
 
     try:
-        RA.setValueFromHeader(header)
+        RA.set_value_from_header(header)
     except ValueError:
         raise ValueError("No RA is present.")
         return
 
-    Dec.setValueFromHeader(header)
+    Dec.set_value_from_header(header)
     RA.value = RA.value.replace(' ', ':')
     Dec.value = Dec.value.replace(' ', ':')
     object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
@@ -128,7 +128,7 @@ def add_object_pos_airmass(header, history=False):
                                              0)).ra.hms)
     for keyword in keywords_for_light_files:
         if keyword.value is not None:
-            keyword.addToHeader(header, history=history)
+            keyword.add_to_header(header, history=history)
 
 
 def purge_bad_keywords(header, history=False, force=False):
@@ -301,15 +301,13 @@ def add_overscan_header(header, history=True):
     image_dim = [header['naxis1'], header['naxis2']]
     instrument = feder_info.instrument[header['instrume']]
     overscan_present.value = instrument.has_overscan(image_dim)
-    overscan_present.addToHeader(header, history=history)
+    overscan_present.add_to_header(header, history=history)
     modified_keywords = [overscan_present]
     if overscan_present.value:
         overscan_axis.value = instrument.overscan_axis
         overscan_start.value = instrument.overscan_start
-        overscan_axis.addToHeader(header,
-                                  history=history)
-        overscan_start.addToHeader(header,
-                                   history=history)
+        overscan_axis.add_to_header(header, history=history)
+        overscan_start.add_to_header(header, history=history)
         modified_keywords.extend([overscan_axis, overscan_start])
 
     return modified_keywords
@@ -370,7 +368,7 @@ def add_object_info(directory='.', object_list=None,
             continue
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
-        obj_keyword.addToHeader(header, history=True)
+        obj_keyword.add_to_header(header, history=True)
 
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
@@ -401,8 +399,8 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             hdulist = fits.open(full_name)
             header = hdulist[0].header
             int16 = (header['bitpix'] == 16)
-            RA.addToHeader(header, history=True)
-            Dec.addToHeader(header, history=True)
+            RA.add_to_header(header, history=True)
+            Dec.add_to_header(header, history=True)
             if new_file_ext is not None:
                 base, ext = path.splitext(full_name)
                 new_file_name = base + new_file_ext + ext
