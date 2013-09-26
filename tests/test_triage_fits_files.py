@@ -72,8 +72,8 @@ class TestImageFileCollection(object):
         assert len(img_collection.files_filtered(
             imagetyp='bias')) == _n_test['bias']
         assert len(img_collection.files) == _n_test['files']
-        assert img_collection.hasKey('filter')
-        assert not img_collection.hasKey('flying monkeys')
+        assert img_collection.has_key('filter')
+        assert not img_collection.has_key('flying monkeys')
         assert len(img_collection.values('imagetyp', unique=True)) == 2
 
     def test_files_with_compressed(self):

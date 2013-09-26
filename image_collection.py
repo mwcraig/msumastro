@@ -134,7 +134,7 @@ class ImageFileCollection(object):
 
         If `unique` is `True` then only the unique values are returned.
         """
-        if not self.hasKey(keyword):
+        if not self.has_key(keyword):
             raise ValueError(
                 'keyword %s is not in the current summary' % keyword)
 
@@ -143,7 +143,7 @@ class ImageFileCollection(object):
         else:
             return list(self.summary_info[keyword])
 
-    def hasKey(self, keyword):
+    def has_key(self, keyword):
         """True if keyword is in current summary."""
         return keyword in self.keywords
 
