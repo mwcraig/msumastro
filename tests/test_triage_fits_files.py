@@ -215,6 +215,11 @@ class TestImageFileCollection(object):
         assert 'filter' not in tbl_new.keys()
         assert 'object' not in tbl_orig.keys()
 
+    def test_header_and_filename(self):
+        collection = tff.ImageFileCollection(location=_test_dir)
+        for header, fname in collection.headers(return_fname=True):
+            assert (fname in collection.paths())
+            assert (isinstance(header, fits.Header))
 
 def setup_module():
     global _n_test

@@ -313,11 +313,12 @@ class ImageFileCollection(object):
 
         return files
 
-    def _iterator(self, return_type,
-                  save_with_name="", save_location='',
-                  clobber=False,
-                  do_not_scale_image_data=True,
-                  **kwd):
+    def _generator(self, return_type,
+                   save_with_name="", save_location='',
+                   clobber=False,
+                   do_not_scale_image_data=True,
+                   return_fname=False,
+                   **kwd):
 
         # store mask so we can reset at end--must COPY, otherwise
         # current_mask just points to the mask of summary_info
@@ -332,14 +333,16 @@ class ImageFileCollection(object):
             no_scale = do_not_scale_image_data
             hdulist = fits.open(full_path,
                                 do_not_scale_image_data=no_scale)
-            if return_type == 'header':
-                yield hdulist[0].header
-            elif return_type == 'hdu':
-                yield hdulist[0]
-            elif return_type == 'data':
-                yield hdulist[0].data
-            else:
-                raise ValueError
+
+            return_options = {'header': hdulist[0].header,
+                              'hdu': hdulist[0],
+                              'data': hdulist[0].data}
+
+            try:
+                yield (return_options[return_type] if (not return_fname) else
+                       (return_options[return_type], full_path))
+            except ValueError:
+                raise ValueError('No generator for {}'.format(return_type))
 
             if save_location:
                 destination_dir = save_location
@@ -373,12 +376,14 @@ class ImageFileCollection(object):
     def headers(self, save_with_name='',
                 save_location='', clobber=False,
                 do_not_scale_image_data=True,
+                return_fname=False,
                 **kwd):
         """
         Generator for headers in the collection including writing of
         FITS file before moving to next item.
 
         Parameters
+        ----------
 
         save_with_name : str
             string added to end of file name (before extension) if
@@ -399,30 +404,34 @@ class ImageFileCollection(object):
             If true, prevents fits from scaling images (useful for
             preserving unsigned int images unmodified)
 
+        return_fname : bool, default is False
+            If True, return the list (header, file_name) instead of just
+            header.
+
         kwd : dict
             Any additional keywords are passed to `fits.open`
         """
-
-        # return hdulist[0].header
-        return self._iterator('header', save_with_name=save_with_name,
-                              save_location=save_location, clobber=clobber,
-                              do_not_scale_image_data=do_not_scale_image_data,
-                              **kwd)
+        #self.headers.__func__.__doc__ += self._generator.__doc__
+        return self._generator('header', save_with_name=save_with_name,
+                               save_location=save_location, clobber=clobber,
+                               do_not_scale_image_data=do_not_scale_image_data,
+                               return_fname=return_fname,
+                               **kwd)
 
     def hdus(self, save_with_name='',
              save_location='', clobber=False,
              do_not_scale_image_data=False,
              **kwd):
 
-        return self._iterator('hdu', save_with_name=save_with_name,
-                              save_location=save_location, clobber=clobber,
-                              do_not_scale_image_data=do_not_scale_image_data,
-                              **kwd)
+        return self._generator('hdu', save_with_name=save_with_name,
+                               save_location=save_location, clobber=clobber,
+                               do_not_scale_image_data=do_not_scale_image_data,
+                               **kwd)
 
     def data(self, hdulist=None, save_with_name="", save_location='',
              do_not_scale_image_data=False,
              clobber=False, **kwd):
-        return self._iterator('data', save_with_name=save_with_name,
-                              save_location=save_location, clobber=clobber,
-                              do_not_scale_image_data=do_not_scale_image_data,
-                              **kwd)
+        return self._generator('data', save_with_name=save_with_name,
+                               save_location=save_location, clobber=clobber,
+                               do_not_scale_image_data=do_not_scale_image_data,
+                               **kwd)
