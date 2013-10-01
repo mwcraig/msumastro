@@ -272,10 +272,11 @@ def patch_headers(dir='.',
     longitude.value = sexagesimal_string(feder.longitude.dms)
     obs_altitude.value = feder.altitude
 
-    for header in images.headers(save_with_name=new_file_ext,
-                                 save_location=save_location,
-                                 clobber=overwrite,
-                                 do_not_scale_image_data=True):
+    for header, fname in images.headers(save_with_name=new_file_ext,
+                                        save_location=save_location,
+                                        clobber=overwrite,
+                                        do_not_scale_image_data=True,
+                                        return_fname=True):
         run_time = datetime.now()
         header.add_history(history(patch_headers, mode='begin',
                                    time=run_time))
@@ -292,9 +293,8 @@ def patch_headers(dir='.',
             try:
                 add_object_pos_airmass(header,
                                        history=True)
-            except ValueError:
-                print ('Skipping file with header:')
-                print(header)
+            except ValueError as e:
+                print ('Skipping file {} because: {}'.format(fname, e))
                 continue
 
         if add_overscan:
