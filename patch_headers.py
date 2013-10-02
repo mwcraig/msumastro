@@ -207,7 +207,7 @@ def change_imagetype_to_IRAF(header, history=True):
             header.add_history(comment)
 
 
-def read_object_list(dir='.', list='obsinfo.txt'):
+def read_object_list(dir='.', input_list=None):
     """
     Read a list of objects from a text file.
 
@@ -221,6 +221,7 @@ def read_object_list(dir='.', list='obsinfo.txt'):
         + Remaining line(s) are name(s) of object(s), one per line
     """
     from astropy.table import Table
+    list = (input_list if input_list is not None else 'obsinfo.txt')
     objects = Table.read(path.join(dir, list),
                          format='ascii',
                          comment='#',
@@ -366,7 +367,7 @@ def add_object_info(directory='.', object_list=None,
 
     print summary['file']
     try:
-        object_names = read_object_list(directory)
+        object_names = read_object_list(directory, input_list=object_list)
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return

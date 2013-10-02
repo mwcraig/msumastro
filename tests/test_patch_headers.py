@@ -7,6 +7,7 @@ import pytest
 
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
+_default_object_file_name = 'obsinfo.txt'
 
 
 def test_sexagesimal_string():
@@ -81,15 +82,16 @@ def test_data_is_unmodified_by_adding_object():
     assert np.all(orig[0].data == modified[0].data)
 
 
-def test_adding_object_name():
+def test_adding_object_name(use_list=None):
     new_ext = '_obj_name_test'
     patch_headers(_test_dir, new_file_ext=new_ext)
-    add_object_info(_test_dir, new_file_ext=new_ext)
+    add_object_info(_test_dir, new_file_ext=new_ext, object_list=use_list)
     fname = path.join(_test_dir, 'uint16')
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
     print 'add object name: %s' % fname
     assert (with_name[0].header['object'] == 'm101')
+    return with_name
 
 
 def test_writing_patched_files_to_directory():
@@ -182,13 +184,27 @@ def test_fix_imagetype():
         assert('history' in header)
 
 
+def test_add_object_name_uses_object_list_name():
+    from shutil import move
+
+    custom_object_name = 'my_object_list.txt'
+    old_object_path = path.join(_test_dir, _default_object_file_name)
+    new_path = path.join(_test_dir, custom_object_name)
+    move(old_object_path, new_path)
+    fits_with_obj_name = test_adding_object_name(use_list=custom_object_name)
+    # The line below is probably not really necessary since the same test
+    # is done in test_adding_object_name but it doesn't hurt to test it
+    # here too
+    assert (fits_with_obj_name[0].header['object'] == 'm101')
+
+
 def setup():
     global _test_dir
     from shutil import copy
 
     _test_dir = mkdtemp()
     to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
-    object_file = open(path.join(_test_dir, 'obsinfo.txt'), 'wb')
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     copy(path.join('data', 'uint16.fit'), _test_dir)
 
