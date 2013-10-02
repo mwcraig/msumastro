@@ -7,7 +7,7 @@ import astropy.io.fits as fits
 from astropysics import coords
 from astropy.time import Time
 
-from feder import *
+from feder import Feder
 
 from image_collection import ImageFileCollection
 
