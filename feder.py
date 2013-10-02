@@ -200,37 +200,48 @@ class Feder(object):
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
         self.software = [self._maximdl4, self._maximdl5]
+        self._keywords_for_all_files = []
+        self._set_site_keywords_values()
+        self._time_keywords_to_set()
+        for key in self.keywords_for_all_files:
+            name = key.name
+            name = name.replace('-', '_')
+            setattr(self, name, key)
 
-keywords_for_all_files = []
+    @property
+    def keywords_for_all_files(self):
+        return self._keywords_for_all_files
+
+    def _set_site_keywords_values(self):
+        latitude = FITSKeyword(name="latitude",
+                               comment='[degrees] Observatory latitude',
+                               synonyms=['sitelat'])
+
+        longitude = FITSKeyword(name='longitud',
+                                comment='[degrees east] Observatory longitude',
+                                synonyms='sitelong')
+        obs_altitude = FITSKeyword(name='altitude',
+                                   comment='[meters] Observatory altitude')
+        latitude.value = self.site.latitude.getDmsStr(canonical=True)
+        longitude.value = self.site.longitude.getDmsStr(canonical=True)
+        obs_altitude.value = self.site.altitude
+        self._keywords_for_all_files.extend([latitude, longitude,
+                                            obs_altitude])
+
+    def _time_keywords_to_set(self):
+        LST = FITSKeyword(name='LST',
+                          comment='Local Sidereal Time at start of observation')
+
+        JD = FITSKeyword(name='jd-obs',
+                         comment='Julian Date at start of observation')
+
+        MJD = FITSKeyword(name='mjd-obs',
+                          comment='Modified Julian date at start of observation')
+        self._keywords_for_all_files.extend([LST, JD, MJD])
+
+
 keywords_for_light_files = []
 
-# Keywords below are added to all FITS files
-
-latitude = FITSKeyword(name="latitude",
-                       comment='[degrees] Observatory latitude',
-                       synonyms=['sitelat'])
-
-longitude = FITSKeyword(name='longitud',
-                        comment='[degrees east] Observatory longitude',
-                        synonyms='sitelong')
-obs_altitude = FITSKeyword(name='altitude',
-                           comment='[meters] Observatory altitude')
-keywords_for_all_files.append(latitude)
-keywords_for_all_files.append(longitude)
-keywords_for_all_files.append(obs_altitude)
-
-LST = FITSKeyword(name='LST',
-                  comment='Local Sidereal Time at start of observation')
-
-JD = FITSKeyword(name='jd-obs',
-                 comment='Julian Date at start of observation')
-
-MJD = FITSKeyword(name='mjd-obs',
-                  comment='Modified Julian date at start of observation')
-
-keywords_for_all_files.append(LST)
-keywords_for_all_files.append(JD)
-keywords_for_all_files.append(MJD)
 
 # Overscan is also added to all files, but as a separate pass from the
 # other all-file keywords.

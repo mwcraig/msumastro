@@ -91,17 +91,17 @@ def add_time_info(header, history=False):
     Uses `feder.currentobsjd` as the date.
     """
     dateobs = Time(header['date-obs'], scale='utc')
-    JD.value = dateobs.jd
-    MJD.value = dateobs.mjd
+    federstuff.JD_OBS.value = dateobs.jd
+    federstuff.MJD_OBS.value = dateobs.mjd
 
     # setting currentobsjd makes calls following it use that time
     # for calculations
 
-    feder.currentobsjd = JD.value
-    LST.value = feder.localSiderialTime()
-    LST.value = sexagesimal_string(deg2dms(LST.value))
+    federstuff.currentobsjd = federstuff.JD_OBS.value
+    federstuff.LST.value = feder.localSiderialTime()
+    federstuff.LST.value = sexagesimal_string(deg2dms(federstuff.LST.value))
 
-    for keyword in keywords_for_all_files:
+    for keyword in federstuff.keywords_for_all_files:
         keyword.add_to_header(header, history=history)
 
 
@@ -114,8 +114,8 @@ def add_object_pos_airmass(header, history=False):
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
-    if JD.value is not None:
-        feder.currentobsjd == JD.value
+    if federstuff.JD_OBS.value is not None:
+        feder.currentobsjd == federstuff.JD_OBS.value
     else:
         raise ValueError('Need to set JD.value before calling.')
 
@@ -267,10 +267,6 @@ def patch_headers(dir='.',
     that control which aspect of the headers is modified.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
-
-    latitude.value = sexagesimal_string(feder.latitude.dms)
-    longitude.value = sexagesimal_string(feder.longitude.dms)
-    obs_altitude.value = feder.altitude
 
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         save_location=save_location,
