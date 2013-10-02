@@ -11,8 +11,7 @@ from feder import *
 
 from image_collection import ImageFileCollection
 
-federstuff = Feder()
-feder = federstuff.site
+feder = Feder()
 
 
 class FederImage(object):
@@ -88,20 +87,20 @@ def add_time_info(header, history=False):
     history : bool
         If `True`, write history for each keyword changed.
 
-    Uses `feder.currentobsjd` as the date.
+    Uses `feder.site.currentobsjd` as the date.
     """
     dateobs = Time(header['date-obs'], scale='utc')
-    federstuff.JD_OBS.value = dateobs.jd
-    federstuff.MJD_OBS.value = dateobs.mjd
+    feder.JD_OBS.value = dateobs.jd
+    feder.MJD_OBS.value = dateobs.mjd
 
     # setting currentobsjd makes calls following it use that time
     # for calculations
 
-    federstuff.currentobsjd = federstuff.JD_OBS.value
-    federstuff.LST.value = feder.localSiderialTime()
-    federstuff.LST.value = sexagesimal_string(deg2dms(federstuff.LST.value))
+    feder.currentobsjd = feder.JD_OBS.value
+    feder.LST.value = feder.site.localSiderialTime()
+    feder.LST.value = sexagesimal_string(deg2dms(feder.LST.value))
 
-    for keyword in federstuff.keywords_for_all_files:
+    for keyword in feder.keywords_for_all_files:
         keyword.add_to_header(header, history=history)
 
 
@@ -114,8 +113,8 @@ def add_object_pos_airmass(header, history=False):
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
-    if federstuff.JD_OBS.value is not None:
-        feder.currentobsjd == federstuff.JD_OBS.value
+    if feder.JD_OBS.value is not None:
+        feder.site.currentobsjd == feder.JD_OBS.value
     else:
         raise ValueError('Need to set JD.value before calling.')
 
@@ -129,12 +128,12 @@ def add_object_pos_airmass(header, history=False):
     RA.value = RA.value.replace(' ', ':')
     Dec.value = Dec.value.replace(' ', ':')
     object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
-    alt_az = feder.apparentCoordinates(object_coords, refraction=False)
+    alt_az = feder.site.apparentCoordinates(object_coords, refraction=False)
     altitude.value = round(alt_az.alt.d, 5)
     azimuth.value = round(alt_az.az.d, 5)
     airmass.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
     hour_angle.value = sexagesimal_string(
-        coords.EquatorialCoordinatesEquinox((feder.localSiderialTime() -
+        coords.EquatorialCoordinatesEquinox((feder.site.localSiderialTime() -
                                             object_coords.ra.hours,
                                              0)).ra.hms)
     for keyword in keywords_for_light_files:
@@ -153,7 +152,7 @@ def purge_bad_keywords(header, history=False, force=False):
         If `True`, force keywords to be purged even if the FITS header
         indicates it has already been purged.
     """
-    for software in federstuff.software:
+    for software in feder.software:
         if software.created_this(header[software.fits_keyword]):
             break
 
