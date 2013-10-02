@@ -24,7 +24,7 @@ def test_trim():
     chdir(path.join(test_dir, oscan_dir))
     patch_headers('.', new_file_ext='', overwrite=True,
                   add_time=False, purge_bad=False, add_apparent_pos=False,
-                  add_overscan=True)
+                  add_overscan=True, fix_imagetype=False)
     apogee = ApogeeAltaU9()
     # files without overscan should not be changed by trim
     hdus = fits.open(has_no_oscan)
