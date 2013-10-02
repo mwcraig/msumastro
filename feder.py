@@ -206,8 +206,11 @@ class Feder(object):
         self._time_keywords_to_set()
         self._keywords_for_light_files = []
         self._define_keywords_for_light_files()
+        self._overscan_keywords = []
+        self._define_overscan_keywords()
         for key in chain(self.keywords_for_all_files,
-                         self.keywords_for_light_files):
+                         self.keywords_for_light_files,
+                         self.keywords_for_overscan):
             name = key.name
             name = name.replace('-', '_')
             setattr(self, name, key)
@@ -219,6 +222,10 @@ class Feder(object):
     @property
     def keywords_for_light_files(self):
         return self._keywords_for_light_files
+
+    @property
+    def keywords_for_overscan(self):
+        return self._overscan_keywords
 
     def _define_keywords_for_light_files(self):
         RA = FITSKeyword(name='ra',
@@ -279,17 +286,15 @@ class Feder(object):
                           comment='Modified Julian date at start of observation')
         self._keywords_for_all_files.extend([LST, JD, MJD])
 
+    def _define_overscan_keywords(self):
+        overscan_present = FITSKeyword(name='oscan',
+                                       comment='True if image has overscan region')
 
-keywords_for_light_files = []
+        overscan_axis = FITSKeyword(name='oscanax',
+                                    comment='Overscan axis, 1 is NAXIS1, 2 is NAXIS 2')
 
-
-# Overscan is also added to all files, but as a separate pass from the
-# other all-file keywords.
-overscan_present = FITSKeyword(name='oscan',
-                               comment='True if image has overscan region')
-
-overscan_axis = FITSKeyword(name='oscanax',
-                            comment='Overscan axis, 1 is NAXIS1, 2 is NAXIS 2')
-
-overscan_start = FITSKeyword(name='oscanst',
-                             comment='Starting pixel of overscan region')
+        overscan_start = FITSKeyword(name='oscanst',
+                                     comment='Starting pixel of overscan region')
+        self._overscan_keywords.extend([overscan_present,
+                                       overscan_axis,
+                                       overscan_start])
