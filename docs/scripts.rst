@@ -14,6 +14,10 @@ Header processing
 
 For a detailed description of which header keywords are modified see :ref:`header-patch-detail`.
 
+.. WARNING::
+        This script OVERWRITES the image files in the directories
+        specified on the command line.
+
 Usage summary
 -------------
 
@@ -29,6 +33,10 @@ Usage summary
 
 Astrometry
 +++++++++++
+
+.. WARNING::
+        This script OVERWRITES the image files in the directories
+        specified on the command line.
 
 Usage summary
 -------------
@@ -59,6 +67,10 @@ Usage summary
 
 Quickly modify FITS headers
 +++++++++++++++++++++++++++
+
+.. WARNING::
+        This script OVERWRITES the image files in the directories
+        specified on the command line.
 
 Usage summary
 -------------

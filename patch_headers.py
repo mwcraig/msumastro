@@ -181,6 +181,32 @@ def purge_bad_keywords(header, history=False, force=False):
                                             'Have bad keywords been removed?')
 
 
+def change_imagetype_to_IRAF(header, history=True):
+    """
+    Change IMAGETYP to default used by IRAF
+
+    Parameters
+    ----------
+
+    header : astropy.io.fits ``Header``
+        Header object in which `IMAGETYP` is to be changed.
+
+    history : bool, optional
+        If `True`, add history of keyword modification to `header`. Default
+        is `True`.
+    """
+    imagetype = 'imagetyp'  # FITS keyword name is truncated at 8 chars
+    current_type = header[imagetype]
+    IRAF_type = IRAF_image_type(current_type)
+    if current_type != IRAF_type:
+        header[imagetype] = IRAF_type
+        comment = 'Changed {0} from {1} to {2}'.format(imagetype.upper(),
+                                                       current_type,
+                                                       IRAF_type)
+        if history:
+            header.add_history(comment)
+
+
 def read_object_list(dir='.', list='obsinfo.txt'):
     """
     Read a list of objects from a text file.
@@ -248,7 +274,8 @@ def patch_headers(dir='.',
                   purge_bad=True,
                   add_time=True,
                   add_apparent_pos=True,
-                  add_overscan=True):
+                  add_overscan=True,
+                  fix_imagetype=True):
     """
     Add minimal information to Feder FITS headers.
 
@@ -263,8 +290,9 @@ def patch_headers(dir='.',
 
     `overwrite` should be set to `True` to replace the original files.
 
-    `purge_bad`, `add_time`, `add_apparent_pos` and `add_overscan` are flags
-    that control which aspect of the headers is modified.
+    `purge_bad`, `add_time`, `add_apparent_pos`, `add_overscan` and
+    `fix_imagetype` are flags that control which aspect of the headers is
+    modified.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -281,6 +309,9 @@ def patch_headers(dir='.',
 
         if purge_bad:
             purge_bad_keywords(header, history=True)
+
+        if fix_imagetype:
+            change_imagetype_to_IRAF(header, history=True)
 
         if add_time:
             add_time_info(header, history=True)

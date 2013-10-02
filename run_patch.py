@@ -12,6 +12,8 @@ DESCRIPTION
     the options set so that:
 
         + "Bad" keywords written by MaxImDL 5 are purged.
+        + ``IMAGETYP`` keyword is changed from default MaxIM DL style
+          to IRAF style (e.g. "Bias Frame" to "BIAS")
         + Additional useful times like LST, JD are added to the header.
         + Apparent position (Alt/Az, hour angle) are added to the header.
         + Information about overscan is added to the header.

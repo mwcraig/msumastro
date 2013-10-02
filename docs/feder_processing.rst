@@ -19,6 +19,7 @@ The purpose of the header processing is to:
 + Modify or add keywords to the FITS header to make working with other software easier:
 
   + Standardize names instead using the MaxIm DL defaults (e.g. ``RA`` and ``Dec`` instead of ``OBJCTRA`` and ``OBJCTDEC``)
+  + Set ``IMAGETYP`` to IRAF default
   + Add convenient keywords that MaxImDL does not always include (e.g. ``AIRMASS``, ``HA``, ``LST``)
   + Add keywords indicating the overscan region, if any, in the image.
 
@@ -59,6 +60,7 @@ Header patching
 
 The keywords that are currently added/modified by ``patch_headers``  for **all files** are::
 
+  IMAGETYP: Type of image
   LATITUDE: [degrees] Observatory latitude
   LONGITUD: [degrees east] Observatory longitude
   ALTITUDE: [meters] Observatory altitude

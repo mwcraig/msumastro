@@ -1,6 +1,6 @@
 from ..patch_headers import *
 from tempfile import mkdtemp
-from os import path, chdir
+from os import path, chdir, getcwd
 from shutil import rmtree
 import numpy as np
 import pytest
@@ -131,12 +131,19 @@ def test_adding_overscan_apogee_u9():
     from ..feder import ApogeeAltaU9
     from utilities import make_overscan_test_files
 
+    original_dir = getcwd()
+
     apogee = ApogeeAltaU9()
+    print getcwd()
     oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(_test_dir)
+    print "POOOP"
+    print getcwd()
+    print "PEE"
+
     chdir(path.join(_test_dir, oscan_dir))
     patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
                   add_time=False, add_apparent_pos=False,
-                  add_overscan=True)
+                  add_overscan=True, fix_imagetype=False)
     print _test_dir
     header_no_oscan = fits.getheader(has_no_oscan)
     assert not header_no_oscan['oscan']
@@ -144,6 +151,36 @@ def test_adding_overscan_apogee_u9():
     assert header_yes_oscan['oscan']
     assert header_yes_oscan['oscanax'] == apogee.overscan_axis
     assert header_yes_oscan['oscanst'] == apogee.overscan_start
+    print getcwd()
+    chdir(original_dir)
+    print getcwd()
+    assert (True)
+
+
+def test_fix_imagetype():
+    imagetypes_to_check = {'Bias Frame': 'BIAS',
+                           'Dark Frame': 'DARK',
+                           'Light Frame': 'LIGHT',
+                           'Flat Frame': 'FLAT'}
+    for im_type in imagetypes_to_check:
+        header = fits.Header()
+
+        header['imagetyp'] = im_type
+        # first run SHOULD change imagetyp
+        print header
+        change_imagetype_to_IRAF(header, history=False)
+        assert(header['imagetyp'] == imagetypes_to_check[im_type])
+        # second call should NOT change imagetyp
+        print header
+        change_imagetype_to_IRAF(header, history=True)
+        assert(header['imagetyp'] == imagetypes_to_check[im_type])
+        with pytest.raises(KeyError):
+            print header['history']
+        # change imagetype back to non-IRAF
+        header['imagetyp'] = im_type
+        # change with history
+        change_imagetype_to_IRAF(header, history=True)
+        assert('history' in header)
 
 
 def setup():
