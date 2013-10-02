@@ -217,26 +217,15 @@ def read_object_list(dir='.', list='obsinfo.txt'):
 
     File format:
         + All lines in the files that start with # are ignored.
-        + First line is the name(s) of the observer(s)
+        + First line the word object
         + Remaining line(s) are name(s) of object(s), one per line
     """
-    try:
-        object_file = open(path.join(dir, list), 'rb')
-    except IOError:
-        raise IOError('File %s in directory %s not found.' % (list, dir))
-
-    first_line = True
-    objects = []
-    for line in object_file:
-        if not line.startswith('#'):
-            if first_line:
-                first_line = False
-                observer = line.strip()
-            else:
-                if line.strip():
-                    objects.append(line.strip())
-
-    return (observer, objects)
+    from astropy.table import Table
+    objects = Table.read(path.join(dir, list),
+                         format='ascii',
+                         comment='#',
+                         delimiter=',')
+    return objects['object']
 
 
 def history(function, mode='begin', time=None):
@@ -377,7 +366,7 @@ def add_object_info(directory='.', object_list=None,
 
     print summary['file']
     try:
-        observer, object_names = read_object_list(directory)
+        object_names = read_object_list(directory)
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return

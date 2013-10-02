@@ -27,11 +27,10 @@ def test_sexagesimal_string_with_precision_and_sign():
 
 
 def test_read_object_list():
-    observer, objects = read_object_list(dir=_test_dir)
+    objects = read_object_list(dir=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
-    assert observer == 'Ima Observer'
 
 
 def test_history_bad_mode():
@@ -188,7 +187,7 @@ def setup():
     from shutil import copy
 
     _test_dir = mkdtemp()
-    to_write = '# comment 1\nIma Observer\n# comment 2\ney uma\nm101'
+    to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
     object_file = open(path.join(_test_dir, 'obsinfo.txt'), 'wb')
     object_file.write(to_write)
     copy(path.join('data', 'uint16.fit'), _test_dir)
