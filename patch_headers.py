@@ -304,13 +304,15 @@ def add_overscan_header(header, history=True):
     """
     Add overscan information to a FITS header.
     """
-    feder_info = Feder()
     image_dim = [header['naxis1'], header['naxis2']]
-    instrument = feder_info.instrument[header['instrume']]
+    instrument = feder.instrument[header['instrume']]
+    overscan_present = feder.OSCAN
     overscan_present.value = instrument.has_overscan(image_dim)
     overscan_present.add_to_header(header, history=history)
     modified_keywords = [overscan_present]
     if overscan_present.value:
+        overscan_axis = feder.OSCANAX
+        overscan_start = feder.OSCANST
         overscan_axis.value = instrument.overscan_axis
         overscan_start.value = instrument.overscan_start
         overscan_axis.add_to_header(header, history=history)
