@@ -7,7 +7,7 @@ import astropy.io.fits as fits
 from astropysics import coords
 from astropy.time import Time
 
-from feder import *
+from feder import Feder
 
 from image_collection import ImageFileCollection
 
@@ -127,7 +127,8 @@ def add_object_pos_airmass(header, history=False):
     feder.DEC.set_value_from_header(header)
     feder.RA.value = feder.RA.value.replace(' ', ':')
     feder.DEC.value = feder.DEC.value.replace(' ', ':')
-    object_coords = coords.EquatorialCoordinatesEquinox((feder.RA.value, feder.DEC.value))
+    object_coords = coords.EquatorialCoordinatesEquinox((feder.RA.value,
+                                                        feder.DEC.value))
     alt_az = feder.site.apparentCoordinates(object_coords, refraction=False)
     feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
     feder.AZ_OBJ.value = round(alt_az.az.d, 5)
@@ -303,13 +304,15 @@ def add_overscan_header(header, history=True):
     """
     Add overscan information to a FITS header.
     """
-    feder_info = Feder()
     image_dim = [header['naxis1'], header['naxis2']]
-    instrument = feder_info.instrument[header['instrume']]
+    instrument = feder.instrument[header['instrume']]
+    overscan_present = feder.OSCAN
     overscan_present.value = instrument.has_overscan(image_dim)
     overscan_present.add_to_header(header, history=history)
     modified_keywords = [overscan_present]
     if overscan_present.value:
+        overscan_axis = feder.OSCANAX
+        overscan_start = feder.OSCANST
         overscan_axis.value = instrument.overscan_axis
         overscan_start.value = instrument.overscan_start
         overscan_axis.add_to_header(header, history=history)
@@ -397,16 +400,16 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     objects = unique(missing_dec['object'])
     for object_name in objects:
         obj = AstroObject(object_name)
-        RA.value = obj.ra_dec.ra.getHmsStr(canonical=True)
-        Dec.value = obj.ra_dec.dec.getDmsStr(canonical=True)
+        feder.RA.value = obj.ra_dec.ra.getHmsStr(canonical=True)
+        feder.DEC.value = obj.ra_dec.dec.getDmsStr(canonical=True)
         these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
             full_name = path.join(directory, image['file'])
             hdulist = fits.open(full_name)
             header = hdulist[0].header
             int16 = (header['bitpix'] == 16)
-            RA.add_to_header(header, history=True)
-            Dec.add_to_header(header, history=True)
+            feder.RA.add_to_header(header, history=True)
+            feder.DEC.add_to_header(header, history=True)
             if new_file_ext is not None:
                 base, ext = path.splitext(full_name)
                 new_file_name = base + new_file_ext + ext
