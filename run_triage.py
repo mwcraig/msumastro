@@ -49,10 +49,12 @@ class DefaultFileNames(object):
         self.output_table = 'Manifest.txt'
 
 
-def write_list(dir, file, info):
-    out = open(os.path.join(dir, file), 'wb')
-    out.write('\n'.join(info))
-    out.close()
+def write_list(dir, file, info, column_name='File'):
+    from astropy.table import Table
+    temp_table = Table(data=[info],
+                       names=[column_name])
+    temp_table.write(os.path.join(dir, file),
+                     format='ascii')
 
 
 def contains_maximdl_imagetype(image_collection):
