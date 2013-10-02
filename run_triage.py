@@ -79,10 +79,12 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     `file_info_to_keep` is a list of the FITS keywords to get values
     for for each FITS file in `dir`.
     """
-    from feder import RA
+    from feder import Feder
     from image_collection import ImageFileCollection
 
     all_file_info = file_info_to_keep
+    feder = Feder()
+    RA = feder.RA
     if 'ra' not in [key.lower() for key in all_file_info]:
         all_file_info.extend(RA.names)
 

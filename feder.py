@@ -1,5 +1,6 @@
 from astropysics import obstools
 from fitskeyword import FITSKeyword
+from itertools import chain
 import numpy as np
 
 
@@ -203,7 +204,10 @@ class Feder(object):
         self._keywords_for_all_files = []
         self._set_site_keywords_values()
         self._time_keywords_to_set()
-        for key in self.keywords_for_all_files:
+        self._keywords_for_light_files = []
+        self._define_keywords_for_light_files()
+        for key in chain(self.keywords_for_all_files,
+                         self.keywords_for_light_files):
             name = key.name
             name = name.replace('-', '_')
             setattr(self, name, key)
@@ -211,6 +215,42 @@ class Feder(object):
     @property
     def keywords_for_all_files(self):
         return self._keywords_for_all_files
+
+    @property
+    def keywords_for_light_files(self):
+        return self._keywords_for_light_files
+
+    def _define_keywords_for_light_files(self):
+        RA = FITSKeyword(name='ra',
+                         comment='Approximate RA at EQUINOX',
+                         synonyms=['objctra'])
+
+        Dec = FITSKeyword(name='DEC',
+                          comment='Approximate DEC at EQUINOX',
+                          synonyms=['objctdec'])
+
+        target_object = FITSKeyword(name='object',
+                                    comment='Target of the observations')
+
+        hour_angle = FITSKeyword(name='ha',
+                                 comment='Hour angle')
+
+        airmass = FITSKeyword(name='airmass',
+                              comment='Airmass (Sec(Z)) at start of observation',
+                              synonyms=['secz'])
+
+        altitude = FITSKeyword(name='alt-obj',
+                               comment='[degrees] Altitude of object, no refraction')
+
+        azimuth = FITSKeyword(name='az-obj',
+                              comment='[degrees] Azimuth of object, no refraction')
+        self._keywords_for_light_files.append(RA)
+        self._keywords_for_light_files.append(Dec)
+        self._keywords_for_light_files.append(target_object)
+        self._keywords_for_light_files.append(hour_angle)
+        self._keywords_for_light_files.append(airmass)
+        self._keywords_for_light_files.append(altitude)
+        self._keywords_for_light_files.append(azimuth)
 
     def _set_site_keywords_values(self):
         latitude = FITSKeyword(name="latitude",
@@ -253,36 +293,3 @@ overscan_axis = FITSKeyword(name='oscanax',
 
 overscan_start = FITSKeyword(name='oscanst',
                              comment='Starting pixel of overscan region')
-
-# Keywords below are added only to light images
-RA = FITSKeyword(name='ra',
-                 comment='Approximate RA at EQUINOX',
-                 synonyms=['objctra'])
-keywords_for_light_files.append(RA)
-
-Dec = FITSKeyword(name='DEC',
-                  comment='Approximate DEC at EQUINOX',
-                  synonyms=['objctdec'])
-keywords_for_light_files.append(Dec)
-
-target_object = FITSKeyword(name='object',
-                            comment='Target of the observations')
-keywords_for_light_files.append(target_object)
-
-hour_angle = FITSKeyword(name='ha',
-                         comment='Hour angle')
-
-airmass = FITSKeyword(name='airmass',
-                      comment='Airmass (Sec(Z)) at start of observation',
-                      synonyms=['secz'])
-
-altitude = FITSKeyword(name='alt-obj',
-                       comment='[degrees] Altitude of object, no refraction')
-
-azimuth = FITSKeyword(name='az-obj',
-                      comment='[degrees] Azimuth of object, no refraction')
-
-keywords_for_light_files.append(hour_angle)
-keywords_for_light_files.append(airmass)
-keywords_for_light_files.append(altitude)
-keywords_for_light_files.append(azimuth)

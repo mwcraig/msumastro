@@ -119,24 +119,24 @@ def add_object_pos_airmass(header, history=False):
         raise ValueError('Need to set JD.value before calling.')
 
     try:
-        RA.set_value_from_header(header)
+        feder.RA.set_value_from_header(header)
     except ValueError:
         raise ValueError("No RA is present.")
         return
 
-    Dec.set_value_from_header(header)
-    RA.value = RA.value.replace(' ', ':')
-    Dec.value = Dec.value.replace(' ', ':')
-    object_coords = coords.EquatorialCoordinatesEquinox((RA.value, Dec.value))
+    feder.DEC.set_value_from_header(header)
+    feder.RA.value = feder.RA.value.replace(' ', ':')
+    feder.DEC.value = feder.DEC.value.replace(' ', ':')
+    object_coords = coords.EquatorialCoordinatesEquinox((feder.RA.value, feder.DEC.value))
     alt_az = feder.site.apparentCoordinates(object_coords, refraction=False)
-    altitude.value = round(alt_az.alt.d, 5)
-    azimuth.value = round(alt_az.az.d, 5)
-    airmass.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
-    hour_angle.value = sexagesimal_string(
+    feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
+    feder.AZ_OBJ.value = round(alt_az.az.d, 5)
+    feder.AIRMASS.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
+    feder.HA.value = sexagesimal_string(
         coords.EquatorialCoordinatesEquinox((feder.site.localSiderialTime() -
                                             object_coords.ra.hours,
                                              0)).ra.hms)
-    for keyword in keywords_for_light_files:
+    for keyword in feder.keywords_for_light_files:
         if keyword.value is not None:
             keyword.add_to_header(header, history=history)
 
