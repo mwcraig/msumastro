@@ -368,9 +368,7 @@ def add_object_info(directory='.',
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
-    summary = images.summary_info
 
-    print summary['file']
     object_dir = directory if object_list_dir is None else object_list_dir
 
     try:

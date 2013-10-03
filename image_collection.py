@@ -41,14 +41,14 @@ class ImageFileCollection(object):
                 self.summary_info = Table(path.join(self.location, info_file),
                                           type='ascii',
                                           delimiter=',')
-            except Exception:
-                print ('Unable to read file %s, will regenerate table' %
-                       info_file)
+            except IOError:
+                pass
 
         if keywords:
             if not set(keywords).issubset(set(self.keywords)):
-                print ('Regenerating information summary table for %s' %
-                       location)
+                pass
+                #print ('Regenerating information summary table for %s' %
+                #       location)
 
         self.summary_info = self.fits_summary(keywords=keywords,
                                               missing=missing)
