@@ -55,7 +55,7 @@ EXAMPLES
 from patch_headers import patch_headers, add_object_info
 
 
-def patch_directories(directories, verbose=False):
+def patch_directories(directories, verbose=False, object_list=None):
     """
     Patch all of the files in each of a list of directories.
 
@@ -67,22 +67,47 @@ def patch_directories(directories, verbose=False):
 
     verbose : bool, optional
         Control amount of logging output.
+
+    object_list : str, optional
+        Path to the name of a file containing a list of objects that
+        might be in the files in `directory`. If not provided it defaults
+        to looking for a file called `obsinfo.txt` in the directory being
+        processed.
     """
+    from os import path
+
+    if object_list is not None:
+        full_path = path.abspath(object_list)
+
     for currentDir in directories:
         if verbose:
             print "working on directory: %s" % currentDir
+        obj_dir = None
+        obj_name = None
+        if object_list is not None:
+            obj_dir, obj_name = path.split(full_path)
         patch_headers(currentDir, new_file_ext='', overwrite=True)
-        add_object_info(currentDir, new_file_ext='', overwrite=True)
+        add_object_info(currentDir, new_file_ext='', overwrite=True,
+                        object_list_dir=obj_dir, object_list=obj_name)
 
 from script_helpers import construct_default_parser
 
 
 def construct_parser():
     parser = construct_default_parser(__doc__)
+
+    object_list_help = 'Path to file containing list (and optionally '
+    object_list_help += 'coordinates of) objects that might be in these files.'
+    object_list_help += ' If not provided it defaults to looking for a file '
+    object_list_help += 'called obsinfo.txt in the directory being processed'
+    parser.add_argument('-l', '--object-list',
+                        help=object_list_help,
+                        default=None)
     return parser
 
 if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
 
-    patch_directories(args.dir, verbose=args.verbose)
+    patch_directories(args.dir, verbose=args.verbose,
+                      object_list=args.object_list)
