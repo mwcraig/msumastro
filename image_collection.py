@@ -29,13 +29,15 @@ class ImageFileCollection(object):
     instead of a list.
     """
 
-    def __init__(self, location='.', storage_dir=None, keywords=[],
+    def __init__(self, location='.', storage_dir=None, keywords=None,
                  missing=-999, info_file=None):
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
         self.summary_info = {}
 
+        if keywords is None:
+            keywords = []
         if info_file is not None:
             info_path = path.join(self.location, info_file)
             try:
