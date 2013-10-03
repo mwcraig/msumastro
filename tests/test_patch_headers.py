@@ -82,10 +82,20 @@ def test_data_is_unmodified_by_adding_object():
     assert np.all(orig[0].data == modified[0].data)
 
 
-def test_adding_object_name(use_list=None):
+def test_adding_object_name(use_list=None,
+                            use_obj_dir=None):
+    """
+    Test adding object name
+
+    Provide `use_list` to override the default object file name.
+    Provide `use_obj_dir` to specify directory in which the object file
+    is found. Defaults to directory in which the images reside if
+    `use_obj_dir` is None.
+    """
     new_ext = '_obj_name_test'
     patch_headers(_test_dir, new_file_ext=new_ext)
-    add_object_info(_test_dir, new_file_ext=new_ext, object_list=use_list)
+    add_object_info(_test_dir, new_file_ext=new_ext,
+                    object_list=use_list, object_list_dir=use_obj_dir)
     fname = path.join(_test_dir, 'uint16')
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
@@ -198,7 +208,38 @@ def test_add_object_name_uses_object_list_name():
     assert (fits_with_obj_name[0].header['object'] == 'm101')
 
 
-def setup():
+def test_add_object_name_with_custom_dir_standard_name():
+    from shutil import move
+
+    a_temp_dir = mkdtemp()
+
+    old_object_path = path.join(_test_dir, _default_object_file_name)
+    new_path = path.join(a_temp_dir, _default_object_file_name)
+    move(old_object_path, new_path)
+    test_adding_object_name(use_obj_dir=a_temp_dir)
+
+
+def test_add_object_name_uses_object_list_dir():
+    from shutil import move
+
+    a_temp_dir = mkdtemp()
+
+    custom_object_name = 'my_object_list.txt'
+    old_object_path = path.join(_test_dir, _default_object_file_name)
+    new_path = path.join(a_temp_dir, custom_object_name)
+    move(old_object_path, new_path)
+    # first make sure object name isn't added if object list can't be found
+    with pytest.raises(IOError):
+        test_adding_object_name(use_list=custom_object_name)
+
+    # Now make sure it works when we specify the directory; need to redo
+    # setup to clear out files made in pass above
+    setup_function(test_add_object_name_uses_object_list_dir)
+    test_adding_object_name(use_list=custom_object_name,
+                            use_obj_dir=a_temp_dir)
+
+
+def setup_function(function):
     global _test_dir
     from shutil import copy
 
@@ -209,6 +250,6 @@ def setup():
     copy(path.join('data', 'uint16.fit'), _test_dir)
 
 
-def teardown():
+def teardown_function(function):
     global _test_dir
     rmtree(_test_dir)

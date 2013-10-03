@@ -343,7 +343,9 @@ def add_overscan_header(header, history=True):
     return modified_keywords
 
 
-def add_object_info(directory='.', object_list=None,
+def add_object_info(directory='.',
+                    object_list=None,
+                    object_list_dir=None,
                     match_radius=20.0, new_file_ext='new',
                     overwrite=False, detailed_history=True):
     """
@@ -352,6 +354,9 @@ def add_object_info(directory='.', object_list=None,
     `directory` is the directory containing the FITS files to be fixed
     up and an `object_list`. Set `object_list` to `None` to use
     default object list name.
+
+    `object_list_dir` is the directory in which the `object_list` is contained.
+    If not specified it defaults to `directory`.
 
     `match_radius` is the maximum distance, in arcmin, between the
     RA/Dec of the image and a particular object for the image to be
@@ -366,8 +371,10 @@ def add_object_info(directory='.', object_list=None,
     summary = images.summary_info
 
     print summary['file']
+    object_dir = directory if object_list_dir is None else object_list_dir
+
     try:
-        object_names = read_object_list(directory, input_list=object_list)
+        object_names = read_object_list(object_dir, input_list=object_list)
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return
