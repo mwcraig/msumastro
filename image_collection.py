@@ -37,10 +37,11 @@ class ImageFileCollection(object):
         self.summary_info = {}
 
         if info_file is not None:
+            info_path = path.join(self.location, info_file)
             try:
-                self.summary_info = Table(path.join(self.location, info_file),
-                                          type='ascii',
-                                          delimiter=',')
+                self.summary_info = Table.read(info_path,
+                                               format='ascii',
+                                               delimiter=',')
             except IOError:
                 pass
 
