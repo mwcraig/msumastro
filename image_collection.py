@@ -30,7 +30,7 @@ class ImageFileCollection(object):
     """
 
     def __init__(self, location='.', storage_dir=None, keywords=[],
-                 missing=-999, info_file='Manifest.txt'):
+                 missing=-999, info_file=None):
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
