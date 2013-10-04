@@ -28,7 +28,7 @@ def test_sexagesimal_string_with_precision_and_sign():
 
 
 def test_read_object_list():
-    objects = read_object_list(dir=_test_dir)
+    objects, RA, Dec = read_object_list(dir=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
@@ -237,6 +237,23 @@ def test_add_object_name_uses_object_list_dir():
     setup_function(test_add_object_name_uses_object_list_dir)
     test_adding_object_name(use_list=custom_object_name,
                             use_obj_dir=a_temp_dir)
+
+
+def test_read_object_list_with_ra_dec():
+    temp_dir = mkdtemp()
+    obj_name = 'objects_with_ra.txt'
+    object_path = path.join(temp_dir, obj_name)
+    object_in = 'ey uma'
+    RA_in = "09:02:20.76"
+    Dec_in = "+49:49:09.3"
+    to_write = 'object, RA, Dec\n{},{},{}'.format(object_in, RA_in, Dec_in)
+    object_file = open(object_path, 'wb')
+    object_file.write(to_write)
+    object_file.close()
+    obj, RA, Dec = read_object_list(temp_dir, obj_name)
+    assert(obj[0] == object_in)
+    assert(RA[0] == RA_in)
+    assert(Dec[0] == Dec_in)
 
 
 def setup_function(function):

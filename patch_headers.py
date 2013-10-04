@@ -221,12 +221,20 @@ def read_object_list(dir='.', input_list=None):
         + Remaining line(s) are name(s) of object(s), one per line
     """
     from astropy.table import Table
+
     list = (input_list if input_list is not None else 'obsinfo.txt')
     objects = Table.read(path.join(dir, list),
                          format='ascii',
                          comment='#',
                          delimiter=',')
-    return objects['object']
+    try:
+        RA = objects['RA']
+        Dec = objects['Dec']
+    except KeyError:
+        RA = None
+        Dec = None
+
+    return objects['object'], RA, Dec
 
 
 def history(function, mode='begin', time=None):
@@ -372,7 +380,8 @@ def add_object_info(directory='.',
     object_dir = directory if object_list_dir is None else object_list_dir
 
     try:
-        object_names = read_object_list(object_dir, input_list=object_list)
+        object_names, RAs, Decs = read_object_list(object_dir,
+                                                   input_list=object_list)
     except IOError:
         print 'No object list in directory %s, skipping.' % directory
         return
