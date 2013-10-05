@@ -370,8 +370,9 @@ def add_object_info(directory='.',
     RA/Dec of the image and a particular object for the image to be
     considered an image of that object.
     """
-    from astro_object import AstroObject
     from fitskeyword import FITSKeyword
+    from astropy.coordinates import FK5Coordinates
+    from astropy import units as u
 
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -391,24 +392,31 @@ def add_object_info(directory='.',
 
     object_names = np.array(object_names)
     ra_dec = []
-    for object_name in object_names:
-        obj = AstroObject(object_name)
-        ra_dec.append(obj.ra_dec)
+    default_angle_units = (u.hour, u.degree)
+
+    if (RAs is not None) and (Decs is not None):
+        ra_dec = [FK5Coordinates(RA, Dec, unit=default_angle_units)
+                  for RA, Dec in zip(RAs, Decs)]
+    else:
+        ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
+
     object_ra_dec = np.array(ra_dec)
 
     for header in images.headers(save_with_name=new_file_ext,
                                  clobber=overwrite,
                                  object='', RA='*', Dec='*'):
-        image_ra_dec = coords.coordsys.FK5Coordinates(header['ra'],
-                                                      header['dec'])
-        distance = [(rd_tmp - image_ra_dec).arcmin for rd_tmp in object_ra_dec]
+        image_ra_dec = FK5Coordinates(header['ra'],
+                                      header['dec'],
+                                      unit=default_angle_units)
+        distance = [(rd_tmp.separation(image_ra_dec)).arcmins
+                    for rd_tmp in object_ra_dec]
         distance = np.array(distance)
         matches = (distance < match_radius)
         if matches.sum() > 1:
             raise RuntimeError("More than one object match for image")
 
         if not matches.any():
-            raise RuntimeWarning("No object foundn for image")
+            raise RuntimeWarning("No object found for image")
             continue
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
