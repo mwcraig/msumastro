@@ -186,7 +186,6 @@ def change_imagetype_to_IRAF(header, history=True):
     Change IMAGETYP to default used by IRAF
 
     Parameters
-    ----------
 
     header : astropy.io.fits ``Header``
         Header object in which `IMAGETYP` is to be changed.
@@ -213,12 +212,57 @@ def read_object_list(dir='.', input_list=None):
 
     `dir` is the directory containing the file.
 
-    `list` is the name of the file.
+    `input_list` is the name of the file.
 
-    File format:
-        + All lines in the files that start with # are ignored.
-        + First line the word object
-        + Remaining line(s) are name(s) of object(s), one per line
+    There are two file formats; one contains just a list of objects, the
+    other has an RA and Dec for each object.
+
+    In both types any lines that start with ``#`` are ignored and treated
+    as comments.
+
+    **File with list of objects only:**
+        + Object coordinates are determined by lookup with
+          `Simbad <http://simbad.u-strasbg.fr/simbad/>`_. You should make sure
+          the object names you use are known to simbad.
+        + The first non-comment line MUST be the word ``object`` and only
+          the word ``object``. It is case sensitive; ``Object`` or ``OBJECT``
+          will not work.
+        + Remaining line(s) are name(s) of object(s), one per line. Case does
+          **not** matter for object name.
+        + Example::
+
+            # my list is below
+            object
+            m101
+            sz lyn
+            # the next object is after this comment
+            RR LYR
+
+    **File with object name and position:**
+        + RA and Dec **must be J2000**.
+        + RA **must be given in hours**, though it can be either sexagesimal
+          (e.g. ``19:25:27.9``) or decimal (e.g. ``19.423861``).
+        + Dec **must be given in degrees**, though it can be either sexagesimal
+          (e.g. ``42:47:3.69``) or decimal (e.g. ``42.7843583``)
+        + The first non-comment line MUST be these words: ``object,RA,Dec``.
+          These are column headings for your file. It is case sensitive; for
+          example, using ``DEC`` instead of ``Dec`` will not work.
+        + Each remaining line should be an object name, object RA and Dec.
+          Case does **not** matter for object name.
+        + Example::
+
+            # my list with RA and Dec
+            # RA and Dec are assumed to be J2000
+            # RA MUST BE IN HOURS
+            # DEC MUST BE IN DEGREES
+            object,RA,Dec
+            m101,14:03:12.583, +54:20:55.50
+            # note that the leading sign for the Dec is optional if Dec is
+            # positive
+            sz lyn,08:09:35.748, 44:28:17.61
+            # You can mix sexagesimal and decimal RA/Dec.
+            RR Lyr, 19.423861,42.7843583
+
     """
     from astropy.table import Table
 
@@ -246,6 +290,7 @@ def history(function, mode='begin', time=None):
     function : func
         Function calling `history`
     mode : str, 'begin' or 'end'
+        A different string is produced for the beginning and the end
     time : datetime
         If not set, defaults to current date/time.
     """
@@ -364,7 +409,8 @@ def add_object_info(directory='.',
     default object list name.
 
     `object_list_dir` is the directory in which the `object_list` is contained.
-    If not specified it defaults to `directory`.
+    If not specified it defaults to `directory`. See :func:`read_object_list`
+    for a description of the format of this object file.
 
     `match_radius` is the maximum distance, in arcmin, between the
     RA/Dec of the image and a particular object for the image to be
@@ -401,7 +447,6 @@ def add_object_info(directory='.',
         ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
 
     object_ra_dec = np.array(ra_dec)
-
     for header in images.headers(save_with_name=new_file_ext,
                                  clobber=overwrite,
                                  object='', RA='*', Dec='*'):

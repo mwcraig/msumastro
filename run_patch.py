@@ -2,53 +2,73 @@
 DESCRIPTION
 -----------
 
-    For each directory provided on the command line the
-    headers all of the FITS files in that directory are modified
-    to add information like LST, apparent object position, and more.
-    See the full documentation for a list of the specific keywords
-    that are modified.
+For each directory provided on the command line the
+headers all of the FITS files in that directory are modified
+to add information like LST, apparent object position, and more.
+See the full documentation for a list of the specific keywords
+that are modified.
 
-    This is basically a wrapper around the function `patch_headers` with
-    the options set so that:
+Header patching
+^^^^^^^^^^^^^^^
 
-        + "Bad" keywords written by MaxImDL 5 are purged.
-        + ``IMAGETYP`` keyword is changed from default MaxIM DL style
-          to IRAF style (e.g. "Bias Frame" to "BIAS")
-        + Additional useful times like LST, JD are added to the header.
-        + Apparent position (Alt/Az, hour angle) are added to the header.
-        + Information about overscan is added to the header.
-        + Files are overwritten.
+This is basically a wrapper around the function
+:func:`patch_headers.patch_headers` with the options set so that:
 
-    For more control over what is patched and where the patched files are saved
-    see the documentation for ``patch_headers`` at
-    :func:`patch_headers.patch_headers`.
+    + "Bad" keywords written by MaxImDL 5 are purged.
+    + ``IMAGETYP`` keyword is changed from default MaxIM DL style
+      to IRAF style (e.g. "Bias Frame" to "BIAS")
+    + Additional useful times like LST, JD are added to the header.
+    + Apparent position (Alt/Az, hour angle) are added to the header.
+    + Information about overscan is added to the header.
+    + Files are overwritten.
 
-    ``run_patch`` also adds the name of the object being observed when
-    appropriate (i.e. only for light files) and possible. It needs to be
-    given a list of objects; looking up the coordinates for those objects
-    requires an Internet connection. See :func:`patch_headers.add_object_info`
-    for details.
+For more control over what is patched and where the patched files are saved
+see the documentation for ``patch_headers`` at
+:func:`patch_headers.patch_headers`.
 
-    .. Note::
-        This script is **NOT RECURSIVE**; it will not process files in
-        subdirectories of the the directories supplied on the command line.
+Adding OBJECT keyword
+^^^^^^^^^^^^^^^^^^^^^
 
-    .. WARNING::
-        This script OVERWRITES the image files in the directories
-        specified on the command line.
+``run_patch`` also adds the name of the object being observed when
+appropriate (i.e. only for light files) and possible. It needs to be
+given a list of objects; looking up the coordinates for those objects
+requires an Internet connection. See
+
+For a detailed description of the object list file see
+:func:`Object file format <patch_headers.read_object_list>`.
+
+for a detailed description of the function that actually adds the object name
+see :func:`patch_headers.add_object_info`.
+
+If no object list is specified or present in the directory being processed
+the `OBJECT` keyword is simply not added to the FITS header.
+
+.. Note::
+    This script is **NOT RECURSIVE**; it will not process files in
+    subdirectories of the the directories supplied on the command line.
+
+.. WARNING::
+    This script OVERWRITES the image files in the directories
+    specified on the command line.
 
 EXAMPLES
 --------
 
-    Invoking this script from the command line::
+Invoking this script from the command line::
 
-        python run_patch.py /my/folder/of/images
+    python run_patch.py /my/folder/of/images
 
-    To work on the same folder from within python, do this::
+To work on the same folder from within python, do this::
 
-        from run_patch import patch_directories
-        patch_directories('/my/folder/of/images')
+    from run_patch import patch_directories
+    patch_directories('/my/folder/of/images')
 
+To use the same object list for several different directories do this::
+
+    python run_patch.py --object-list path/to/list.txt dir1 dir2 dir3
+
+where ``path/to/list.txt`` is the path to your object list and ``dir1``,
+``dir2``, etc. are the directories you want to process.
 
 """
 
