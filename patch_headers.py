@@ -463,7 +463,7 @@ def add_object_info(directory='.',
             raise RuntimeError("More than one object match for image")
 
         if not matches.any():
-            raise RuntimeWarning("No object found for image")
+            warn("No object found for image", UserWarning)
             continue
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
