@@ -419,6 +419,7 @@ def add_object_info(directory='.',
     from fitskeyword import FITSKeyword
     from astropy.coordinates import FK5Coordinates
     from astropy import units as u
+    from warnings import warn
 
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -430,7 +431,8 @@ def add_object_info(directory='.',
         object_names, RAs, Decs = read_object_list(object_dir,
                                                    input_list=object_list)
     except IOError:
-        print 'No object list in directory %s, skipping.' % directory
+        warn('No object list in directory {0}, skipping.'.format(directory),
+             Warning)
         return
 
 #    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335),
