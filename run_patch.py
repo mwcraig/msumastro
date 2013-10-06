@@ -95,6 +95,7 @@ def patch_directories(directories, verbose=False, object_list=None):
         processed.
     """
     from os import path
+    import warnings
 
     if object_list is not None:
         full_path = path.abspath(object_list)
@@ -106,9 +107,13 @@ def patch_directories(directories, verbose=False, object_list=None):
         obj_name = None
         if object_list is not None:
             obj_dir, obj_name = path.split(full_path)
-        patch_headers(currentDir, new_file_ext='', overwrite=True)
-        add_object_info(currentDir, new_file_ext='', overwrite=True,
-                        object_list_dir=obj_dir, object_list=obj_name)
+        with warnings.catch_warnings():
+            # suppress warning from overwriting FITS files
+            ignore_from = 'astropy.io.fits.hdu.hdulist'
+            warnings.filterwarnings('ignore', module=ignore_from)
+            patch_headers(currentDir, new_file_ext='', overwrite=True)
+            add_object_info(currentDir, new_file_ext='', overwrite=True,
+                            object_list_dir=obj_dir, object_list=obj_name)
 
 from script_helpers import construct_default_parser
 
