@@ -2,6 +2,7 @@ from os import path
 from math import cos, pi
 from datetime import datetime
 import numpy as np
+from warnings import warn
 
 import astropy.io.fits as fits
 from astropysics import coords
@@ -142,7 +143,7 @@ def add_object_pos_airmass(header, history=False):
             keyword.add_to_header(header, history=history)
 
 
-def purge_bad_keywords(header, history=False, force=False):
+def purge_bad_keywords(header, history=False, force=False, file_name=''):
     """
     Remove keywords from FITS header that may be incorrect
 
@@ -163,7 +164,9 @@ def purge_bad_keywords(header, history=False, force=False):
         purged = False
 
     if purged and not force:
-        print "Not removing headers again, set force=True to force removal."
+        warn_msg = 'Not removing headers from {0} again, '
+        warn_msg += 'set force=True to force removal.'
+        warn(warn_msg.format(file_name), UserWarning)
         return
 
     for keyword in software.bad_keywords:
@@ -351,7 +354,7 @@ def patch_headers(dir='.',
                            % run_time)
 
         if purge_bad:
-            purge_bad_keywords(header, history=True)
+            purge_bad_keywords(header, history=True, file_name=fname)
 
         if fix_imagetype:
             change_imagetype_to_IRAF(header, history=True)
@@ -419,7 +422,6 @@ def add_object_info(directory='.',
     from fitskeyword import FITSKeyword
     from astropy.coordinates import FK5Coordinates
     from astropy import units as u
-    from warnings import warn
 
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
