@@ -432,7 +432,7 @@ def add_object_info(directory='.',
                                                    input_list=object_list)
     except IOError:
         warn('No object list in directory {0}, skipping.'.format(directory),
-             Warning)
+             UserWarning)
         return
 
 #    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335),
