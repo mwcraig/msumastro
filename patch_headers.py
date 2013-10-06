@@ -97,7 +97,7 @@ def add_time_info(header, history=False):
     # setting currentobsjd makes calls following it use that time
     # for calculations
 
-    feder.currentobsjd = feder.JD_OBS.value
+    feder.site.currentobsjd = feder.JD_OBS.value
     feder.LST.value = feder.site.localSiderialTime()
     feder.LST.value = sexagesimal_string(deg2dms(feder.LST.value))
 
