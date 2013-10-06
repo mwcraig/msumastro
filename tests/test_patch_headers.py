@@ -1,6 +1,6 @@
 from ..patch_headers import *
 from tempfile import mkdtemp
-from os import path, chdir, getcwd
+from os import path, chdir, getcwd, remove
 from shutil import rmtree
 import numpy as np
 import pytest
@@ -8,6 +8,7 @@ import pytest
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
+_test_image_name = 'uint16.fit'
 
 
 def test_sexagesimal_string():
@@ -256,15 +257,38 @@ def test_read_object_list_with_ra_dec():
     assert(Dec[0] == Dec_in)
 
 
+def test_missing_object_file_issues_warning(recwarn):
+    remove(path.join(_test_dir, _default_object_file_name))
+    add_object_info(_test_dir)
+    w = recwarn.pop(UserWarning)
+    assert issubclass(w.category, UserWarning)
+
+
+def test_no_object_match_for_image_warning_includes_file_name(recwarn):
+    remove(path.join(_test_dir, _default_object_file_name))
+    to_write = '# comment 1\n# comment 2\nobject\nsz lyn'
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
+    object_file.write(to_write)
+    object_file.close()
+    patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    add_object_info(_test_dir)
+    print _test_dir
+    w = recwarn.pop(UserWarning)
+    assert issubclass(w.category, UserWarning)
+    assert _test_image_name in str(w.message)
+
+
 def setup_function(function):
     global _test_dir
+    global _test_image_name
     from shutil import copy
 
     _test_dir = mkdtemp()
     to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
-    copy(path.join('data', 'uint16.fit'), _test_dir)
+    object_file.close()
+    copy(path.join('data', _test_image_name), _test_dir)
 
 
 def teardown_function(function):

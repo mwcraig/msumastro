@@ -449,9 +449,10 @@ def add_object_info(directory='.',
         ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
 
     object_ra_dec = np.array(ra_dec)
-    for header in images.headers(save_with_name=new_file_ext,
-                                 clobber=overwrite,
-                                 object='', RA='*', Dec='*'):
+    for header, fname in images.headers(save_with_name=new_file_ext,
+                                        clobber=overwrite,
+                                        object='', RA='*', Dec='*',
+                                        return_fname=True):
         image_ra_dec = FK5Coordinates(header['ra'],
                                       header['dec'],
                                       unit=default_angle_units)
@@ -460,10 +461,12 @@ def add_object_info(directory='.',
         distance = np.array(distance)
         matches = (distance < match_radius)
         if matches.sum() > 1:
-            raise RuntimeError("More than one object match for image")
+            err_msg = "More than one object match for image {0}".format(fname)
+            raise RuntimeError(err_msg)
 
         if not matches.any():
-            warn("No object found for image", UserWarning)
+            warn_msg = "No object found for image {0}".format(fname)
+            warn(warn_msg, UserWarning)
             continue
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
