@@ -330,6 +330,11 @@ def test_times_added():
     header_alt = header['alt-obj']
     assert_almost_equal(alt.degrees, header_alt, decimal=5)
 
+    # calculate, then check, airmass
+    zenith_angle = Angle(90 - alt.degrees, unit=u.degree)
+    airmass_correct = 1/np.cos(zenith_angle.radians)
+    assert_almost_equal(airmass_correct, header['airmass'], decimal=3)
+
 
 def setup_function(function):
     global _test_dir
