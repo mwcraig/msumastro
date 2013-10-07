@@ -511,9 +511,8 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
         these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
             full_name = path.join(directory, image['file'])
-            hdulist = fits.open(full_name)
+            hdulist = fits.open(full_name, do_not_scale_image_data=True)
             header = hdulist[0].header
-            int16 = (header['bitpix'] == 16)
             feder.RA.add_to_header(header, history=True)
             feder.DEC.add_to_header(header, history=True)
             if new_file_ext is not None:
@@ -523,8 +522,6 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             else:
                 new_file_name = full_name
                 overwrite = True
-            if int16:
-                hdulist[0].scale('int16')
             hdulist.writeto(new_file_name, clobber=overwrite)
             hdulist.close()
 
