@@ -278,7 +278,7 @@ def test_no_object_match_for_image_warning_includes_file_name(recwarn):
     assert _test_image_name in str(w.message)
 
 
-def test_times_added():
+def test_times_apparent_pos_added():
     from astropy.io import fits
     from numpy.testing import assert_almost_equal
     from astropy.coordinates import Angle
