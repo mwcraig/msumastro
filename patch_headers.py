@@ -92,15 +92,12 @@ def add_time_info(header, history=False):
     dateobs = Time(header['date-obs'], scale='utc')
     feder.JD_OBS.value = dateobs.jd
     feder.MJD_OBS.value = dateobs.mjd
-    print header['date-obs']
-    print dateobs
-    print dateobs.jd
+
     # setting currentobsjd makes calls following it use that time
     # for calculations
 
     feder.site.currentobsjd = feder.JD_OBS.value
     feder.LST.value = feder.site.localSiderialTime()
-    print 'feder LST: {}'.format(feder.LST.value)
     feder.LST.value = sexagesimal_string(deg2dms(feder.LST.value))
 
     for keyword in feder.keywords_for_all_files:
@@ -119,9 +116,6 @@ def add_object_pos_airmass(header, history=False):
     from astropy.coordinates import Angle, FK5Coordinates
     import astropy.units as u
 
-    print 'JD_OBS value: {}'.format(feder.JD_OBS.value)
-    print 'currentobsjd: {}'.format(feder.site.currentobsjd)
-
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd == feder.JD_OBS.value
     else:
@@ -139,6 +133,7 @@ def add_object_pos_airmass(header, history=False):
 
     obj_coord2 = FK5Coordinates(feder.RA.value, feder.DEC.value,
                                 unit=(u.hour, u.degree))
+
     # monkeypatch obj_coord2 so it looks like an astropysics coord
     obj_coord2.raerr = None
     obj_coord2.decerr = None
