@@ -278,6 +278,59 @@ def test_no_object_match_for_image_warning_includes_file_name(recwarn):
     assert _test_image_name in str(w.message)
 
 
+def test_times_added():
+    from astropy.io import fits
+    from numpy.testing import assert_almost_equal
+    from astropy.coordinates import Angle
+    from astropy import units as u
+    from ..feder import FederSite
+
+    # the correct value below is from the USNO JD calculator using the UT
+    # of the start of the observation in the file uint16.fit, which is
+    # 2012-06-05T04:17:00
+    JD_correct = 2456083.678472222
+    # The "correct" values below are from converting the RA/Dec in uint16 to
+    # decimal hours/degrees
+    RA_correct = 14.054166667  # hours
+    Dec_correct = 54.351111111  # degrees
+
+    # Get the "correct" LST from astropysics and assume that that is correct
+    f = FederSite()
+    f.currentobsjd = JD_correct
+    LST_astropysics = f.localSiderialTime()
+
+    HA_correct = LST_astropysics - RA_correct
+
+    patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    header = fits.getheader(path.join(_test_dir, _test_image_name))
+
+    # check Julian Date
+    assert_almost_equal(header['JD-OBS'], JD_correct)
+
+    # calculate then check LST
+    h, m, s = header['LST'].split(':')
+    header_lst = int(h) + int(m)/60. + float(s)/3600.
+
+    assert_almost_equal(header_lst, LST_astropysics, decimal=5)
+
+    # calculate then check HA
+    h, m, s = header['HA'].split(':')
+    header_HA = int(h) + int(m)/60. + float(s)/3600.
+
+    assert_almost_equal(HA_correct, header_HA)
+
+    # calculate, then check, altitude
+    latitude = f.latitude.radians
+    Dec_a = Angle(Dec_correct, unit=u.degree)
+    HA_a = Angle(HA_correct, unit=u.hour)
+    sin_alt = (np.sin(latitude) * np.sin(Dec_a.radians) +
+               (np.cos(latitude) * np.cos(Dec_a.radians) *
+                np.cos(HA_a.radians)))
+    alt = Angle(np.arcsin(sin_alt), unit=u.radian)
+    header_alt = header['alt-obj']
+    assert_almost_equal(alt.degrees, header_alt, decimal=5)
+
+
 def setup_function(function):
     global _test_dir
     global _test_image_name

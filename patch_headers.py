@@ -5,7 +5,6 @@ import numpy as np
 from warnings import warn
 
 import astropy.io.fits as fits
-from astropysics import coords
 from astropy.time import Time
 
 from feder import Feder
@@ -93,12 +92,15 @@ def add_time_info(header, history=False):
     dateobs = Time(header['date-obs'], scale='utc')
     feder.JD_OBS.value = dateobs.jd
     feder.MJD_OBS.value = dateobs.mjd
-
+    print header['date-obs']
+    print dateobs
+    print dateobs.jd
     # setting currentobsjd makes calls following it use that time
     # for calculations
 
     feder.site.currentobsjd = feder.JD_OBS.value
     feder.LST.value = feder.site.localSiderialTime()
+    print 'feder LST: {}'.format(feder.LST.value)
     feder.LST.value = sexagesimal_string(deg2dms(feder.LST.value))
 
     for keyword in feder.keywords_for_all_files:
@@ -114,6 +116,12 @@ def add_object_pos_airmass(header, history=False):
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
+    from astropy.coordinates import Angle, FK5Coordinates
+    import astropy.units as u
+
+    print 'JD_OBS value: {}'.format(feder.JD_OBS.value)
+    print 'currentobsjd: {}'.format(feder.site.currentobsjd)
+
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd == feder.JD_OBS.value
     else:
@@ -128,16 +136,23 @@ def add_object_pos_airmass(header, history=False):
     feder.DEC.set_value_from_header(header)
     feder.RA.value = feder.RA.value.replace(' ', ':')
     feder.DEC.value = feder.DEC.value.replace(' ', ':')
-    object_coords = coords.EquatorialCoordinatesEquinox((feder.RA.value,
-                                                        feder.DEC.value))
-    alt_az = feder.site.apparentCoordinates(object_coords, refraction=False)
+
+    obj_coord2 = FK5Coordinates(feder.RA.value, feder.DEC.value,
+                                unit=(u.hour, u.degree))
+    # monkeypatch obj_coord2 so it looks like an astropysics coord
+    obj_coord2.raerr = None
+    obj_coord2.decerr = None
+    alt_az = feder.site.apparentCoordinates(obj_coord2, refraction=False)
+
     feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
     feder.AZ_OBJ.value = round(alt_az.az.d, 5)
     feder.AIRMASS.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
-    feder.HA.value = sexagesimal_string(
-        coords.EquatorialCoordinatesEquinox((feder.site.localSiderialTime() -
-                                            object_coords.ra.hours,
-                                             0)).ra.hms)
+
+    HA = feder.site.localSiderialTime() - obj_coord2.ra.hours
+    HA = Angle(HA, unit=u.hour)
+
+    feder.HA.value = HA.format(unit=u.hour, sep=':')
+
     for keyword in feder.keywords_for_light_files:
         if keyword.value is not None:
             keyword.add_to_header(header, history=history)
