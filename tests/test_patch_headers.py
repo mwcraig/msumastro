@@ -278,6 +278,37 @@ def test_no_object_match_for_image_warning_includes_file_name(recwarn):
     assert _test_image_name in str(w.message)
 
 
+def test_add_ra_dec_from_object_name():
+    from astropy.io import fits
+    from astropy.coordinates import FK5Coordinates
+    from astropy import units as u
+    from numpy.testing import assert_almost_equal
+    import warnings
+
+    full_path = path.join(_test_dir, _test_image_name)
+    f = fits.open(full_path, do_not_scale_image_data=True)
+    h = f[0].header
+    del h['OBJCTRA']
+    del h['OBJCTDEC']
+    h['OBJECT'] = 'M101'
+    with warnings.catch_warnings():
+        ignore_from = 'astropy.io.fits.hdu.hdulist'
+        warnings.filterwarnings('ignore', module=ignore_from)
+        f.writeto(full_path, clobber=True)
+    f.close()
+    add_ra_dec_from_object_name(_test_dir, new_file_ext=None)
+    f = fits.open(full_path, do_not_scale_image_data=True)
+    h = f[0].header
+    m101_ra_dec_correct = FK5Coordinates('14h03m12.58s +54d20m55.50s')
+    header_m101 = FK5Coordinates(ra=h['ra'], dec=h['dec'],
+                                 unit=(u.hour, u.degree))
+
+    assert_almost_equal(m101_ra_dec_correct.ra.hours,
+                        header_m101.ra.hours)
+    assert_almost_equal(m101_ra_dec_correct.dec.degrees,
+                        header_m101.dec.degrees)
+
+
 def test_times_apparent_pos_added():
     from astropy.io import fits
     from numpy.testing import assert_almost_equal
