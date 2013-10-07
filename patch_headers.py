@@ -491,7 +491,8 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     Add RA/Dec to FITS file that has object name but no pointing.
     """
     from numpy import unique
-    from astro_object import AstroObject
+    from astropy.coordinates import FK5Coordinates
+    from astropy import units as u
 
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -505,9 +506,15 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
 
     objects = unique(missing_dec['object'])
     for object_name in objects:
-        obj = AstroObject(object_name)
-        feder.RA.value = obj.ra_dec.ra.getHmsStr(canonical=True)
-        feder.DEC.value = obj.ra_dec.dec.getDmsStr(canonical=True)
+        object_coords = FK5Coordinates.from_name(object_name)
+        common_format_keywords = {'sep': ':',
+                                  'precision': 2,
+                                  'pad': True}
+        feder.RA.value = object_coords.ra.format(unit=u.hour,
+                                                 **common_format_keywords)
+        feder.DEC.value = object_coords.dec.format(unit=u.degree,
+                                                   alwayssign=True,
+                                                   **common_format_keywords)
         these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
             full_name = path.join(directory, image['file'])
