@@ -377,7 +377,8 @@ def patch_headers(dir='.',
                 add_object_pos_airmass(header,
                                        history=True)
             except ValueError as e:
-                print ('Skipping file {} because: {}'.format(fname, e))
+                warn('Skipping file {} because: {}'.format(fname, e),
+                     UserWarning)
                 continue
 
         if add_overscan:
