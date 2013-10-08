@@ -182,6 +182,6 @@ if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
     print dir(args)
-    astrometry_for_directory(args.directories,
+    astrometry_for_directory(args.dir,
                              group_by_object=args.group_by_object,
                              blind=args.blind)
