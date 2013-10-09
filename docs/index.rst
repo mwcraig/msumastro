@@ -18,9 +18,10 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   
+
+   Installation <installation>   
    Header patching and other Feder-specific code <feder_processing>
-   Tools for managing a set of images <image_processing>
+   Atool for managing a set of images <image_processing>
 
 
 Indices and tables
