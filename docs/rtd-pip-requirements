@@ -1,2 +1,2 @@
 sphinx-argparse
-astropysics
+astropysics>=0.0dev0
