@@ -1,3 +1,4 @@
 sphinx-argparse
 astropysics>=0.0dev0
 astropy
+numpy
