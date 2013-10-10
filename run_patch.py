@@ -73,9 +73,11 @@ where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 """
 
 from patch_headers import patch_headers, add_object_info
+default_obj_list = 'obsinfo.txt'
 
 
-def patch_directories(directories, verbose=False, object_list=None):
+def patch_directories(directories, verbose=False, object_list=None,
+                      destination=None):
     """
     Patch all of the files in each of a list of directories.
 
@@ -93,6 +95,11 @@ def patch_directories(directories, verbose=False, object_list=None):
         might be in the files in `directory`. If not provided it defaults
         to looking for a file called `obsinfo.txt` in the directory being
         processed.
+
+    destination : str, optional
+        Path to directory in which patched images will be stored. Default
+        value is None, which means that **files will be overwritten** in
+        the directory being processed.
     """
     from os import path
     import warnings
@@ -111,8 +118,21 @@ def patch_directories(directories, verbose=False, object_list=None):
             # suppress warning from overwriting FITS files
             ignore_from = 'astropy.io.fits.hdu.hdulist'
             warnings.filterwarnings('ignore', module=ignore_from)
-            patch_headers(currentDir, new_file_ext='', overwrite=True)
-            add_object_info(currentDir, new_file_ext='', overwrite=True,
+            patch_headers(currentDir, new_file_ext='', overwrite=True,
+                          save_location=destination)
+            if destination is not None:
+                working_dir = destination
+            else:
+                working_dir = currentDir
+
+            default_object_list_present = path.exists(path.join(currentDir,
+                                                      default_obj_list))
+            no_explicit_object_list = (object_list is None)
+            if (default_object_list_present and no_explicit_object_list):
+                obj_dir = currentDir
+                obj_name = default_obj_list
+            add_object_info(working_dir, new_file_ext='', overwrite=True,
+                            save_location=destination,
                             object_list_dir=obj_dir, object_list=obj_name)
 
 from script_helpers import construct_default_parser
@@ -135,4 +155,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     patch_directories(args.dir, verbose=args.verbose,
-                      object_list=args.object_list)
+                      object_list=args.object_list,
+                      destination=args.destination_dir)
