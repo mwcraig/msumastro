@@ -21,7 +21,7 @@ Contents:
 
    Installation <installation>   
    Header patching and other Feder-specific code <feder_processing>
-   Atool for managing a set of images <image_processing>
+   A tool for managing a set of images <image_processing>
 
 
 Indices and tables
