@@ -414,6 +414,7 @@ def add_object_info(directory='.',
                     object_list=None,
                     object_list_dir=None,
                     match_radius=20.0, new_file_ext='new',
+                    save_location=None,
                     overwrite=False, detailed_history=True):
     """
     Automagically add object information to FITS files.
@@ -464,6 +465,7 @@ def add_object_info(directory='.',
     object_ra_dec = np.array(ra_dec)
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         clobber=overwrite,
+                                        save_location=save_location,
                                         object='', RA='*', Dec='*',
                                         return_fname=True):
         image_ra_dec = FK5Coordinates(header['ra'],

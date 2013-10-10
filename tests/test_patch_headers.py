@@ -121,6 +121,22 @@ def test_writing_patched_files_to_directory():
             (n_files_init == n_files_destination))
 
 
+def test_adding_object_name_to_different_directory(use_list=None,
+                                                   use_obj_dir=None):
+    new_ext = '_obj_name_test'
+    patch_headers(_test_dir, new_file_ext=new_ext)
+    destination_dir = mkdtemp()
+    add_object_info(_test_dir, new_file_ext=new_ext,
+                    save_location=destination_dir,
+                    object_list=use_list, object_list_dir=use_obj_dir)
+    fname = path.join(destination_dir, 'uint16')
+    fname += new_ext + new_ext
+    with_name = fits.open(fname + '.fit')
+    print 'add object name: %s' % fname
+    assert (with_name[0].header['object'] == 'm101')
+    return with_name
+
+
 def test_purging_maximdl5_keywords():
     from ..feder import Feder
     from shutil import copy
@@ -148,9 +164,7 @@ def test_adding_overscan_apogee_u9():
     apogee = ApogeeAltaU9()
     print getcwd()
     oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(_test_dir)
-    print "POOOP"
     print getcwd()
-    print "PEE"
 
     chdir(path.join(_test_dir, oscan_dir))
     patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
