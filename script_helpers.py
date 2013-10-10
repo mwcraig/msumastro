@@ -54,6 +54,22 @@ def add_directories(parser, nargs_in='+'):
                         help="Directory to process")
 
 
+def add_destination_directory(parser):
+    """
+    Add a destination directory option
+
+    Parameters
+    ----------
+
+    parser : `ArgumentParser`
+
+    """
+    arg_help = 'Directory in which output from this script will be stored'
+    parser.add_argument("-d", "--destination-dir",
+                        help=arg_help,
+                        default=None)
+
+
 def construct_default_parser(docstring=None):
     #import script_helpers
     import argparse
@@ -63,5 +79,6 @@ def construct_default_parser(docstring=None):
         setup_parser_help(parser, docstring)
     add_verbose(parser)
     add_directories(parser)
+    add_destination_directory(parser)
 
     return parser
