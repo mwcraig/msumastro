@@ -48,6 +48,9 @@ class DefaultFileNames(object):
         self.filter_file_name = 'NEEDS_FILTER.txt'
         self.output_table = 'Manifest.txt'
 
+    def as_dict(self):
+        return self.__dict__
+
 
 def write_list(dir, file, info, column_name='File'):
     from astropy.table import Table
@@ -131,7 +134,8 @@ def triage_directories(directories,
                        object_file_name=None,
                        pointing_file_name=None,
                        filter_file_name=None,
-                       output_table=None):
+                       output_table=None,
+                       destination=None):
 
     use_keys = []
     if keywords is not None:
@@ -139,24 +143,31 @@ def triage_directories(directories,
 
     for currentDir in directories:
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
-        for fil in [pointing_file_name, filter_file_name,
-                    object_file_name, output_table]:
+        outfiles = [pointing_file_name, filter_file_name,
+                    object_file_name, output_table]
+        for fil in [outfile for outfile in outfiles if outfile is not None]:
             try:
                 os.remove(os.path.join(currentDir, fil))
             except OSError:
                 pass
 
         need_pointing = result['needs_pointing']
-        if need_pointing:
-            write_list(currentDir, pointing_file_name, need_pointing)
-        if result['needs_filter']:
-            write_list(currentDir, filter_file_name, result['needs_filter'])
-        if result['needs_object_name']:
-            write_list(currentDir, object_file_name,
-                       result['needs_object_name'])
+        need_filter = result['needs_filter']
+        need_object_name = result['needs_object_name']
+        if destination is not None:
+            target_dir = destination
+        else:
+            target_dir = currentDir
+        if need_pointing and pointing_file_name is not None:
+            write_list(target_dir, pointing_file_name, need_pointing)
+        if need_filter and filter_file_name is not None:
+            write_list(target_dir, filter_file_name, need_filter)
+        if need_object_name and object_file_name is not None:
+            write_list(target_dir, object_file_name,
+                       need_object_name)
         tbl = result['files']
         if ((len(tbl) > 0) and (output_table is not None)):
-            tbl.write(os.path.join(currentDir, output_table),
+            tbl.write(os.path.join(target_dir, output_table),
                       format='ascii', delimiter=',')
 
 
@@ -170,6 +181,7 @@ def construct_parser():
     # can be used without needing to specify a directory
     script_helpers.add_directories(parser, '*')
     script_helpers.add_verbose(parser)
+    script_helpers.add_destination_directory(parser)
 
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'
@@ -214,16 +226,16 @@ def construct_parser():
 
     return parser
 
+always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
+                       'object', 'observer', 'airmass', 'instrument',
+                       'RA', 'Dec']
+
 if __name__ == "__main__":
     from sys import exit
     parser = construct_parser()
     args = parser.parse_args()
 
-    all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
-
-    always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
-                           'object', 'observer', 'airmass', 'instrument',
-                           'RA', 'Dec']
+    #all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
 
     try:
         always_include_keys.extend(args.key)
@@ -246,4 +258,5 @@ if __name__ == "__main__":
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,
                        filter_file_name=args.filter_needed_list,
-                       output_table=args.table_name)
+                       output_table=args.table_name,
+                       destination=args.destination_dir)

@@ -1,8 +1,17 @@
 import pytest
 import py
 from ..run_patch import patch_directories
+from ..run_triage import DefaultFileNames, always_include_keys
+from ..run_triage import triage_directories
 
 _default_object_file_name = 'obsinfo.txt'
+
+
+@pytest.fixture
+def triage_dict():
+    default_names = DefaultFileNames()
+    names_dict = default_names.as_dict()
+    return names_dict
 
 
 class TestScript(object):
@@ -22,7 +31,7 @@ class TestScript(object):
             self.test_dir.remove()
         request.addfinalizer(cleanup)
 
-    def test_run_patch_does_not_overwite_if_destination(self, recwarn):
+    def test_run_patch_does_not_overwite_if_destination_set(self, recwarn):
         mtimes = lambda files: [fil.mtime() for fil in files]
         fits_files = [fil for fil in self.test_dir.visit(fil='*.fit',
                                                          sort=True)]
@@ -44,3 +53,36 @@ class TestScript(object):
         # complete
         assert(len(recwarn.list) == 0)
         destination.remove()
+
+    def test_run_triage_no_output_generated(self):
+        list_before = self.test_dir.listdir(sort=True)
+        triage_directories([self.test_dir.strpath],
+                           keywords=always_include_keys,
+                           object_file_name=None,
+                           pointing_file_name=None,
+                           filter_file_name=None,
+                           output_table=None)
+        list_after = self.test_dir.listdir(sort=True)
+        assert(list_before == list_after)
+
+    def _verify_triage_files_created(self, dir, triage_dict):
+        for option_name, file_name in triage_dict.iteritems():
+            print option_name, file_name, dir.join(file_name).check()
+            assert(dir.join(file_name).check())
+
+    def test_triage_output_file_by_keyword(self, triage_dict):
+        triage_directories([self.test_dir.strpath],
+                           keywords=always_include_keys,
+                           **triage_dict)
+        self._verify_triage_files_created(self.test_dir, triage_dict)
+
+    def test_triage_destination_directory(self, triage_dict):
+        destination = self.test_dir.make_numbered_dir()
+        list_before = self.test_dir.listdir(sort=True)
+        triage_directories([self.test_dir.strpath],
+                           keywords=always_include_keys,
+                           destination=destination.strpath,
+                           **triage_dict)
+        list_after = self.test_dir.listdir(sort=True)
+        assert(list_before == list_after)
+        self._verify_triage_files_created(destination, triage_dict)
