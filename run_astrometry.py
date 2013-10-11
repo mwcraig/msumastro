@@ -41,12 +41,14 @@ EXAMPLES
 """
 import astrometry as ast
 from os import path
+import shutil
 import numpy as np
 import image_collection as tff
 from image import ImageWithWCS
 
 
 def astrometry_for_directory(directories,
+                             destination=None,
                              blind=False):
     """
     Add astrometry to files in list of directories
@@ -71,8 +73,14 @@ def astrometry_for_directory(directories,
         lights = summary[((summary['imagetyp'] == 'LIGHT') &
                           (summary['wcsaxes'] == ''))]
 
-        for light_file in lights:
-            img = ImageWithWCS(path.join(currentDir, light_file['file']))
+        working_dir = destination if destination is not None else currentDir
+
+        for light_file in lights['file']:
+            if destination is not None:
+                src = path.join(currentDir, light_file)
+                shutil.copy(src, destination)
+
+            img = ImageWithWCS(path.join(working_dir, light_file))
             try:
                 ra = img.header['ra']
                 dec = img.header['dec']
@@ -81,7 +89,7 @@ def astrometry_for_directory(directories,
                 ra_dec = None
 
             if (ra_dec is None) and (not blind):
-                original_fname = path.join(currentDir, light_file['file'])
+                original_fname = path.join(working_dir, light_file)
                 root, ext = path.splitext(original_fname)
                 f = open(root + '.blind', 'wb')
                 f.close()
@@ -93,7 +101,7 @@ def astrometry_for_directory(directories,
                                             overwrite=True)
 
             if astrometry and ra_dec is None:
-                original_fname = path.join(currentDir, light_file['file'])
+                original_fname = path.join(working_dir, light_file)
                 root, ext = path.splitext(original_fname)
                 img_new = ImageWithWCS(original_fname)
                 ra_dec = img_new.wcs_pix2sky(np.trunc(np.array(img_new.shape) / 2))

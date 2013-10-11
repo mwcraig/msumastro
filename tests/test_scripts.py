@@ -3,6 +3,7 @@ import py
 from ..run_patch import patch_directories
 from ..run_triage import DefaultFileNames, always_include_keys
 from ..run_triage import triage_directories
+from ..run_astrometry import astrometry_for_directory
 
 _default_object_file_name = 'obsinfo.txt'
 
@@ -86,3 +87,24 @@ class TestScript(object):
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
         self._verify_triage_files_created(destination, triage_dict)
+
+    def test_run_astrometry_with_dest_does_not_modify_source(self):
+        from ..image_collection import ImageFileCollection
+
+        destination = self.test_dir.make_numbered_dir()
+        list_before = self.test_dir.listdir(sort=True)
+        astrometry_for_directory([self.test_dir.strpath], destination.strpath,
+                                 blind=False)
+        list_after = self.test_dir.listdir(sort=True)
+        # nothing should change in the source directory
+        assert(list_before == list_after)
+        # for each light file in the destination directory we should have a
+        # file with the same basename but an extension of blind
+        ic = ImageFileCollection(destination.strpath,
+                                 keywords=['IMAGETYP'])
+        for image in ic.files_filtered(imagetyp='LIGHT'):
+            image_path = destination.join(image)
+            print image_path.purebasename
+            blind_path = destination.join(image_path.purebasename + '.blind')
+            print blind_path.strpath
+            assert (blind_path.check())
