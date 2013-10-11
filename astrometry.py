@@ -81,7 +81,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         solve_field.append("%s" % verify)
 
     solve_field.extend([filename])
-    print solve_field
+    #print solve_field
     return subprocess.call(solve_field)
 
 
