@@ -46,47 +46,7 @@ import image_collection as tff
 from image import ImageWithWCS
 
 
-def astrometry_img_group(img_group, directory='.'):
-    """
-    Add astrometry to a set of images of the same object.
-
-    Tries to save a bit of time by using the WCS file from the first
-    successful fit as a starting guess for the remainer of the files
-    in the group.
-    """
-    astrometry = False
-    while not astrometry:
-        for idx, img in enumerate(img_group):
-            ra_dec = (img['ra'], img['dec'])
-            img_file = path.join(directory, img['file'])
-            astrometry = ast.add_astrometry(img_file, ra_dec=ra_dec,
-                                            note_failure=True,
-                                            overwrite=True,
-                                            save_wcs=True)
-            if astrometry:
-                break
-        else:
-            break
-        wcs_file = path.splitext(img_file)[0] + '.wcs'
-
-        # loop over files, terminating when astrometry is successful.
-            # at this stage want to *keep* the wcs file (need to modify
-            # add_astrometry/call_astrometry to allow this)
-        # save name of this wcs file.
-    print idx, len(img_group)
-    for img in img_group[range(idx + 1, len(img_group))]:
-        img_file = path.join(directory, img['file'])
-        astrometry = ast.add_astrometry(img_file, ra_dec=ra_dec,
-                                        note_failure=True,
-                                        overwrite=True,
-                                        verify=wcs_file)
-
-    # loop over remaining files, with addition of --verify option to
-    # add_astrometry (which I'll need to write)
-
-
 def astrometry_for_directory(directories,
-                             group_by_object=False,
                              blind=False):
     """
     Add astrometry to files in list of directories
@@ -96,11 +56,6 @@ def astrometry_for_directory(directories,
 
     directories : str or list of str
         Directory or directories whose FITS files are to be processed.
-
-    group_by_object : bool, optional
-        attempt to speed up astrometry by using WCS from one image
-        of an object as initial guess for others; may very well NOT
-        speed things up. Default is False.
 
     blind : bool, optional
         Set to True to force blind astrometry. False by default because
@@ -116,20 +71,7 @@ def astrometry_for_directory(directories,
         lights = summary[((summary['imagetyp'] == 'LIGHT') &
                           (summary['wcsaxes'] == ''))]
 
-        print lights['file']
-        can_group = ((lights['object'] != '') &
-                     (lights['ra'] != '') &
-                     (lights['dec'] != ''))
-        can_group &= group_by_object
-
-        if can_group.any():
-            groupable = lights[can_group]
-            objects = np.unique(groupable['object'])
-            for obj in objects:
-                astrometry_img_group(groupable[(groupable['object'] == obj)],
-                                     directory=currentDir)
-
-        for light_file in lights[np.logical_not(can_group)]:
+        for light_file in lights:
             img = ImageWithWCS(path.join(currentDir, light_file['file']))
             try:
                 ra = img.header['ra']
@@ -165,12 +107,6 @@ from script_helpers import construct_default_parser
 def construct_parser():
     parser = construct_default_parser(__doc__)
 
-    group_help = 'attempt to speed up astrometry by using WCS from one image '
-    group_help += 'of an object as initial guess for others; may very well '
-    group_help += 'NOT speed things up.'
-    parser.add_argument('-g', '--group-by-object',
-                        help=group_help, action='store_true')
-
     blind_help = 'Turn ON blind astrometry; '
     blind_help += 'disabled by default because it is so slow.'
     parser.add_argument('-b', '--blind',
@@ -181,7 +117,5 @@ def construct_parser():
 if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
-    print dir(args)
     astrometry_for_directory(args.dir,
-                             group_by_object=args.group_by_object,
                              blind=args.blind)
