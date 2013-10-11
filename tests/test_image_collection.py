@@ -1,5 +1,4 @@
 from .. import image_collection as tff
-from ..run_triage import triage_fits_files
 from ..patch_headers import IRAF_image_type
 import os
 import numpy
@@ -7,7 +6,6 @@ import astropy.io.fits as fits
 from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
-from numpy import where
 import numpy as np
 import pytest
 
@@ -18,19 +16,7 @@ _n_test = {'files': 0, 'need_object': 0,
 
 _test_dir = ''
 _filters = []
-
-
-def test_triage():
-    file_info = triage_fits_files(_test_dir)
-    print "number of files should be %i" % _n_test['files']
-    print file_info['files']['file']
-    assert len(file_info['files']['file']) == _n_test['files']
-    assert len(file_info['needs_pointing']) == _n_test['need_pointing']
-    assert len(file_info['needs_object_name']) == _n_test['need_object']
-    assert len(file_info['needs_filter']) == _n_test['need_filter']
-    bias_check = where(file_info['files']['imagetyp'] ==
-                       IRAF_image_type('bias'))
-    assert (len(bias_check[0]) == 2)
+_original_dir = ''
 
 
 def test_fits_summary():
@@ -221,14 +207,18 @@ class TestImageFileCollection(object):
             assert (fname in collection.paths())
             assert (isinstance(header, fits.Header))
 
+
 def setup_module():
     global _n_test
     global _test_dir
+    global _original_dir
 
     for key in _n_test.keys():
         _n_test[key] = 0
 
     _test_dir = mkdtemp()
+    _original_dir = os.getcwd()
+
     os.chdir(_test_dir)
     img = numpy.uint16(numpy.arange(100))
 
@@ -285,3 +275,4 @@ def teardown_module():
     for key in _n_test.keys():
         _n_test[key] = 0
     rmtree(_test_dir)
+    os.chdir(_original_dir)
