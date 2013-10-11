@@ -2,15 +2,18 @@ from ..reduction import trim
 from ..patch_headers import patch_headers
 import astropy.io.fits as fits
 from tempfile import mkdtemp
-from os import path, chdir
+from os import path, chdir, getcwd
 import pytest
 
 test_dir = ''
+original_dir = ''
 
 
 def setup():
     global test_dir
+    global original_dir
     from shutil import copytree
+    original_dir = getcwd()
     test_dir = path.join(mkdtemp(), "data")
     copytree('data', test_dir)
 
@@ -55,4 +58,5 @@ def test_trim():
 def teardown():
     from shutil import rmtree
 
+    chdir(original_dir)
     rmtree(test_dir)
