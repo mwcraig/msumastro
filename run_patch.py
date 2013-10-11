@@ -49,7 +49,8 @@ the `OBJECT` keyword is simply not added to the FITS header.
 
 .. WARNING::
     This script OVERWRITES the image files in the directories
-    specified on the command line.
+    specified on the command line unless you use the --destination-dir
+    option.
 
 EXAMPLES
 --------
