@@ -1,6 +1,16 @@
 Installation
 =============
 
+This software
+*************
+
+Install this software by downloading a copy from the `github page for the code <https://github.com/mwcraig/msumastro>`_. On Mac/Linux do this by typing, in a terminal in the directory in which you want to run the code::
+
+    git clone https://github.com/mwcraig/msumastro.git
+
+Dependencies
+************
+
 Python
 ------
 
