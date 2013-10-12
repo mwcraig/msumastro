@@ -1,6 +1,9 @@
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ImageWithWCS(object):

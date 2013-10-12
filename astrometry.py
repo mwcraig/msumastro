@@ -1,5 +1,8 @@
+import logging
 import subprocess
 from os import path, remove, rename
+
+logger = logging.getLogger(__name__)
 
 
 def call_astrometry(filename, sextractor=False, feder_settings=True,

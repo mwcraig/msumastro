@@ -1,4 +1,7 @@
 import astropy.io.fits as fits
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def image_gen(filein, data=None, fileout=None):

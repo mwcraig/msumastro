@@ -2,6 +2,9 @@ from astropysics import obstools
 from fitskeyword import FITSKeyword
 from itertools import chain
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FederSite(obstools.Site):

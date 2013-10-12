@@ -11,6 +11,10 @@ from feder import Feder
 
 from image_collection import ImageFileCollection
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 feder = Feder()
 
 

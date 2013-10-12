@@ -1,6 +1,9 @@
 from image import ImageWithWCS
 import numpy as np
 from os import path
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def shift_images(files, source_dir, output_file='_shifted'):

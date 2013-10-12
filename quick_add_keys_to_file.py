@@ -10,6 +10,9 @@ DESCRIPTION
 
 import astropy.io.fits as fits
 from astropy.table import Table
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def add_keys(*files, **kwd):

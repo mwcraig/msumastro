@@ -4,6 +4,9 @@ from os import listdir, path
 from numpy import array
 import numpy.ma as ma
 from astropy.table import Table
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ImageFileCollection(object):

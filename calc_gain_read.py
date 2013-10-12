@@ -2,6 +2,9 @@ from image_collection import ImageFileCollection
 from ccd_characterization import ccd_gain, ccd_read_noise
 from numpy import array
 from astropysics import ccd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def as_images(tbl, src_dir):

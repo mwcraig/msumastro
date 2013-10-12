@@ -1,5 +1,8 @@
 from os import listdir, path
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 from patch_headers import fix_int16_images, compare_data_in_fits
 from image_collection import ImageFileCollection

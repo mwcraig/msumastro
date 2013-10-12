@@ -1,4 +1,7 @@
-"""A set of functions to standardize some options for python scripts."""
+"""A set of functions to standardize some options for python scripts"""
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def setup_parser_help(parser, additional_docs=None):

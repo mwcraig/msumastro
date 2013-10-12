@@ -2,6 +2,9 @@ from astropysics import ccd, pipeline
 import image_collection as tff
 from os import path
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def reduce(files, source_dir, destination=None,

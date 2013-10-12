@@ -1,4 +1,7 @@
 from numpy import array, zeros, sqrt, ndarray
+import logging 
+
+logger = logging.getLogger(__name__)
 
 
 def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):

@@ -1,6 +1,10 @@
 from __future__ import division
 import numpy as np
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def snr(flux, ap_rad_pix, sky_per_pix, gain=1.0, read_noise=0.0):
     npix = np.pi * ap_rad_pix ** 2

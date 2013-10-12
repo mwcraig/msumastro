@@ -4,6 +4,9 @@ from os import path
 import astropy.io.fits as fits
 import numpy as np
 from master_bias_dark import master_frame, add_files_info
+import logging
+
+logger = logging.getLogger(__name__)
 
 combiner = ccd.ImageCombiner()
 

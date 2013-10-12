@@ -5,6 +5,10 @@ from numpy import median, mean
 from datetime import datetime
 # from fits import Header
 import astropy.io.fits as fits
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 temperature_tolerance = 2  # degree C
 combiner = ccd.ImageCombiner()
