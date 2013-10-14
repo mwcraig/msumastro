@@ -106,6 +106,7 @@ def add_time_info(header, history=False):
 
     for keyword in feder.keywords_for_all_files:
         keyword.add_to_header(header, history=history)
+        logger.info(keyword.history_comment())
 
 
 def add_object_pos_airmass(header, history=False):
@@ -155,6 +156,7 @@ def add_object_pos_airmass(header, history=False):
     for keyword in feder.keywords_for_light_files:
         if keyword.value is not None:
             keyword.add_to_header(header, history=history)
+            logger.info(keyword.history_comment())
 
 
 def purge_bad_keywords(header, history=False, force=False, file_name=''):
@@ -189,7 +191,7 @@ def purge_bad_keywords(header, history=False, force=False, file_name=''):
                        ' with value ' + str(header[keyword]))
         except KeyError:
             continue
-
+        logger.info(comment)
         del header[keyword]
         if history:
             header.add_history(comment)
@@ -219,6 +221,7 @@ def change_imagetype_to_IRAF(header, history=True):
         comment = 'Changed {0} from {1} to {2}'.format(imagetype.upper(),
                                                        current_type,
                                                        IRAF_type)
+        logger.info(comment)
         if history:
             header.add_history(comment)
 
@@ -362,6 +365,9 @@ def patch_headers(dir='.',
                                         do_not_scale_image_data=True,
                                         return_fname=True):
         run_time = datetime.now()
+
+        logger.info('START PATCHING FILE: {0}'.format(fname))
+
         header.add_history(history(patch_headers, mode='begin',
                                    time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
@@ -391,6 +397,8 @@ def patch_headers(dir='.',
         header.add_history(history(patch_headers, mode='end',
                                    time=run_time))
 
+        logger.info('END PATCHING FILE: {0}'.format(fname))
+
 
 def add_overscan_header(header, history=True):
     """
@@ -410,6 +418,9 @@ def add_overscan_header(header, history=True):
         overscan_axis.add_to_header(header, history=history)
         overscan_start.add_to_header(header, history=history)
         modified_keywords.extend([overscan_axis, overscan_start])
+
+    for keyword in modified_keywords:
+        logger.info(keyword.history_comment())
 
     return modified_keywords
 
@@ -472,6 +483,9 @@ def add_object_info(directory='.',
                                         save_location=save_location,
                                         object='', RA='*', Dec='*',
                                         return_fname=True):
+
+        logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
+
         image_ra_dec = FK5Coordinates(header['ra'],
                                       header['dec'],
                                       unit=default_angle_units)
@@ -490,6 +504,8 @@ def add_object_info(directory='.',
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
         obj_keyword.add_to_header(header, history=True)
+        logger.info(obj_keyword.history_comment())
+        logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
 
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
