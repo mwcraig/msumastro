@@ -2,7 +2,6 @@ from os import path
 from math import cos, pi
 from datetime import datetime
 import numpy as np
-from warnings import warn
 
 import astropy.io.fits as fits
 from astropy.time import Time
@@ -182,7 +181,7 @@ def purge_bad_keywords(header, history=False, force=False, file_name=''):
     if purged and not force:
         warn_msg = 'Not removing headers from {0} again, '
         warn_msg += 'set force=True to force removal.'
-        warn(warn_msg.format(file_name), UserWarning)
+        logger.warn(warn_msg.format(file_name))
         return
 
     for keyword in software.bad_keywords:
@@ -387,8 +386,7 @@ def patch_headers(dir='.',
                 add_object_pos_airmass(header,
                                        history=True)
             except ValueError as e:
-                warn('Skipping file {} because: {}'.format(fname, e),
-                     UserWarning)
+                logger.warn('Skipping file {} because: {}'.format(fname, e))
                 continue
 
         if add_overscan:
@@ -460,8 +458,8 @@ def add_object_info(directory='.',
         object_names, RAs, Decs = read_object_list(object_dir,
                                                    input_list=object_list)
     except IOError:
-        warn('No object list in directory {0}, skipping.'.format(directory),
-             UserWarning)
+        warn_msg = 'No object list in directory {0}, skipping.'
+        logger.warn(warn_msg.format(directory))
         return
 
 #    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335),
@@ -499,7 +497,7 @@ def add_object_info(directory='.',
 
         if not matches.any():
             warn_msg = "No object found for image {0}".format(fname)
-            warn(warn_msg, UserWarning)
+            logger.warn(warn_msg)
             continue
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)

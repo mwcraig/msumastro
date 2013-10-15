@@ -1,9 +1,10 @@
+import pytest
+pytest_plugins = "capturelog"
 from ..patch_headers import *
 from tempfile import mkdtemp
 from os import path, chdir, getcwd, remove
 from shutil import rmtree
 import numpy as np
-import pytest
 
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
@@ -271,14 +272,26 @@ def test_read_object_list_with_ra_dec():
     assert(Dec[0] == Dec_in)
 
 
-def test_missing_object_file_issues_warning(recwarn):
+def get_patch_header_warnings(log):
+    patch_header_warnings = []
+    for record in log.records():
+        if (('patch_headers' in record.name) and
+            (record.levelno == logging.WARN)):
+
+            patch_header_warnings.append(record.message)
+
+    patch_headers_message_text = '\n'.join(patch_header_warnings)
+    return patch_headers_message_text
+
+
+def test_missing_object_file_issues_warning(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     add_object_info(_test_dir)
-    w = recwarn.pop(UserWarning)
-    assert issubclass(w.category, UserWarning)
+    patch_header_warnings = get_patch_header_warnings(caplog)
+    assert 'No object list in directory' in patch_header_warnings
 
 
-def test_no_object_match_for_image_warning_includes_file_name(recwarn):
+def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     to_write = '# comment 1\n# comment 2\nobject\nsz lyn'
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
@@ -286,10 +299,9 @@ def test_no_object_match_for_image_warning_includes_file_name(recwarn):
     object_file.close()
     patch_headers(_test_dir, new_file_ext=None, overwrite=True)
     add_object_info(_test_dir)
-    print _test_dir
-    w = recwarn.pop(UserWarning)
-    assert issubclass(w.category, UserWarning)
-    assert _test_image_name in str(w.message)
+    patch_header_warnings = get_patch_header_warnings(caplog)
+    assert 'No object found' in patch_header_warnings
+    assert _test_image_name in patch_header_warnings
 
 
 def test_add_ra_dec_from_object_name():
