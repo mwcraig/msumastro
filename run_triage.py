@@ -189,7 +189,7 @@ def construct_parser():
                         help=key_help)
 
     no_default_help = 'Do not include default list of keywords in table'
-    parser.add_argument('-n', '--no-default', action='store_true',
+    parser.add_argument('--no-default', action='store_true',
                         help=no_default_help)
 
     list_help = 'Print default list keywords put into table and exit'
