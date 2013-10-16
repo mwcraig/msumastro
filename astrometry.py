@@ -150,14 +150,14 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     if solved_field:
         logger.info('Adding astrometry succeeded')
     else:
-        logger.warning('Adding astrometry failed')
+        logger.warning('Adding astrometry failed for file %s', filename)
 
     if overwrite and solved_field:
         logger.info('Overwriting original file with image with astrometry')
         try:
             rename(base + '.new', filename)
         except OSError as e:
-            logger.debug(e)
+            logger.error(e)
             return False
 
     # whether we succeeded or failed, clean up
@@ -179,4 +179,5 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         except IOError:
             pass
 
+    logger.info('END ADDING ASTROMETRY for %s', filename)
     return solved_field
