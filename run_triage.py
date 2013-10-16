@@ -40,6 +40,17 @@ EXAMPLES
 import os
 import numpy as np
 
+# The import below
+# MUST happen before any logging...oddly, setting the VALUE
+# doesn't change anything. True story.
+
+from astropy.logger import LOG_WARNINGS
+import logging
+from customlogger import console_handler, add_file_handlers
+
+logger = logging.getLogger()
+logger.addHandler(console_handler())
+
 
 class DefaultFileNames(object):
     def __init__(self):
@@ -142,6 +153,7 @@ def triage_directories(directories,
         use_keys = keywords
 
     for currentDir in directories:
+        logger.info('Examining directory %s', currentDir)
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         outfiles = [pointing_file_name, filter_file_name,
                     object_file_name, output_table]
@@ -234,10 +246,21 @@ always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
 
 if __name__ == "__main__":
     from sys import exit
+    from os import getcwd
+
     parser = construct_parser()
     args = parser.parse_args()
 
     #all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
+
+    logger.setLevel(logging.WARNING)
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    add_file_handlers(logger, getcwd(), 'run_triage')
 
     try:
         always_include_keys.extend(args.key)
