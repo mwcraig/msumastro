@@ -146,7 +146,7 @@ def construct_parser():
     object_list_help += 'coordinates of) objects that might be in these files.'
     object_list_help += ' If not provided it defaults to looking for a file '
     object_list_help += 'called obsinfo.txt in the directory being processed'
-    parser.add_argument('-l', '--object-list',
+    parser.add_argument('-o', '--object-list',
                         help=object_list_help,
                         default=None)
     return parser
