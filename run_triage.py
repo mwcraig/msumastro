@@ -180,8 +180,10 @@ def construct_parser():
     # allow for no directories below so that -l option
     # can be used without needing to specify a directory
     script_helpers.add_directories(parser, '*')
+    script_helpers.add_debug(parser)
     script_helpers.add_verbose(parser)
     script_helpers.add_destination_directory(parser)
+    script_helpers.add_no_log_destination(parser)
 
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'

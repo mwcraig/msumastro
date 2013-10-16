@@ -86,6 +86,15 @@ def add_debug(parser):
     parser.add_argument('--debug', help=arg_help, action='store_true')
 
 
+def add_no_log_destination(parser):
+    """
+    Add option to suppress logging to files in destination directory
+    """
+    arg_help = 'Do not write log files to destination directory'
+    parser.add_argument('-n', '--no-log-destination',
+                        help=arg_help, action='store_true')
+
+
 def construct_default_parser(docstring=None):
     #import script_helpers
     import argparse
@@ -97,5 +106,6 @@ def construct_default_parser(docstring=None):
     add_directories(parser)
     add_destination_directory(parser)
     add_debug(parser)
+    add_no_log_destination(parser)
 
     return parser
