@@ -73,6 +73,17 @@ where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 
 """
 
+# The import below
+# MUST happen before any logging...oddly, setting the VALUE
+# doesn't change anything. True story.
+
+from astropy.logger import LOG_WARNINGS
+import logging
+from customlogger import console_handler, FormattedFileHandler
+
+logger = logging.getLogger()
+logger.addHandler(console_handler())
+
 from patch_headers import patch_headers, add_object_info
 default_obj_list = 'obsinfo.txt'
 

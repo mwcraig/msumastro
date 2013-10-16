@@ -47,6 +47,12 @@ import numpy as np
 import image_collection as tff
 from image import ImageWithWCS
 
+import logging
+from customlogger import console_handler, FormattedFileHandler
+
+logger = logging.getLogger()
+logger.addHandler(console_handler())
+
 
 def astrometry_for_directory(directories,
                              destination=None,
@@ -71,12 +77,13 @@ def astrometry_for_directory(directories,
         summary = images.summary_info
         if len(summary) == 0:
             continue
+        logger.debug('\n %s', '\n'.join(summary.pformat()))
         lights = summary[((summary['imagetyp'] == 'LIGHT') &
                           ((summary['wcsaxes'].mask) |
                            (summary['wcsaxes'] == '')))]  # TEMPORARY HACK
 
         working_dir = destination if destination is not None else currentDir
-
+        logger.debug('About to loop over %d files', len(lights['file']))
         for light_file in lights['file']:
             if destination is not None:
                 src = path.join(currentDir, light_file)
