@@ -3,9 +3,10 @@ from __future__ import print_function
 from astropy.utils.console import _color_text
 import logging
 
-console_format = '%(levelname)-18s %(message)s [%(name)s.%(funcName)s]'
+message_format = '%(message)s [%(name)s.%(funcName)s]'
+console_format = '%(levelname)-18s ' + message_format
 time_format = '%Y-%m-%d %H:%M:%S'
-file_format = '%(asctime)s ' + console_format
+file_format = '%(asctime)s %(levelname)-8s ' + message_format
 
 console_formatter = logging.Formatter(fmt=console_format,
                                       datefmt=time_format)
@@ -71,5 +72,14 @@ def console_handler(*args, **kwd):
     return console
 
 
-def file_handler():
-    pass
+def add_file_handlers(logger, directory, script_name):
+    from os import path
+
+    detail_log_path = path.join(directory, script_name + '.log')
+    detailed_destination_log = FormattedFileHandler(detail_log_path)
+    logger.addHandler(detailed_destination_log)
+    error_log_path = path.join(directory,
+                               script_name + '_error.log')
+    error_destination_log = FormattedFileHandler(error_log_path)
+    error_destination_log.setLevel(logging.WARNING)
+    logger.addHandler(error_destination_log)

@@ -79,7 +79,7 @@ where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 
 from astropy.logger import LOG_WARNINGS
 import logging
-from customlogger import console_handler, FormattedFileHandler
+from customlogger import console_handler, FormattedFileHandler, add_file_handlers
 
 logger = logging.getLogger()
 logger.addHandler(console_handler())
@@ -89,7 +89,9 @@ default_obj_list = 'obsinfo.txt'
 
 
 def patch_directories(directories, verbose=False, object_list=None,
-                      destination=None):
+                      destination=None,
+                      no_log_destination=False,
+                      script_name='run_patch'):
     """
     Patch all of the files in each of a list of directories.
 
@@ -120,6 +122,14 @@ def patch_directories(directories, verbose=False, object_list=None,
         full_path = path.abspath(object_list)
 
     for currentDir in directories:
+        if destination is not None:
+            working_dir = destination
+        else:
+            working_dir = currentDir
+
+        if not no_log_destination:
+            add_file_handlers(logger, working_dir, 'run_patch')
+
         logger.info("Working on directory: %s", currentDir)
         obj_dir = None
         obj_name = None
@@ -131,10 +141,6 @@ def patch_directories(directories, verbose=False, object_list=None,
             warnings.filterwarnings('ignore', module=ignore_from)
             patch_headers(currentDir, new_file_ext='', overwrite=True,
                           save_location=destination)
-            if destination is not None:
-                working_dir = destination
-            else:
-                working_dir = currentDir
 
             default_object_list_present = path.exists(path.join(currentDir,
                                                       default_obj_list))

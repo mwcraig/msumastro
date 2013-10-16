@@ -48,7 +48,7 @@ import image_collection as tff
 from image import ImageWithWCS
 
 import logging
-from customlogger import console_handler, FormattedFileHandler
+from customlogger import console_handler, FormattedFileHandler, add_file_handlers
 
 logger = logging.getLogger()
 logger.addHandler(console_handler())
@@ -56,6 +56,7 @@ logger.addHandler(console_handler())
 
 def astrometry_for_directory(directories,
                              destination=None,
+                             no_log_destination=False,
                              blind=False):
     """
     Add astrometry to files in list of directories
@@ -83,6 +84,9 @@ def astrometry_for_directory(directories,
                            (summary['wcsaxes'] == '')))]  # TEMPORARY HACK
 
         working_dir = destination if destination is not None else currentDir
+        if not no_log_destination:
+            add_file_handlers(logger, working_dir, 'run_astrometry')
+
         logger.debug('About to loop over %d files', len(lights['file']))
         for light_file in lights['file']:
             if destination is not None:
@@ -143,4 +147,5 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
 
     astrometry_for_directory(args.dir,
+                             destination=args.destination_dir,
                              blind=args.blind)
