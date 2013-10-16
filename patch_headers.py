@@ -454,6 +454,7 @@ def add_object_info(directory='.',
 
     object_dir = directory if object_list_dir is None else object_list_dir
 
+    logger.debug('About to read object list')
     try:
         object_names, RAs, Decs = read_object_list(object_dir,
                                                    input_list=object_list)
@@ -476,6 +477,7 @@ def add_object_info(directory='.',
         ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
 
     object_ra_dec = np.array(ra_dec)
+    n_found_image_objects = 0
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         clobber=overwrite,
                                         save_location=save_location,
@@ -499,12 +501,14 @@ def add_object_info(directory='.',
             warn_msg = "No object found for image {0}".format(fname)
             logger.warn(warn_msg)
             continue
+        n_found_image_objects += 1
         object_name = (object_names[matches])[0]
         obj_keyword = FITSKeyword('object', value=object_name)
         obj_keyword.add_to_header(header, history=True)
         logger.info(obj_keyword.history_comment())
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
-
+    if n_found_image_objects == 0:
+        logger.info('NO OBJECTS MATCHED TO IMAGES IN: {0}'.format(directory))
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
