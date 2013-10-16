@@ -95,6 +95,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         solve_field_output = 'Output from astrometry.net:\n' + e.output
         log_level = logging.WARN
         logger.warning('Adding astrometry failed for %s', filename)
+        raise e
     logger.log(log_level, solve_field_output)
     return return_status
 
@@ -132,20 +133,30 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     base, ext = path.splitext(filename)
 
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
-    solved_field = (call_astrometry(filename,
-                                    sextractor=True,
-                                    ra_dec=ra_dec,
-                                    save_wcs=save_wcs, verify=verify)
-                    == 0)
+    try:
+        logger.debug('About to call call_astrometry')
+        solved_field = (call_astrometry(filename,
+                                        sextractor=True,
+                                        ra_dec=ra_dec,
+                                        save_wcs=save_wcs, verify=verify)
+                        == 0)
+    except subprocess.CalledProcessError as e:
+        logger.debug('Failed with error')
+        failed_details = e.output
+        solved_field = False
 
     if (not solved_field) and try_builtin_source_finder:
         log_msg = 'Astrometry failed using sextractor, trying built-in '
         log_msg += 'source finder'
         logger.info(log_msg)
-        solved_field = (call_astrometry(filename, ra_dec=ra_dec,
-                                        overwrite=True,
-                                        save_wcs=save_wcs, verify=verify)
-                        == 0)
+        try:
+            solved_field = (call_astrometry(filename, ra_dec=ra_dec,
+                                            overwrite=True,
+                                            save_wcs=save_wcs, verify=verify)
+                            == 0)
+        except subprocess.CalledProcessError as e:
+            failed_details = e.output
+            solved_field = False
 
     if solved_field:
         logger.info('Adding astrometry succeeded')
@@ -175,8 +186,10 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     if note_failure and not solved_field:
         try:
             f = open(base + '.failed', 'wb')
+            f.write(failed_details)
             f.close()
-        except IOError:
+        except IOError as e:
+            logger.error('Unable to save output of astrometry.net %s', e)
             pass
 
     logger.info('END ADDING ASTROMETRY for %s', filename)
