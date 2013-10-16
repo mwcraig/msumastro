@@ -445,7 +445,7 @@ def add_object_info(directory='.',
     considered an image of that object.
     """
     from fitskeyword import FITSKeyword
-    from astropy.coordinates import FK5Coordinates
+    from astropy.coordinates import FK5Coordinates, name_resolve
     from astropy import units as u
 
     images = ImageFileCollection(directory,
@@ -474,7 +474,12 @@ def add_object_info(directory='.',
         ra_dec = [FK5Coordinates(RA, Dec, unit=default_angle_units)
                   for RA, Dec in zip(RAs, Decs)]
     else:
-        ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
+        try:
+            ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
+        except name_resolve.NameResolveError as e:
+            logger.error('Unable to do lookup of object positions')
+            logger.error(e)
+            return
 
     object_ra_dec = np.array(ra_dec)
     n_found_image_objects = 0
@@ -509,6 +514,7 @@ def add_object_info(directory='.',
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
     if n_found_image_objects == 0:
         logger.info('NO OBJECTS MATCHED TO IMAGES IN: {0}'.format(directory))
+
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
