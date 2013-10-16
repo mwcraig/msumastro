@@ -41,14 +41,13 @@ EXAMPLES
 
 """
 import astrometry as ast
-from os import path
 import shutil
 import numpy as np
 import image_collection as tff
 from image import ImageWithWCS
 
 import logging
-from customlogger import console_handler, FormattedFileHandler, add_file_handlers
+from customlogger import console_handler, add_file_handlers
 
 logger = logging.getLogger()
 logger.addHandler(console_handler())
@@ -71,6 +70,8 @@ def astrometry_for_directory(directories,
         Set to True to force blind astrometry. False by default because
         blind astrometry is slow.
     """
+    from os import path
+
     for currentDir in directories:
         images = tff.ImageFileCollection(currentDir,
                                          keywords=['imagetyp', 'object',
@@ -136,6 +137,7 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
+    from os import getcwd
     parser = construct_parser()
     args = parser.parse_args()
 
@@ -145,6 +147,8 @@ if __name__ == "__main__":
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
+
+    add_file_handlers(logger, getcwd(), 'run_astrometry')
 
     astrometry_for_directory(args.dir,
                              destination=args.destination_dir,

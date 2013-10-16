@@ -79,7 +79,7 @@ where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 
 from astropy.logger import LOG_WARNINGS
 import logging
-from customlogger import console_handler, FormattedFileHandler, add_file_handlers
+from customlogger import console_handler, add_file_handlers
 
 logger = logging.getLogger()
 logger.addHandler(console_handler())
@@ -168,6 +168,7 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
+    from os import getcwd
     parser = construct_parser()
     args = parser.parse_args()
 
@@ -177,6 +178,8 @@ if __name__ == "__main__":
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
+
+    add_file_handlers(logger, getcwd(), 'run_patch')
 
     patch_directories(args.dir, verbose=args.verbose,
                       object_list=args.object_list,
