@@ -36,8 +36,8 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         List or tuple of RA and Dec; also limits search
         radius to 1 degree.
     :param overwrite:
-        If True, write the WCS header to the input FITS
-        file.
+        If True, perform astrometry even if astrometry.net files from a
+        previous run are present.
     :param wcs_reference_image_center:
         If True, force the WCS reference point in the image to be the
         image center.
@@ -84,7 +84,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         solve_field.append("%s" % verify)
 
     solve_field.extend([filename])
-    #print solve_field
+    logger.debug(' '.join(solve_field))
     return subprocess.call(solve_field)
 
 
@@ -120,6 +120,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     """
     base, ext = path.splitext(filename)
 
+    logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     solved_field = (call_astrometry(filename,
                                     sextractor=True,
                                     ra_dec=ra_dec,
@@ -127,15 +128,25 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                     == 0)
 
     if (not solved_field) and try_builtin_source_finder:
+        log_msg = 'Astrometry failed using sextractor, trying built-in '
+        log_msg += 'source finder'
+        logger.info(log_msg)
         solved_field = (call_astrometry(filename, ra_dec=ra_dec,
                                         overwrite=True,
                                         save_wcs=save_wcs, verify=verify)
                         == 0)
 
+    if solved_field:
+        logger.info('Adding astrometry succeeded')
+    else:
+        logger.warning('Adding astrometry failed')
+
     if overwrite and solved_field:
+        logger.info('Overwriting original file with image with astrometry')
         try:
             rename(base + '.new', filename)
-        except OSError:
+        except OSError as e:
+            logger.debug(e)
             return False
 
     # whether we succeeded or failed, clean up
