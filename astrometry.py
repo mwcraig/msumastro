@@ -85,7 +85,18 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
 
     solve_field.extend([filename])
     logger.debug(' '.join(solve_field))
-    return subprocess.call(solve_field)
+    try:
+        solve_field_output = subprocess.check_output(solve_field,
+                                                     stderr=subprocess.STDOUT)
+        return_status = 0
+        log_level = logging.DEBUG
+    except subprocess.CalledProcessError as e:
+        return_status = e.returncode
+        solve_field_output = 'Output from astrometry.net:\n' + e.output
+        log_level = logging.WARN
+        logger.warning('Adding astrometry failed for %s', filename)
+    logger.log(log_level, solve_field_output)
+    return return_status
 
 
 def add_astrometry(filename, overwrite=False, ra_dec=None,
