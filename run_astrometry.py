@@ -72,7 +72,8 @@ def astrometry_for_directory(directories,
         if len(summary) == 0:
             continue
         lights = summary[((summary['imagetyp'] == 'LIGHT') &
-                          (summary['wcsaxes'] == ''))]
+                          ((summary['wcsaxes'].mask) |
+                           (summary['wcsaxes'] == '')))]  #TEMPORARY HACK
 
         working_dir = destination if destination is not None else currentDir
 
