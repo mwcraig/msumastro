@@ -95,6 +95,16 @@ def add_no_log_destination(parser):
                         help=arg_help, action='store_true')
 
 
+def add_console_output_args(parser):
+    parser.add_argument('--quiet-console',
+                        help=('Log only errors (or worse) to console '
+                              'while running scripts'),
+                        action='store_true')
+    parser.add_argument('--silent-console',
+                        help=('Turn off all logging output to console'),
+                        action='store_true')
+
+
 def construct_default_parser(docstring=None):
     #import script_helpers
     import argparse
@@ -107,5 +117,6 @@ def construct_default_parser(docstring=None):
     add_destination_directory(parser)
     add_debug(parser)
     add_no_log_destination(parser)
+    add_console_output_args(parser)
 
     return parser
