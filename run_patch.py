@@ -120,8 +120,7 @@ def patch_directories(directories, verbose=False, object_list=None,
         full_path = path.abspath(object_list)
 
     for currentDir in directories:
-        if verbose:
-            print "working on directory: %s" % currentDir
+        logger.info("Working on directory: %s", currentDir)
         obj_dir = None
         obj_name = None
         if object_list is not None:
