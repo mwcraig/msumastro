@@ -120,3 +120,18 @@ def construct_default_parser(docstring=None):
     add_console_output_args(parser)
 
     return parser
+
+
+def setup_logging(logger, args, screen_handler):
+    logger.setLevel(logging.WARNING)
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    if args.quiet_console:
+        screen_handler.setLevel(logging.WARNING)
+
+    if args.silent_console:
+        logger.removeHandler(screen_handler)

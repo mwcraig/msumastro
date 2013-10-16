@@ -49,7 +49,8 @@ import logging
 from customlogger import console_handler, add_file_handlers
 
 logger = logging.getLogger()
-logger.addHandler(console_handler())
+screen_handler = console_handler()
+logger.addHandler(screen_handler)
 
 
 class DefaultFileNames(object):
@@ -247,18 +248,14 @@ always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
 if __name__ == "__main__":
     from sys import exit
     from os import getcwd
+    from script_helpers import setup_logging
 
     parser = construct_parser()
     args = parser.parse_args()
 
     #all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
 
-    logger.setLevel(logging.WARNING)
-    if args.verbose:
-        logger.setLevel(logging.INFO)
-
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
+    setup_logging(logger, args, screen_handler)
 
     add_file_handlers(logger, getcwd(), 'run_triage')
 

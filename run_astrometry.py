@@ -50,7 +50,8 @@ import logging
 from customlogger import console_handler, add_file_handlers
 
 logger = logging.getLogger()
-logger.addHandler(console_handler())
+screen_handler = console_handler()
+logger.addHandler(screen_handler)
 
 
 def astrometry_for_directory(directories,
@@ -138,15 +139,12 @@ def construct_parser():
 
 if __name__ == "__main__":
     from os import getcwd
+    from script_helpers import setup_logging
+
     parser = construct_parser()
     args = parser.parse_args()
 
-    logger.setLevel(logging.WARNING)
-    if args.verbose:
-        logger.setLevel(logging.INFO)
-
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
+    setup_logging(logger, args, screen_handler)
 
     add_file_handlers(logger, getcwd(), 'run_astrometry')
 
