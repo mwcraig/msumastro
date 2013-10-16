@@ -127,5 +127,13 @@ def construct_parser():
 if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
+
+    logger.setLevel(logging.WARNING)
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
     astrometry_for_directory(args.dir,
                              blind=args.blind)

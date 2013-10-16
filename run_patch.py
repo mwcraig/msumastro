@@ -155,6 +155,13 @@ if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
 
+    logger.setLevel(logging.WARNING)
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
     patch_directories(args.dir, verbose=args.verbose,
                       object_list=args.object_list,
                       destination=args.destination_dir)

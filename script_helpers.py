@@ -73,6 +73,19 @@ def add_destination_directory(parser):
                         default=None)
 
 
+def add_debug(parser):
+    """
+    Add a debug option to produce very verbose output
+
+    Parameters
+    ----------
+
+    parser : `ArgumentParser`
+    """
+    arg_help = 'Turn on very detailed logging output'
+    parser.add_argument('--debug', help=arg_help, action='store_true')
+
+
 def construct_default_parser(docstring=None):
     #import script_helpers
     import argparse
@@ -83,5 +96,6 @@ def construct_default_parser(docstring=None):
     add_verbose(parser)
     add_directories(parser)
     add_destination_directory(parser)
+    add_debug(parser)
 
     return parser
