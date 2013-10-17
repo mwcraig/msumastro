@@ -204,6 +204,9 @@ class ImageFileCollection(object):
             summary[keyword] = []
             missing_values[keyword] = []
 
+        if not self.files:
+            return None
+
         for afile in self.files:
             try:
                 header = fits.getheader(path.join(self.location, afile))
@@ -328,6 +331,9 @@ class ImageFileCollection(object):
 
         # store mask so we can reset at end--must COPY, otherwise
         # current_mask just points to the mask of summary_info
+        if self.summary_info is None:
+            return
+
         current_mask = {}
         for col in self.summary_info.columns:
             current_mask[col] = self.summary_info[col].mask

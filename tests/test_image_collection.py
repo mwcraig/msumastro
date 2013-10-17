@@ -207,6 +207,17 @@ class TestImageFileCollection(object):
             assert (fname in collection.paths())
             assert (isinstance(header, fits.Header))
 
+    def test_dir_with_no_fits_files(self, tmpdir):
+        empty_dir = tmpdir.mkdtemp()
+        some_file = empty_dir.join('some_file.txt')
+        some_file.dump('words')
+        print empty_dir.listdir()
+        collection = tff.ImageFileCollection(location=empty_dir.strpath)
+        assert (collection.summary_info is None)
+        for hdr in collection.headers():
+            # this statement should not be reached if there are no FITS files
+            assert 0
+
 
 def setup_module():
     global _n_test
