@@ -147,13 +147,20 @@ def triage_directories(directories,
                        pointing_file_name=None,
                        filter_file_name=None,
                        output_table=None,
-                       destination=None):
+                       destination=None,
+                       no_log_destination=False):
 
     use_keys = []
     if keywords is not None:
         use_keys = keywords
 
     for currentDir in directories:
+        if destination is not None:
+            target_dir = destination
+        else:
+            target_dir = currentDir
+        if not no_log_destination:
+            add_file_handlers(logger, destination, 'run_triage')
         logger.info('Examining directory %s', currentDir)
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         outfiles = [pointing_file_name, filter_file_name,
@@ -167,10 +174,7 @@ def triage_directories(directories,
         need_pointing = result['needs_pointing']
         need_filter = result['needs_filter']
         need_object_name = result['needs_object_name']
-        if destination is not None:
-            target_dir = destination
-        else:
-            target_dir = currentDir
+
         if need_pointing and pointing_file_name is not None:
             write_list(target_dir, pointing_file_name, need_pointing)
         if need_filter and filter_file_name is not None:
@@ -197,6 +201,7 @@ def construct_parser():
     script_helpers.add_verbose(parser)
     script_helpers.add_destination_directory(parser)
     script_helpers.add_no_log_destination(parser)
+    script_helpers.add_console_output_args(parser)
 
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'
@@ -242,7 +247,7 @@ def construct_parser():
     return parser
 
 always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
-                       'object', 'observer', 'airmass', 'instrument',
+                       'object', 'observer', 'airmass', 'instrume',
                        'RA', 'Dec']
 
 if __name__ == "__main__":
