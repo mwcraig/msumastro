@@ -82,8 +82,7 @@ def astrometry_for_directory(directories,
             continue
         logger.debug('\n %s', '\n'.join(summary.pformat()))
         lights = summary[((summary['imagetyp'] == 'LIGHT') &
-                          ((summary['wcsaxes'].mask) |
-                           (summary['wcsaxes'] == '')))]  # TEMPORARY HACK
+                          (summary['wcsaxes'].mask))]
 
         working_dir = destination if destination is not None else currentDir
         if not no_log_destination:
