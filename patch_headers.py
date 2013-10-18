@@ -243,8 +243,8 @@ def read_object_list(dir='.', input_list=None):
         + Dec **must be given in degrees**, though it can be either sexagesimal
           (e.g. ``42:47:3.69``) or decimal (e.g. ``42.7843583``)
         + The first non-comment line MUST be these words: ``object,RA,Dec``.
-          These are column headings for your file. It is case sensitive; for
-          example, using ``DEC`` instead of ``Dec`` will not work.
+          These are column headings for your file. It is **not** case
+          sensitive; for example, using ``DEC`` instead of ``Dec`` will work.
         + Each remaining line should be an object name, object RA and Dec.
           Case does **not** matter for object name.
         + Example::
@@ -264,12 +264,38 @@ def read_object_list(dir='.', input_list=None):
     """
     from astropy.table import Table
 
+    def normalize_column_name(key, table):
+        """
+        Find any column in table whose name matches, aside from case, key
+        and change the name of the column to key
+        """
+        contains_col = lambda key, names: key.lower() in [name.lower() for name
+                                                          in names]
+
+        if not contains_col(key, table.columns):
+            raise(KeyError, 'Keyword {0} not found in table'.format(key))
+
+        for column in table.columns:
+            if ((key.lower() == column.lower()) and (key != column)):
+                table.rename_column(column, key)
+                break
+
     list = (input_list if input_list is not None else 'obsinfo.txt')
     objects = Table.read(path.join(dir, list),
                          format='ascii',
                          comment='#',
                          delimiter=',')
+
     try:
+        normalize_column_name('object', objects)
+    except KeyError as e:
+        logger.debug('%s', e)
+        raise(RuntimeError,
+              'No column named object found in file {}'.format(list))
+
+    try:
+        normalize_column_name('RA', objects)
+        normalize_column_name('Dec', objects)
         RA = objects['RA']
         Dec = objects['Dec']
     except KeyError:

@@ -29,6 +29,7 @@ def test_sexagesimal_string_with_precision_and_sign():
             '+01:02:03.142')
 
 
+@pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
     objects, RA, Dec = read_object_list(dir=_test_dir)
     assert len(objects) == 2
@@ -275,8 +276,8 @@ def test_read_object_list_with_ra_dec():
 def get_patch_header_warnings(log):
     patch_header_warnings = []
     for record in log.records():
-        if (('patch_headers' in record.name) and
-            (record.levelno == logging.WARN)):
+        if (('patch_headers' in record.name) and (record.levelno ==
+                                                  logging.WARN)):
 
             patch_header_warnings.append(record.message)
 
@@ -391,6 +392,14 @@ def test_times_apparent_pos_added():
     zenith_angle = Angle(90 - alt.degrees, unit=u.degree)
     airmass_correct = 1/np.cos(zenith_angle.radians)
     assert_almost_equal(airmass_correct, header['airmass'], decimal=3)
+
+
+@pytest.fixture(params=['object', 'OBJECT', 'Object'])
+def object_file_no_ra(request):
+    to_write = '# comment 1\n# comment 2\n' + request.param + '\ney uma\nm101'
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
+    object_file.write(to_write)
+    object_file.close()
 
 
 def setup_function(function):
