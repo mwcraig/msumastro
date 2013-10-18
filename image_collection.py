@@ -33,7 +33,7 @@ class ImageFileCollection(object):
     """
 
     def __init__(self, location='.', storage_dir=None, keywords=None,
-                 missing=-999, info_file=None):
+                 info_file=None):
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
@@ -56,8 +56,7 @@ class ImageFileCollection(object):
                 #print ('Regenerating information summary table for %s' %
                 #       location)
 
-        self.summary_info = self.fits_summary(keywords=keywords,
-                                              missing=missing)
+        self.summary_info = self.fits_summary(keywords=keywords)
 
     @property
     def location(self):
@@ -169,8 +168,7 @@ class ImageFileCollection(object):
         self._find_keywords_by_values(**kwd)
         return self.summary_info['file'].compressed()
 
-    def fits_summary(self,
-                     keywords=['imagetyp'], missing=-999):
+    def fits_summary(self, keywords=['imagetyp']):
         """
         Collect information about fits files in a directory.
 
@@ -189,7 +187,6 @@ class ImageFileCollection(object):
         from collections import OrderedDict
         from astropy.table import MaskedColumn
 
-        missing = float(missing)
 
         summary = OrderedDict()
         summary['file'] = []
@@ -223,7 +220,7 @@ class ImageFileCollection(object):
                     else:
                         data_type[keyword] = type(header[keyword])
                 else:
-                    summary[keyword].append(missing)
+                    summary[keyword].append(dummy_value)
                     missing_values[keyword].append(True)
 
         summary_table = Table(masked=True)

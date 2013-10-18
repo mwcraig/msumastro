@@ -74,8 +74,7 @@ def master_bias_dark(directories):
         print 'Directory %s' % currentDir
         keywords = ['imagetyp', 'exptime', 'ccd-temp', 'calstat', 'master']
         images = tff.ImageFileCollection(location=currentDir,
-                                         keywords=keywords,
-                                         missing=-999)
+                                         keywords=keywords)
         useful = images.summary_info
         # print useful.data
         bias_files = useful[(((useful['imagetyp'] == 'BIAS') |

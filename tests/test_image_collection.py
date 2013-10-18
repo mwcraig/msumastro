@@ -32,10 +32,10 @@ def test_fits_summary():
     # explicit conversion to array is needed to avoid astropy Table bug in
     # 0.2.4
     print np.array(summary['file'] == 'no_filter_no_object_bias.fit')
-    # print summary['filter'][summary['file'] ==
-    # 'no_filter_no_object_bias.fit']
-    assert summary['filter'][
-        summary['file'] == 'no_filter_no_object_bias.fit'] == ['']
+    no_filter_no_object_row = np.array(summary['file'] ==
+                                       'no_filter_no_object_bias.fit')
+    # there should be no filter keyword in the bias file
+    assert (summary['filter'][no_filter_no_object_row].mask)
 
 
 class TestImageFileCollection(object):
@@ -172,11 +172,6 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=_test_dir)
         for img in collection.data():
             assert isinstance(img, np.ndarray)
-
-    def test_missing_value_in_summary(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
-        with pytest.raises(ValueError):
-            collection.fits_summary(missing='string')
 
     def test_consecutive_fiilters(self):
         collection = tff.ImageFileCollection(location=_test_dir,
