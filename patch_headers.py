@@ -486,7 +486,7 @@ def add_object_info(directory='.',
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         clobber=overwrite,
                                         save_location=save_location,
-                                        object='', RA='*', Dec='*',
+                                        object=None, RA='*', Dec='*',
                                         return_fname=True):
 
         logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
@@ -520,7 +520,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
     """
-    from numpy import unique
+    from numpy import unique, logical_not
     from astropy.coordinates import FK5Coordinates
     from astropy import units as u
 
@@ -528,9 +528,9 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
     summary = images.summary_info
-    missing_dec = summary[(summary['object'] != '') &
-                          (summary['RA'] == '') &
-                          (summary['Dec'] == '')]
+    missing_dec = summary[(logical_not(summary['object'].mask)) &
+                          (summary['RA'].mask) &
+                          (summary['Dec'].mask)]
     if not missing_dec:
         return
 
