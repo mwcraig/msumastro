@@ -17,25 +17,6 @@ logger = logging.getLogger(__name__)
 feder = Feder()
 
 
-class FederImage(object):
-
-    """Unsigned integer image for which no data modification is allowed"""
-
-    def __init__(self, fname):
-        self._hdulist = fits.open(fname, do_not_scale_image_data=True)
-        self._hdulist.verify('fix')
-
-    @property
-    def header(self):
-        return self._hdulist[0].header
-
-    def save(self, fname, clobber=False):
-        self._hdulist.writeto(fname, clobber=clobber)
-
-    def close(self):
-        self._hdulist.close()
-
-
 def sexagesimal_string(dms, precision=2, sign=False):
     """Convert degrees, minutes, seconds into a string
 
