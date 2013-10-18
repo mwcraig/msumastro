@@ -1,10 +1,11 @@
 from os import path
-from math import cos, pi
 from datetime import datetime
 import numpy as np
 
 import astropy.io.fits as fits
 from astropy.time import Time
+from astropy.coordinates import Angle, FK5Coordinates, name_resolve
+from astropy import units as u
 
 from feder import Feder
 
@@ -98,9 +99,6 @@ def add_object_pos_airmass(header, history=False):
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
     """
-    from astropy.coordinates import Angle, FK5Coordinates
-    import astropy.units as u
-
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd == feder.JD_OBS.value
     else:
@@ -126,7 +124,7 @@ def add_object_pos_airmass(header, history=False):
 
     feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
     feder.AZ_OBJ.value = round(alt_az.az.d, 5)
-    feder.AIRMASS.value = round(1 / cos(pi / 2 - alt_az.alt.r), 3)
+    feder.AIRMASS.value = round(1 / np.cos(np.pi / 2 - alt_az.alt.r), 3)
 
     HA = feder.site.localSiderialTime() - obj_coord2.ra.hours
     HA = Angle(HA, unit=u.hour)
@@ -426,8 +424,6 @@ def add_object_info(directory='.',
     considered an image of that object.
     """
     from fitskeyword import FITSKeyword
-    from astropy.coordinates import FK5Coordinates, name_resolve
-    from astropy import units as u
 
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -501,21 +497,17 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
     """
-    from numpy import unique, logical_not
-    from astropy.coordinates import FK5Coordinates
-    from astropy import units as u
-
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
     summary = images.summary_info
-    missing_dec = summary[(logical_not(summary['object'].mask)) &
+    missing_dec = summary[(np.logical_not(summary['object'].mask)) &
                           (summary['RA'].mask) &
                           (summary['Dec'].mask)]
     if not missing_dec:
         return
 
-    objects = unique(missing_dec['object'])
+    objects = np.unique(missing_dec['object'])
     for object_name in objects:
         object_coords = FK5Coordinates.from_name(object_name)
         common_format_keywords = {'sep': ':',
