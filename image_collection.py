@@ -1,7 +1,7 @@
 import fnmatch
 import astropy.io.fits as fits
 from os import listdir, path
-from numpy import array
+from numpy import array, logical_not
 import numpy.ma as ma
 from astropy.table import Table
 import logging
@@ -187,7 +187,10 @@ class ImageFileCollection(object):
         from collections import OrderedDict
         from astropy.table import MaskedColumn
 
+        if not self.files:
+            return None
 
+        dummy_value = -123  # Used as fill value before masked array is created
         summary = OrderedDict()
         summary['file'] = []
         missing_values = OrderedDict()
@@ -197,13 +200,13 @@ class ImageFileCollection(object):
             summary[keyword] = []
             missing_values[keyword] = []
 
-        if not self.files:
-            return None
-
         for afile in self.files:
+            file_path = path.join(self.location, afile)
             try:
-                header = fits.getheader(path.join(self.location, afile))
-            except IOError:
+                header = fits.getheader(file_path)
+            except IOError as e:
+                logger.warning('Unable to get FITS header for file %s: %s',
+                               file_path, e)
                 continue
             summary['file'].append(afile)
             missing_values['file'].append(False)
@@ -233,9 +236,6 @@ class ImageFileCollection(object):
             new_column = MaskedColumn(name=key, data=summary[key],
                                       mask=missing_values[key])
             summary_table.add_column(new_column)
-
-            if data_type[key] == type('str'):
-                summary_table[key][array(missing_values[key])] = ''
 
         return summary_table
 
@@ -268,22 +268,42 @@ class ImageFileCollection(object):
 
         matches = array([True] * len(use_info))
         for key, value in zip(keywords, values):
+            logger.debug('Key %s, value %s', key, value)
+            logger.debug('Value in table %s', use_info[key])
+            value_missing = use_info[key].mask
+            logger.debug('Value missing: %s', value_missing)
+            value_not_missing = logical_not(value_missing)
             if value == '*':
-                have_this_value = (use_info[key] != '')
-            else:
+                have_this_value = value_not_missing
+            elif value is not None:
                 if isinstance(value, basestring):
                     # need to loop explicitly over array rather than using
                     # where to correctly do string comparison.
                     have_this_value = array([False] * len(use_info))
                     for idx, file_key_value in enumerate(use_info[key]):
-                        have_this_value[idx] = (
-                            file_key_value.lower() == value.lower())
+                        if value_not_missing[idx]:
+                            value_matches = (file_key_value.lower() ==
+                                             value.lower())
+                        else:
+                            value_matches = False
+
+                        have_this_value[idx] = (value_not_missing[idx] &
+                                                value_matches)
                 else:
-                    have_this_value = (use_info[key] == value)
+                    have_this_value = value_not_missing
+                    tmp = (use_info[key][value_not_missing] == value)
+                    have_this_value[value_not_missing] = tmp
+                    have_this_value &= value_not_missing
+            else:
+                # this case--when value==None--is asking for the files which
+                # are missing a value for this keyword
+                have_this_value = value_missing
+
             matches &= have_this_value
 
         # the numpy convention is that the mask is True for values to
         # be omitted, hence use ~matches.
+        logger.debug('Matches: %s', matches)
         self.summary_info['file'].mask = ma.nomask
         self.summary_info['file'][~matches] = ma.masked
 

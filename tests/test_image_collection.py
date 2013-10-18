@@ -180,7 +180,7 @@ class TestImageFileCollection(object):
                                                        'object'])
         no_files_match = collection.files_filtered(object='fdsafs')
         assert(len(no_files_match) == 0)
-        some_files_should_match = collection.files_filtered(object='',
+        some_files_should_match = collection.files_filtered(object=None,
                                                             imagetyp='light')
         print some_files_should_match
         assert(len(some_files_should_match) == _n_test['need_object'])
