@@ -90,7 +90,7 @@ def astrometry_for_directory(directories,
 
         logger.debug('About to loop over %d files', len(lights['file']))
         for light_file in lights['file']:
-            if destination is not None:
+            if ((destination is not None) and (destination != currentDir)):
                 src = path.join(currentDir, light_file)
                 shutil.copy(src, destination)
 
