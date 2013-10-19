@@ -137,7 +137,7 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
-    from os import getcwd
+    from os import getcwd, path
     from script_helpers import setup_logging
 
     parser = construct_parser()
@@ -147,6 +147,18 @@ if __name__ == "__main__":
 
     add_file_handlers(logger, getcwd(), 'run_astrometry')
 
+    do_not_log_in_destination = args.no_log_destination
+    # turn off destination logging if we are running in the destination
+    # directory because we just created the logs in that directory...
+    if path.abspath(getcwd()) == path.abspath(args.destination_dir):
+        if do_not_log_in_destination:
+            raise(RuntimeError, ('option --no-log-destination cannot be used '
+                                 'when running in the destination directory '
+                                 'because a log is always made in the '
+                                 'directory in which the script is run'))
+        do_not_log_in_destination = True
+
     astrometry_for_directory(args.dir,
                              destination=args.destination_dir,
-                             blind=args.blind)
+                             blind=args.blind,
+                             no_log_destination=do_not_log_in_destination)
