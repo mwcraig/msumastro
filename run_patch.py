@@ -128,7 +128,7 @@ def patch_directories(directories, verbose=False, object_list=None,
         else:
             working_dir = currentDir
 
-        if not no_log_destination:
+        if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, working_dir, 'run_patch')
 
         logger.info("Working on directory: %s", currentDir)

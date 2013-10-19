@@ -159,7 +159,7 @@ def triage_directories(directories,
             target_dir = destination
         else:
             target_dir = currentDir
-        if (not no_log_destination) and destination is not None:
+        if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, destination, 'run_triage')
         logger.info('Examining directory %s', currentDir)
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)

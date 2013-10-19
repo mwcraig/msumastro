@@ -85,7 +85,7 @@ def astrometry_for_directory(directories,
                           (summary['wcsaxes'].mask))]
 
         working_dir = destination if destination is not None else currentDir
-        if not no_log_destination:
+        if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, working_dir, 'run_astrometry')
 
         logger.debug('About to loop over %d files', len(lights['file']))
