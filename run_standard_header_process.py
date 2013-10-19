@@ -46,6 +46,12 @@ parser.add_argument('--quiet-log',
                           'FILES AND CONSOLE while running scripts'),
                     action='store_true')
 
+parser.add_argument('-r', '--run-only',
+                    help=('Select which scripts you want to run. This can be '
+                          'any combination of [p]atch, [a]strometry and '
+                          '[t]riage.'),
+                    choices='atp')
+
 script_helpers.add_console_output_args(parser)
 script_helpers.add_debug(parser)
 
@@ -95,7 +101,13 @@ separator_format = '#' * sep_repeat + ' {} ' + '#' * sep_repeat
 all_commands = []
 script_name = 'header_process_script.sh'
 
+if args.run_only is not None:
+    patch = 'p' in args.run_only
+    astrometry = 'a' in args.run_only
+    triage = 't' in args.run_only
+
 for root, dirs, files in os.walk(source_root):
+
     if not files:
         continue
 
@@ -112,15 +124,32 @@ for root, dirs, files in os.walk(source_root):
 
     # Construct strings that will be used to actually do the processing
     make_destination = ['mkdir', '-p', destination]
+
     run_patch = construct_command('run_patch.py', root, destination,
                                   common_args,
                                   additional_args=object_list_option)
+    if not patch:
+        run_patch = ''
+
     # NOTE: after header patching all other scripts should use as their
-    # input the directory that was the destination for run_patch
-    run_astrometry = construct_command('run_astrometry.py', destination,
+    # input the directory that was the destination for run_patch if
+    # run_patch was executed
+
+    if patch:
+        source_for_rest = destination
+    else:
+        source_for_rest = root
+
+    run_astrometry = construct_command('run_astrometry.py', source_for_rest,
                                        destination, common_args)
-    run_triage = construct_command('run_triage.py', destination, destination,
-                                   common_args)
+    if not astrometry:
+        run_astrometry = ''
+
+    run_triage = construct_command('run_triage.py', source_for_rest,
+                                   destination, common_args)
+
+    if not triage:
+        run_triage = ''
 
     cmd_list = [separator_format.format('START commands for {}'.format(root))]
     for cmd in [make_destination, run_patch, run_astrometry, run_triage]:
@@ -136,6 +165,9 @@ for root, dirs, files in os.walk(source_root):
         script_path = os.path.join(destination, script_name)
         with open(script_path, 'wb') as script_to_reproduce_this:
             script_to_reproduce_this.write(cmd_list)
-        subprocess.call(run_patch)
-        subprocess.call(run_astrometry)
-        subprocess.call(run_triage)
+        if patch:
+            subprocess.call(run_patch)
+        if astrometry:
+            subprocess.call(run_astrometry)
+        if triage:
+            subprocess.call(run_triage)
