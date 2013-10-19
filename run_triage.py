@@ -129,7 +129,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     for ra_name in RA.names:
         try:
             has_no_ra &= (lights[ra_name].mask)
-        except KeyError as e:
+        except KeyError:
             pass
 
     needs_minimal_pointing = (lights['object'].mask) & has_no_ra
