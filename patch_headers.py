@@ -485,7 +485,22 @@ def add_object_info(directory='.',
             return
 
     object_ra_dec = np.array(ra_dec)
+    # sanity check object list--the objects should not be so close together
+    # that any pair is within match radius of each other.
+    logger.debug('Testing object list for self-consistency')
+    try:
+        find_object_match(object_ra_dec,
+                          in_coord_list=object_ra_dec,
+                          match_radius=match_radius,
+                          max_matches=1)
+    except RuntimeError as e:
+        logger.error('Object list %s in directory %s contains at least one '
+                     'pair of objects that '
+                     'are closer together than match radius %f arcmin',
+                     object_list, object_list_dir, match_radius)
+
     n_found_image_objects = 0
+    last_found_object = None
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         clobber=overwrite,
                                         save_location=save_location,
@@ -493,30 +508,92 @@ def add_object_info(directory='.',
                                         return_fname=True):
 
         logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
-
+        matched_object = False
         image_ra_dec = FK5Coordinates(header['ra'],
                                       header['dec'],
                                       unit=default_angle_units)
-        distance = [(rd_tmp.separation(image_ra_dec)).arcmins
-                    for rd_tmp in object_ra_dec]
-        distance = np.array(distance)
-        matches = (distance < match_radius)
-        if matches.sum() > 1:
-            err_msg = "More than one object match for image {0}".format(fname)
-            raise RuntimeError(err_msg)
+        logger.debug('Checking whether we had a match last time.')
+        if last_found_object is not None:
+            # Check if the last object matches this image...
+            logger.debug('We had a match last time...')
+            last_ra_dec = (object_ra_dec[object_names == last_found_object])
+            last_ra_dec = last_ra_dec[0]
+            sep = last_ra_dec.separation(image_ra_dec).arcmins
+            matched_object = (sep < match_radius)
+            if matched_object:
+                logger.debug('And that object matches again')
+                matches = [last_found_object]
 
-        if not matches.any():
+        # we either failed on the last object or there wasn't one...
+        # either way, need to do a full search
+        if not matched_object:
+            logger.debug('No match found yet, checking full object list')
+            matches = find_object_match([image_ra_dec],
+                                        in_coord_list=object_ra_dec,
+                                        return_names=object_names,
+                                        match_radius=match_radius,
+                                        max_matches=1)
+            # we only need the list that matched the first object...
+            matches = matches[0]
+            logger.debug('%s', matches)
+
+        if matches is None:
             warn_msg = "No object found for image {0}".format(fname)
             logger.warn(warn_msg)
             continue
         n_found_image_objects += 1
-        object_name = (object_names[matches])[0]
+        object_name = matches[0]
+        logger.debug('Found matching object named %s', object_name)
+        last_found_object = object_name
         obj_keyword = FITSKeyword('object', value=object_name)
         obj_keyword.add_to_header(header, history=True)
         logger.info(obj_keyword.history_comment())
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
     if n_found_image_objects == 0:
         logger.info('NO OBJECTS MATCHED TO IMAGES IN: {0}'.format(directory))
+
+
+def find_object_match(target_coords, in_coord_list=None, return_names=None,
+                      match_radius=20.0, max_matches=1):
+    """
+    Check for a match of target coordinates with coordinates of objects.
+
+    Parameters
+    ----------
+
+    target_coords : list or list-like of astropy.coordinates objects
+        Positions at which you would like a matching object
+
+    in_coord_list : list or list-like of astropy.coordinates objects
+        Positions of objects you want to match to.
+
+    match_radius : float
+        Radius, in **arcminutes**, for a match_radius
+
+    max_matches : int
+        Maximum number of matches each target may have.
+    Returns
+    -------
+
+    matches : a list with a match, if any, for each of the ```target_coords``
+    """
+    matches = []
+    if return_names is not None:
+        return_value = return_names
+    else:
+        return_value = in_coord_list
+
+    for target in target_coords:
+        distance = [(rd_tmp.separation(target)).arcmins
+                    for rd_tmp in in_coord_list]
+        matches_at = np.array(distance) < match_radius
+        if matches_at.sum() > max_matches:
+            raise RuntimeError('Too many matches found for target coordinates')
+        if matches_at.any():
+            matches.append(return_value[matches_at])
+        else:
+            matches.append(None)
+    return matches
 
 
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
