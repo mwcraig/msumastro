@@ -3,7 +3,7 @@ pytest_plugins = "capturelog"
 from ..patch_headers import *
 from tempfile import mkdtemp
 from os import path, chdir, getcwd, remove
-from shutil import rmtree
+from shutil import rmtree, copy, move
 import numpy as np
 
 test_tuple = (1, 2, 3.1415)
@@ -86,7 +86,8 @@ def test_data_is_unmodified_by_adding_object():
 
 
 def test_adding_object_name(use_list=None,
-                            use_obj_dir=None):
+                            use_obj_dir=None,
+                            check_fits_file='uint16'):
     """
     Test adding object name
 
@@ -99,12 +100,19 @@ def test_adding_object_name(use_list=None,
     patch_headers(_test_dir, new_file_ext=new_ext)
     add_object_info(_test_dir, new_file_ext=new_ext,
                     object_list=use_list, object_list_dir=use_obj_dir)
-    fname = path.join(_test_dir, 'uint16')
+    fname = path.join(_test_dir, check_fits_file)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
     print 'add object name: %s' % fname
     assert (with_name[0].header['object'] == 'm101')
     return with_name
+
+
+def test_adding_object_name_using_last_object():
+    copy(path.join(_test_dir, 'uint16.fit'),
+         path.join(_test_dir, 'uint16_2.fit'))
+    test_adding_object_name(check_fits_file='uint16')
+    test_adding_object_name(check_fits_file='uint16_2')
 
 
 def test_writing_patched_files_to_directory():
@@ -141,7 +149,6 @@ def test_adding_object_name_to_different_directory(use_list=None,
 
 def test_purging_maximdl5_keywords():
     from ..feder import Feder
-    from shutil import copy
 
     feder = Feder()
     mdl5_name = 'maximdl5_header.fit'
@@ -212,7 +219,6 @@ def test_fix_imagetype():
 
 
 def test_add_object_name_uses_object_list_name():
-    from shutil import move
 
     custom_object_name = 'my_object_list.txt'
     old_object_path = path.join(_test_dir, _default_object_file_name)
@@ -226,7 +232,6 @@ def test_add_object_name_uses_object_list_name():
 
 
 def test_add_object_name_with_custom_dir_standard_name():
-    from shutil import move
 
     a_temp_dir = mkdtemp()
 
@@ -237,7 +242,6 @@ def test_add_object_name_with_custom_dir_standard_name():
 
 
 def test_add_object_name_uses_object_list_dir():
-    from shutil import move
 
     a_temp_dir = mkdtemp()
 
@@ -405,7 +409,6 @@ def object_file_no_ra(request):
 def setup_function(function):
     global _test_dir
     global _test_image_name
-    from shutil import copy
 
     _test_dir = mkdtemp()
     to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
