@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 feder = Feder()
 
+__all__ = ['patch_headers', 'add_object_info', 'add_ra_dec_from_object_name']
+
 
 def sexagesimal_string(dms, precision=2, sign=False):
     """Convert degrees, minutes, seconds into a string
