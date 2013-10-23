@@ -8,3 +8,5 @@ quick_reduce.py
 Untitled0.ipynb
 *.log
 dest
+dist
+msumastro.egg-info
