@@ -135,3 +135,35 @@ def setup_logging(logger, args, screen_handler):
 
     if args.silent_console:
         logger.removeHandler(screen_handler)
+
+
+def handle_destination_dir_logging_check(args):
+    """
+    Perform error checking for command line arguments
+    """
+    from os import getcwd, path
+
+    do_not_log_in_destination = args.no_log_destination
+    # turn off destination logging if we are running in the destination
+    # directory because we always create logs in the working directory...
+    if args.dir:
+        dir_abs = [path.abspath(d) for d in args.dir]
+    else:
+        dir_abs = None
+
+    if args.destination_dir:
+        dest_abs = path.abspath(args.destination_dir)
+    else:
+        dest_abs = None
+
+    effective_destination = dest_abs or dir_abs or None
+
+    cwd = getcwd()
+    if effective_destination and (path.abspath(cwd) in effective_destination):
+        if do_not_log_in_destination:
+            raise RuntimeError('option --no-log-destination cannot be used '
+                               'when running in the destination directory '
+                               'because a log is always made in the '
+                               'directory in which the script is run')
+        do_not_log_in_destination = True
+    return do_not_log_in_destination

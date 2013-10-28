@@ -252,8 +252,9 @@ always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
 
 if __name__ == "__main__":
     from sys import exit
-    from os import getcwd, path
-    from script_helpers import setup_logging
+    from os import getcwd
+    from script_helpers import (setup_logging,
+                                handle_destination_dir_logging_check)
 
     parser = construct_parser()
     args = parser.parse_args()
@@ -281,17 +282,7 @@ if __name__ == "__main__":
     if not args.dir:
         parser.error('No directory specified')
 
-    do_not_log_in_destination = args.no_log_destination
-    # turn off destination logging if we are running in the destination
-    # directory because we just created the logs in that directory...
-    if path.abspath(getcwd()) == path.abspath(args.destination_dir):
-        if do_not_log_in_destination:
-            raise(RuntimeError, ('option --no-log-destination cannot be used '
-                                 'when running in the destination directory '
-                                 'because a log is always made in the '
-                                 'directory in which the script is run'))
-        do_not_log_in_destination = True
-
+    do_not_log_in_destination = handle_destination_dir_logging_check(args)
     triage_directories(args.dir, keywords=always_include_keys,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,

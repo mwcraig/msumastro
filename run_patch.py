@@ -169,8 +169,10 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
-    from os import getcwd, path
-    from script_helpers import setup_logging
+    from os import getcwd
+    from script_helpers import (setup_logging,
+                                handle_destination_dir_logging_check)
+
     parser = construct_parser()
     args = parser.parse_args()
 
@@ -178,16 +180,7 @@ if __name__ == "__main__":
 
     add_file_handlers(logger, getcwd(), 'run_patch')
 
-    do_not_log_in_destination = args.no_log_destination
-    # turn off destination logging if we are running in the destination
-    # directory because we just created the logs in that directory...
-    if path.abspath(getcwd()) == path.abspath(args.destination_dir):
-        if do_not_log_in_destination:
-            raise(RuntimeError, ('option --no-log-destination cannot be used '
-                                 'when running in the destination directory '
-                                 'because a log is always made in the '
-                                 'directory in which the script is run'))
-        do_not_log_in_destination = True
+    do_not_log_in_destination = handle_destination_dir_logging_check(args)
 
     patch_directories(args.dir, verbose=args.verbose,
                       object_list=args.object_list,

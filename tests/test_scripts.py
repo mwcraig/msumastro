@@ -110,6 +110,40 @@ class TestScript(object):
             assert (blind_path.check())
 
 
+@pytest.fixture(params=['run_patch', 'run_triage', 'run_astrometry'])
+def a_parser(request):
+    if request.param == 'run_patch':
+        from ..run_patch import construct_parser
+    if request.param == 'run_astrometry':
+        from ..run_astrometry import construct_parser
+    if request.param == 'run_triage':
+        from ..run_triage import construct_parser
+    return construct_parser()
+
+from ..script_helpers import handle_destination_dir_logging_check
+from os import getcwd
+
+
+class TestScriptHelper(object):
+    """Test functions in script_helpers"""
+
+    @pytest.mark.parametrize("argstring,expected", [
+        (['--no-log-destination', '--destination-dir', '.', '.'], 'exception'),
+        (['--no-log-destination', getcwd()], 'exception'),
+        (['--no-log-destination', '--destination-dir', '/tmp', getcwd()], True),
+        (['--destination-dir', '/tmp', '.'], False)])
+    def test_handle_destination_dir_logging_check(self, argstring, expected,
+                                                  a_parser):
+        args = a_parser.parse_args(argstring)
+        print argstring, expected
+        print type(expected)
+        if expected == 'exception':
+            with pytest.raises(RuntimeError):
+                handle_destination_dir_logging_check(args)
+        else:
+            assert (handle_destination_dir_logging_check(args) == expected)
+
+
 _n_test = {'files': 0, 'need_object': 0,
            'need_filter': 0, 'bias': 0,
            'compressed': 0, 'light': 0,
