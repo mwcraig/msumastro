@@ -102,8 +102,6 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     `file_info_to_keep` is a list of the FITS keywords to get values
     for for each FITS file in `dir`.
     """
-
-
     all_file_info = file_info_to_keep
     feder = Feder()
     RA = feder.RA
@@ -249,7 +247,7 @@ def construct_parser():
 
     return parser
 
-always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
+ALWAYS_INCLUDE_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                        'object', 'observer', 'airmass', 'instrume',
                        'RA', 'Dec']
 
@@ -262,16 +260,16 @@ if __name__ == "__main__":
     add_file_handlers(logger, os.getcwd(), 'run_triage')
 
     try:
-        always_include_keys.extend(args.key)
+        ALWAYS_INCLUDE_KEYS.extend(args.key)
     except TypeError as e:
         pass
 
     if args.no_default:
-        always_include_keys = None
+        ALWAYS_INCLUDE_KEYS = None
 
     if args.list_default:
         print 'Keys included by default are:\n'
-        keys_print = [key.upper() for key in always_include_keys]
+        keys_print = [key.upper() for key in ALWAYS_INCLUDE_KEYS]
         print ', '.join(keys_print)
         exit(0)
 
@@ -279,7 +277,7 @@ if __name__ == "__main__":
         parser.error('No directory specified')
 
     do_not_log_in_destination = script_helpers.handle_destination_dir_logging_check(args)
-    triage_directories(args.dir, keywords=always_include_keys,
+    triage_directories(args.dir, keywords=ALWAYS_INCLUDE_KEYS,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,
                        filter_file_name=args.filter_needed_list,

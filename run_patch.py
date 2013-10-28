@@ -91,7 +91,7 @@ logger = logging.getLogger()
 screen_handler = console_handler()
 logger.addHandler(screen_handler)
 
-default_obj_list = 'obsinfo.txt'
+DEFAULT_OBJ_LIST = 'obsinfo.txt'
 
 
 def patch_directories(directories, verbose=False, object_list=None,
@@ -146,11 +146,11 @@ def patch_directories(directories, verbose=False, object_list=None,
                           save_location=destination)
 
             default_object_list_present = path.exists(path.join(currentDir,
-                                                      default_obj_list))
+                                                      DEFAULT_OBJ_LIST))
             no_explicit_object_list = (object_list is None)
             if (default_object_list_present and no_explicit_object_list):
                 obj_dir = currentDir
-                obj_name = default_obj_list
+                obj_name = DEFAULT_OBJ_LIST
             add_object_info(working_dir, new_file_ext='', overwrite=True,
                             save_location=destination,
                             object_list_dir=obj_dir, object_list=obj_name)

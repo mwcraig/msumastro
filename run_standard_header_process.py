@@ -95,11 +95,11 @@ if (dest_root == source_root) & (not args.overwrite_source):
     raise RuntimeError('Will not overwrite source unless you explicitly use '
                        'the option --overwrite-source')
 
-sep_repeat = 20
-separator_format = '#' * sep_repeat + ' {} ' + '#' * sep_repeat
+SEP_REPEAT = 20
+separator_format = '#' * SEP_REPEAT + ' {} ' + '#' * SEP_REPEAT
 
 all_commands = []
-script_name = 'header_process_script.sh'
+SCRIPT_NAME = 'header_process_script.sh'
 
 if args.run_only is not None:
     patch = 'p' in args.run_only
@@ -157,12 +157,12 @@ for root, dirs, files in os.walk(source_root):
     end_str = separator_format.format('END commands for {}'.format(root))
     cmd_list.append(end_str)
     cmd_list = '\n'.join(cmd_list) + '\n'*5
-    with open(script_name, mode='a') as f:
+    with open(SCRIPT_NAME, mode='a') as f:
         f.write(cmd_list)
 
     if not args.scripts_only:
         subprocess.call(make_destination)
-        script_path = os.path.join(destination, script_name)
+        script_path = os.path.join(destination, SCRIPT_NAME)
         with open(script_path, 'wb') as script_to_reproduce_this:
             script_to_reproduce_this.write(cmd_list)
         if patch:

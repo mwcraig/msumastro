@@ -10,7 +10,7 @@ import numpy as np
 
 from ..patch_headers import IRAF_image_type
 from ..run_patch import patch_directories
-from ..run_triage import DefaultFileNames, always_include_keys
+from ..run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
 from ..run_triage import triage_directories, triage_fits_files
 from ..run_astrometry import astrometry_for_directory
 from ..image_collection import ImageFileCollection
@@ -69,7 +69,7 @@ class TestScript(object):
     def test_run_triage_no_output_generated(self):
         list_before = self.test_dir.listdir(sort=True)
         triage_directories([self.test_dir.strpath],
-                           keywords=always_include_keys,
+                           keywords=ALWAYS_INCLUDE_KEYS,
                            object_file_name=None,
                            pointing_file_name=None,
                            filter_file_name=None,
@@ -84,7 +84,7 @@ class TestScript(object):
 
     def test_triage_output_file_by_keyword(self, triage_dict):
         triage_directories([self.test_dir.strpath],
-                           keywords=always_include_keys,
+                           keywords=ALWAYS_INCLUDE_KEYS,
                            **triage_dict)
         self._verify_triage_files_created(self.test_dir, triage_dict)
 
@@ -92,7 +92,7 @@ class TestScript(object):
         destination = self.test_dir.make_numbered_dir()
         list_before = self.test_dir.listdir(sort=True)
         triage_directories([self.test_dir.strpath],
-                           keywords=always_include_keys,
+                           keywords=ALWAYS_INCLUDE_KEYS,
                            destination=destination.strpath,
                            **triage_dict)
         list_after = self.test_dir.listdir(sort=True)
