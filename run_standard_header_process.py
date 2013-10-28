@@ -1,6 +1,9 @@
 import os
 import argparse
+import subprocess
+
 import script_helpers
+from image_collection import ImageFileCollection
 
 parser = argparse.ArgumentParser()
 
@@ -70,7 +73,6 @@ if args.object_list is not None:
 
 source_root = args.source_root[0]
 
-import subprocess
 
 
 def construct_command(script_name, source, destination,
@@ -83,8 +85,6 @@ def construct_command(script_name, source, destination,
     command.extend([source])
     command = [arg for arg in command if arg]
     return command
-
-from image_collection import ImageFileCollection
 
 dest_root = args.dest_root or [source_root]
 dest_root = dest_root[0]
