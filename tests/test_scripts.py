@@ -122,13 +122,15 @@ class TestScript(object):
 
 @pytest.fixture(params=['run_patch', 'run_triage', 'run_astrometry'])
 def a_parser(request):
-    if request.param == 'run_patch':
-        from ..run_patch import construct_parser
-    if request.param == 'run_astrometry':
-        from ..run_astrometry import construct_parser
-    if request.param == 'run_triage':
-        from ..run_triage import construct_parser
-    return construct_parser()
+    from ..run_patch import construct_parser as ph_parser
+    from ..run_astrometry import construct_parser as as_parser
+    from ..run_triage import construct_parser as tr_parser
+    parsers = {'run_patch': ph_parser,
+               'run_astrometry': as_parser,
+               'run_triage': tr_parser
+               }
+    the_parser = parsers[request.param]
+    return the_parser()
 
 
 class TestScriptHelper(object):
