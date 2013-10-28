@@ -1,4 +1,4 @@
-from ..feder import *
+from ..feder import Feder, ApogeeAltaU9
 
 # def test_localSiderialTime():
 #    feder_site = FederSite()

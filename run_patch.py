@@ -73,19 +73,24 @@ where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 
 """
 
+from os import getcwd
+from os import path
+import warnings
 # The import below
 # MUST happen before any logging...oddly, setting the VALUE
 # doesn't change anything. True story.
-
 from astropy.logger import LOG_WARNINGS
 import logging
+
+from patch_headers import patch_headers, add_object_info
 from customlogger import console_handler, add_file_handlers
+from script_helpers import (setup_logging, construct_default_parser,
+                            handle_destination_dir_logging_check)
 
 logger = logging.getLogger()
 screen_handler = console_handler()
 logger.addHandler(screen_handler)
 
-from patch_headers import patch_headers, add_object_info
 default_obj_list = 'obsinfo.txt'
 
 
@@ -116,9 +121,6 @@ def patch_directories(directories, verbose=False, object_list=None,
         value is None, which means that **files will be overwritten** in
         the directory being processed.
     """
-    from os import path
-    import warnings
-
     if object_list is not None:
         full_path = path.abspath(object_list)
 
@@ -153,8 +155,6 @@ def patch_directories(directories, verbose=False, object_list=None,
                             save_location=destination,
                             object_list_dir=obj_dir, object_list=obj_name)
 
-from script_helpers import construct_default_parser
-
 
 def construct_parser():
     parser = construct_default_parser(__doc__)
@@ -169,10 +169,6 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
-    from os import getcwd
-    from script_helpers import (setup_logging,
-                                handle_destination_dir_logging_check)
-
     parser = construct_parser()
     args = parser.parse_args()
 

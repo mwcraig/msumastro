@@ -38,15 +38,22 @@ EXAMPLES
 
 """
 import os
-import numpy as np
-
+from argparse import ArgumentParser
+from sys import exit
 # The import below
 # MUST happen before any logging...oddly, setting the VALUE
 # doesn't change anything. True story.
 
 from astropy.logger import LOG_WARNINGS
 import logging
+
+from astropy.table import Table
+import numpy as np
+
 from customlogger import console_handler, add_file_handlers
+from feder import Feder
+from image_collection import ImageFileCollection
+import script_helpers
 
 logger = logging.getLogger()
 screen_handler = console_handler()
@@ -65,7 +72,6 @@ class DefaultFileNames(object):
 
 
 def write_list(dir, file, info, column_name='File'):
-    from astropy.table import Table
     temp_table = Table(data=[info],
                        names=[column_name])
     temp_table.write(os.path.join(dir, file),
@@ -96,8 +102,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     `file_info_to_keep` is a list of the FITS keywords to get values
     for for each FITS file in `dir`.
     """
-    from feder import Feder
-    from image_collection import ImageFileCollection
+
 
     all_file_info = file_info_to_keep
     feder = Feder()
@@ -189,8 +194,6 @@ def triage_directories(directories,
 
 
 def construct_parser():
-    from argparse import ArgumentParser
-    import script_helpers
 
     parser = ArgumentParser()
     script_helpers.setup_parser_help(parser, __doc__)
@@ -251,17 +254,12 @@ always_include_keys = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                        'RA', 'Dec']
 
 if __name__ == "__main__":
-    from sys import exit
-    from os import getcwd
-    from script_helpers import (setup_logging,
-                                handle_destination_dir_logging_check)
-
     parser = construct_parser()
     args = parser.parse_args()
 
-    setup_logging(logger, args, screen_handler)
+    script_helpers.setup_logging(logger, args, screen_handler)
 
-    add_file_handlers(logger, getcwd(), 'run_triage')
+    add_file_handlers(logger, os.getcwd(), 'run_triage')
 
     try:
         always_include_keys.extend(args.key)
@@ -280,7 +278,7 @@ if __name__ == "__main__":
     if not args.dir:
         parser.error('No directory specified')
 
-    do_not_log_in_destination = handle_destination_dir_logging_check(args)
+    do_not_log_in_destination = script_helpers.handle_destination_dir_logging_check(args)
     triage_directories(args.dir, keywords=always_include_keys,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,

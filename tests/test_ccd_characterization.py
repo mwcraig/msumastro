@@ -1,6 +1,7 @@
 import pytest
 from numpy import array, sqrt, log
 from numpy import random as rnd
+
 bias = []
 dark = []
 dark_current = 1.0
@@ -13,10 +14,12 @@ try:
 except ImportError:
     HAS_SHERPA = False
 
+if HAS_SHERPA:
+    from ..ccd_characterization import ccd_bias, ccd_dark_current
+
 
 @pytest.mark.skipif('not HAS_SHERPA')
 def test_ccd_dark_current():
-    from ..ccd_characterization import ccd_dark_current
     print ccd_dark_current(bias, dark, gain=1.5)
     print (ccd_dark_current(bias, dark, gain=1.5) - 1.5 * dark_current)
     assert (abs(
@@ -28,7 +31,6 @@ def test_ccd_dark_current():
 
 @pytest.mark.skipif('not HAS_SHERPA')
 def test_ccd_bias():
-    from ..ccd_characterization import ccd_bias
     gaussian = ccd_bias(bias[0])
     fwhm_expected = 2 * sqrt(2 * log(2)) * bias_width
     assert abs(round((gaussian.pos.val - bias_level) / bias_level, 3)) == 0

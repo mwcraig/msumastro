@@ -1,5 +1,7 @@
-from numpy import array, zeros, sqrt, ndarray
-import logging 
+import logging
+
+import numpy as np
+import sherpa.ui as ui
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +24,15 @@ def ccd_dark_current(bias, dark, gain=1.0, average_dark=False):
     else:
         average_bias = bias
 
-    if not isinstance(dark, ndarray):
-        dark = array(dark)
+    if not isinstance(dark, np.ndarray):
+        dark = np.array(dark)
     if len(dark.shape) == 2:
-        dark_array = array([dark])
+        dark_array = np.array([dark])
     else:
         dark_array = dark
 
-    working_dark = zeros(dark_array.shape[1:2])
-    dark_current = zeros(dark_array.shape[0])
+    working_dark = np.zeros(dark_array.shape[1:2])
+    dark_current = np.zeros(dark_array.shape[0])
     for i in range(0, dark_array.shape[0]):
         working_dark = dark_array[i, :, :] - average_bias
         dark_current[i] = gain * working_dark.mean()
@@ -47,10 +49,8 @@ def ccd_bias(bias):
 
     `bias` is a numpy array.
     """
-    import sherpa.ui as ui
-    from numpy import histogram, arange
-
-    values, bins = histogram(bias, bins=arange(bias.min(), bias.max() + 1))
+    values, bins = np.histogram(bias,
+                                bins=np.arange(bias.min(), bias.max() + 1))
     ui.load_arrays(1, bins[:-1], values)
     ui.set_model(ui.gauss1d.g1)
     g1.pos = bias.mean()
@@ -78,7 +78,7 @@ def ccd_read_noise(bias, gain=None, flat=None):
             raise ValueError('Must specify either gain or flat frames.')
         gain = ccd_gain(bias, flat)
 
-    return gain / sqrt(2) * (bias[0] - bias[1]).std()
+    return gain / np.sqrt(2) * (bias[0] - bias[1]).std()
 
 
 def ccd_gain(bias, flat):

@@ -1,5 +1,6 @@
-from ..fitskeyword import FITSKeyword
 from astropy.io.fits.hdu import PrimaryHDU
+
+from ..fitskeyword import FITSKeyword
 
 
 class TestGoodFITSKeyword(object):

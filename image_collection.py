@@ -1,10 +1,12 @@
 import fnmatch
-import astropy.io.fits as fits
 from os import listdir, path
-from numpy import array, logical_not
-import numpy.ma as ma
-from astropy.table import Table
 import logging
+
+import numpy as np
+import numpy.ma as ma
+
+from astropy.table import Table
+import astropy.io.fits as fits
 
 logger = logging.getLogger(__name__)
 
@@ -266,20 +268,20 @@ class ImageFileCollection(object):
             # we need to load information about these keywords.
             use_info = self.fits_summary(keywords=keywords)
 
-        matches = array([True] * len(use_info))
+        matches = np.array([True] * len(use_info))
         for key, value in zip(keywords, values):
             logger.debug('Key %s, value %s', key, value)
             logger.debug('Value in table %s', use_info[key])
             value_missing = use_info[key].mask
             logger.debug('Value missing: %s', value_missing)
-            value_not_missing = logical_not(value_missing)
+            value_not_missing = np.logical_not(value_missing)
             if value == '*':
                 have_this_value = value_not_missing
             elif value is not None:
                 if isinstance(value, basestring):
                     # need to loop explicitly over array rather than using
                     # where to correctly do string comparison.
-                    have_this_value = array([False] * len(use_info))
+                    have_this_value = np.array([False] * len(use_info))
                     for idx, file_key_value in enumerate(use_info[key]):
                         if value_not_missing[idx]:
                             value_matches = (file_key_value.lower() ==

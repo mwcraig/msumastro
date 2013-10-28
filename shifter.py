@@ -1,7 +1,9 @@
-from image import ImageWithWCS
-import numpy as np
 from os import path
 import logging
+
+import numpy as np
+
+from image import ImageWithWCS
 
 logger = logging.getLogger(__name__)
 

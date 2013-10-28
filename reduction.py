@@ -1,8 +1,10 @@
-from astropysics import ccd, pipeline
-import image_collection as tff
-from os import path
-import numpy as np
 import logging
+from os import path
+
+from astropysics import ccd, pipeline
+import numpy as np
+
+import image_collection as tff
 
 logger = logging.getLogger(__name__)
 

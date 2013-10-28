@@ -1,5 +1,6 @@
-import astropy.io.fits as fits
 import logging
+
+import astropy.io.fits as fits
 
 logger = logging.getLogger(__name__)
 

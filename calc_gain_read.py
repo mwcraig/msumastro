@@ -1,14 +1,16 @@
+from os import path
+import logging
+
+import numpy as np
+from astropysics import ccd
+
 from image_collection import ImageFileCollection
 from ccd_characterization import ccd_gain, ccd_read_noise
-from numpy import array
-from astropysics import ccd
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 def as_images(tbl, src_dir):
-    from os import path
     img = []
     for tb in tbl:
         img.append(ccd.FitsImage(path.join(src_dir, tb['file'])).data[1:, :])
@@ -36,4 +38,4 @@ def calc_gain_read(src_dir):
         print biases[i].shape
         gain.append(ccd_gain(biases[i:i + 2], r_flats[i:i + 2]))
         read_noise.append(ccd_read_noise(biases[i:i + 2], gain=gain[-1]))
-    return (array(gain), array(read_noise))
+    return (np.array(gain), np.array(read_noise))

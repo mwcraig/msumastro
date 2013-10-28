@@ -1,13 +1,15 @@
-from .. import image_collection as tff
-from ..patch_headers import IRAF_image_type
 import os
-import numpy
-import astropy.io.fits as fits
 from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
+from glob import iglob, glob
+
+import astropy.io.fits as fits
 import numpy as np
 import pytest
+
+from .. import image_collection as tff
+from ..patch_headers import IRAF_image_type
 
 _n_test = {'files': 0, 'need_object': 0,
            'need_filter': 0, 'bias': 0,
@@ -157,7 +159,6 @@ class TestImageFileCollection(object):
                 header['object']
 
     def test_generator_headers_save_with_name(self):
-        from glob import iglob, glob
         collection = tff.ImageFileCollection(location=_test_dir)
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, fits.Header)
@@ -226,7 +227,7 @@ def setup_module():
     _original_dir = os.getcwd()
 
     os.chdir(_test_dir)
-    img = numpy.uint16(numpy.arange(100))
+    img = np.uint16(np.arange(100))
 
     no_filter_no_object = fits.PrimaryHDU(img)
     no_filter_no_object.header['imagetyp'] = IRAF_image_type('light')

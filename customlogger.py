@@ -1,7 +1,9 @@
 from __future__ import print_function
 
-from astropy.utils.console import _color_text
 import logging
+from os import path
+
+from astropy.utils.console import _color_text
 
 message_format = '%(message)s [%(name)s.%(funcName)s]'
 console_format = '%(levelname)-18s ' + message_format
@@ -73,8 +75,6 @@ def console_handler(*args, **kwd):
 
 
 def add_file_handlers(logger, directory, script_name):
-    from os import path
-
     detail_log_path = path.join(directory, script_name + '.log')
     detailed_destination_log = FormattedFileHandler(detail_log_path)
     logger.addHandler(detailed_destination_log)

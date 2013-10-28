@@ -1,7 +1,9 @@
+import logging
+
 import numpy as np
+from scipy import ndimage
 from astropy import wcs
 from astropy.io import fits
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +60,6 @@ class ImageWithWCS(object):
         If `in_place` is True the image is shifted in place, and the
         wcs reference pixel is updated appropriately.
         """
-        from scipy import ndimage
-
         if (np.int32(np.array(int_shift)) !=
                 np.array(int_shift)).any():
             raise ValueError('Shift must be integer amount!')

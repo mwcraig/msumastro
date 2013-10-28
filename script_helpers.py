@@ -1,5 +1,7 @@
 """A set of functions to standardize some options for python scripts"""
 import logging
+import argparse
+from os import getcwd, path
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +21,7 @@ def setup_parser_help(parser, additional_docs=None):
         `argparse`
 
     """
-    from argparse import RawDescriptionHelpFormatter
-
-    parser.formatter_class = RawDescriptionHelpFormatter
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
     if additional_docs is not None:
         parser.epilog = additional_docs
 
@@ -106,9 +106,6 @@ def add_console_output_args(parser):
 
 
 def construct_default_parser(docstring=None):
-    #import script_helpers
-    import argparse
-
     parser = argparse.ArgumentParser()
     if docstring is not None:
         setup_parser_help(parser, docstring)
@@ -141,8 +138,6 @@ def handle_destination_dir_logging_check(args):
     """
     Perform error checking for command line arguments
     """
-    from os import getcwd, path
-
     do_not_log_in_destination = args.no_log_destination
     # turn off destination logging if we are running in the destination
     # directory because we always create logs in the working directory...

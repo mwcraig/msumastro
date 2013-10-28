@@ -1,6 +1,7 @@
+import logging
+
 from astropy.io.fits import Header
 from astropy.io.fits import PrimaryHDU
-import logging
 
 logger = logging.getLogger(__name__)
 

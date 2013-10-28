@@ -1,10 +1,22 @@
-import pytest
-pytest_plugins = "capturelog"
-from ..patch_headers import *
-from tempfile import mkdtemp
 from os import path, chdir, getcwd, remove
 from shutil import rmtree, copy, move
+from tempfile import mkdtemp
+from glob import glob
+import warnings
+import logging
+
+import pytest
+pytest_plugins = "capturelog"
 import numpy as np
+from numpy.testing import assert_almost_equal
+from astropy.io import fits
+from astropy.coordinates import Angle, FK5Coordinates
+from astropy import units as u
+
+#from ..patch_headers import *
+from .. import patch_headers as ph
+from ..feder import Feder, FederSite, ApogeeAltaU9
+from utilities import make_overscan_test_files
 
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
@@ -13,25 +25,25 @@ _test_image_name = 'uint16.fit'
 
 
 def test_sexagesimal_string():
-    assert sexagesimal_string(test_tuple) == '01:02:03.14'
+    assert ph.sexagesimal_string(test_tuple) == '01:02:03.14'
 
 
 def test_sexagesimal_string_with_sign():
-    assert sexagesimal_string(test_tuple, sign=True) == '+01:02:03.14'
+    assert ph.sexagesimal_string(test_tuple, sign=True) == '+01:02:03.14'
 
 
 def test_sexagesimal_string_with_precision():
-    assert sexagesimal_string(test_tuple, precision=3) == '01:02:03.142'
+    assert ph.sexagesimal_string(test_tuple, precision=3) == '01:02:03.142'
 
 
 def test_sexagesimal_string_with_precision_and_sign():
-    assert (sexagesimal_string(test_tuple, sign=True, precision=3) ==
+    assert (ph.sexagesimal_string(test_tuple, sign=True, precision=3) ==
             '+01:02:03.142')
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
-    objects, RA, Dec = read_object_list(dir=_test_dir)
+    objects, RA, Dec = ph.read_object_list(dir=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
@@ -39,30 +51,30 @@ def test_read_object_list():
 
 def test_history_bad_mode():
     with pytest.raises(ValueError):
-        history(test_history_bad_mode, mode='not a mode')
+        ph.history(test_history_bad_mode, mode='not a mode')
 
 
 def test_history_begin():
-    hist = history(test_history_begin, mode='begin')
+    hist = ph.history(test_history_begin, mode='begin')
     assert hist.find('BEGIN') > 0
     assert hist.endswith('+')
 
 
 def test_history_end():
-    hist = history(test_history_end, mode='end')
+    hist = ph.history(test_history_end, mode='end')
     assert hist.find('END') > 0
     assert hist.endswith('-')
 
 
 def test_history_function_name():
-    hist = history(test_history_function_name, mode='begin')
+    hist = ph.history(test_history_function_name, mode='begin')
     assert hist.find('test_history_function_name') > 0
 
 
 def test_data_is_unmodified_by_patch_headers():
     """No changes should be made to the data."""
     new_ext = '_new'
-    patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext
     orig = fits.open(fname + '.fit',
@@ -74,8 +86,8 @@ def test_data_is_unmodified_by_patch_headers():
 
 def test_data_is_unmodified_by_adding_object():
     new_ext = '_obj'
-    patch_headers(_test_dir, new_file_ext=new_ext)
-    add_object_info(_test_dir, new_file_ext=new_ext)
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.add_object_info(_test_dir, new_file_ext=new_ext)
     fname = path.join(_test_dir, 'uint16')
     fname_new = fname + new_ext + new_ext
     orig = fits.open(fname + '.fit',
@@ -97,9 +109,9 @@ def test_adding_object_name(use_list=None,
     `use_obj_dir` is None.
     """
     new_ext = '_obj_name_test'
-    patch_headers(_test_dir, new_file_ext=new_ext)
-    add_object_info(_test_dir, new_file_ext=new_ext,
-                    object_list=use_list, object_list_dir=use_obj_dir)
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.add_object_info(_test_dir, new_file_ext=new_ext,
+                       object_list=use_list, object_list_dir=use_obj_dir)
     fname = path.join(_test_dir, check_fits_file)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
@@ -116,11 +128,10 @@ def test_adding_object_name_using_last_object():
 
 
 def test_writing_patched_files_to_directory():
-    from glob import glob
     files = glob(path.join(_test_dir, '*.fit*'))
     n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
     dest_dir = mkdtemp()
-    patch_headers(_test_dir, new_file_ext=None, save_location=dest_dir)
+    ph.patch_headers(_test_dir, new_file_ext=None, save_location=dest_dir)
     print files
     n_files_after = len(glob(path.join(_test_dir, '*.fit*')))
     print n_files_after
@@ -134,11 +145,11 @@ def test_writing_patched_files_to_directory():
 def test_adding_object_name_to_different_directory(use_list=None,
                                                    use_obj_dir=None):
     new_ext = '_obj_name_test'
-    patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
     destination_dir = mkdtemp()
-    add_object_info(_test_dir, new_file_ext=new_ext,
-                    save_location=destination_dir,
-                    object_list=use_list, object_list_dir=use_obj_dir)
+    ph.add_object_info(_test_dir, new_file_ext=new_ext,
+                       save_location=destination_dir,
+                       object_list=use_list, object_list_dir=use_obj_dir)
     fname = path.join(destination_dir, 'uint16')
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
@@ -148,13 +159,12 @@ def test_adding_object_name_to_different_directory(use_list=None,
 
 
 def test_purging_maximdl5_keywords():
-    from ..feder import Feder
 
     feder = Feder()
     mdl5_name = 'maximdl5_header.fit'
     copy(path.join('data', mdl5_name), _test_dir)
     hdr5 = fits.getheader(path.join(_test_dir, mdl5_name))
-    purge_bad_keywords(hdr5, history=True, force=False)
+    ph.purge_bad_keywords(hdr5, history=True, force=False)
     for software in feder.software:
         if software.created_this(hdr5[software.fits_keyword]):
             break
@@ -165,9 +175,6 @@ def test_purging_maximdl5_keywords():
 
 
 def test_adding_overscan_apogee_u9():
-    from ..feder import ApogeeAltaU9
-    from utilities import make_overscan_test_files
-
     original_dir = getcwd()
 
     apogee = ApogeeAltaU9()
@@ -176,9 +183,9 @@ def test_adding_overscan_apogee_u9():
     print getcwd()
 
     chdir(path.join(_test_dir, oscan_dir))
-    patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
-                  add_time=False, add_apparent_pos=False,
-                  add_overscan=True, fix_imagetype=False)
+    ph.patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
+                     add_time=False, add_apparent_pos=False,
+                     add_overscan=True, fix_imagetype=False)
     print _test_dir
     header_no_oscan = fits.getheader(has_no_oscan)
     assert not header_no_oscan['oscan']
@@ -203,18 +210,18 @@ def test_fix_imagetype():
         header['imagetyp'] = im_type
         # first run SHOULD change imagetyp
         print header
-        change_imagetype_to_IRAF(header, history=False)
+        ph.change_imagetype_to_IRAF(header, history=False)
         assert(header['imagetyp'] == imagetypes_to_check[im_type])
         # second call should NOT change imagetyp
         print header
-        change_imagetype_to_IRAF(header, history=True)
+        ph.change_imagetype_to_IRAF(header, history=True)
         assert(header['imagetyp'] == imagetypes_to_check[im_type])
         with pytest.raises(KeyError):
             print header['history']
         # change imagetype back to non-IRAF
         header['imagetyp'] = im_type
         # change with history
-        change_imagetype_to_IRAF(header, history=True)
+        ph.change_imagetype_to_IRAF(header, history=True)
         assert('history' in header)
 
 
@@ -271,7 +278,7 @@ def test_read_object_list_with_ra_dec():
     object_file = open(object_path, 'wb')
     object_file.write(to_write)
     object_file.close()
-    obj, RA, Dec = read_object_list(temp_dir, obj_name)
+    obj, RA, Dec = ph.read_object_list(temp_dir, obj_name)
     assert(obj[0] == object_in)
     assert(RA[0] == RA_in)
     assert(Dec[0] == Dec_in)
@@ -291,7 +298,7 @@ def get_patch_header_warnings(log):
 
 def test_missing_object_file_issues_warning(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
-    add_object_info(_test_dir)
+    ph.add_object_info(_test_dir)
     patch_header_warnings = get_patch_header_warnings(caplog)
     assert 'No object list in directory' in patch_header_warnings
 
@@ -302,20 +309,14 @@ def test_no_object_match_for_image_warning_includes_file_name(caplog):
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
-    patch_headers(_test_dir, new_file_ext=None, overwrite=True)
-    add_object_info(_test_dir)
+    ph.patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    ph.add_object_info(_test_dir)
     patch_header_warnings = get_patch_header_warnings(caplog)
     assert 'No object found' in patch_header_warnings
     assert _test_image_name in patch_header_warnings
 
 
 def test_add_ra_dec_from_object_name():
-    from astropy.io import fits
-    from astropy.coordinates import FK5Coordinates
-    from astropy import units as u
-    from numpy.testing import assert_almost_equal
-    import warnings
-
     full_path = path.join(_test_dir, _test_image_name)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
@@ -327,7 +328,7 @@ def test_add_ra_dec_from_object_name():
         warnings.filterwarnings('ignore', module=ignore_from)
         f.writeto(full_path, clobber=True)
     f.close()
-    add_ra_dec_from_object_name(_test_dir, new_file_ext=None)
+    ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=None)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
     m101_ra_dec_correct = FK5Coordinates('14h03m12.58s +54d20m55.50s')
@@ -341,12 +342,6 @@ def test_add_ra_dec_from_object_name():
 
 
 def test_times_apparent_pos_added():
-    from astropy.io import fits
-    from numpy.testing import assert_almost_equal
-    from astropy.coordinates import Angle
-    from astropy import units as u
-    from ..feder import FederSite
-
     # the correct value below is from the USNO JD calculator using the UT
     # of the start of the observation in the file uint16.fit, which is
     # 2012-06-05T04:17:00
@@ -363,7 +358,7 @@ def test_times_apparent_pos_added():
 
     HA_correct = LST_astropysics - RA_correct
 
-    patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    ph.patch_headers(_test_dir, new_file_ext=None, overwrite=True)
     header = fits.getheader(path.join(_test_dir, _test_image_name))
 
     # check Julian Date

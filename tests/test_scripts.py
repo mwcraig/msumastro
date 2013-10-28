@@ -1,9 +1,20 @@
+import os
+from tempfile import mkdtemp
+import gzip
+from shutil import rmtree
+
+import astropy.io.fits as fits
 import pytest
 import py
+import numpy as np
+
+from ..patch_headers import IRAF_image_type
 from ..run_patch import patch_directories
 from ..run_triage import DefaultFileNames, always_include_keys
 from ..run_triage import triage_directories, triage_fits_files
 from ..run_astrometry import astrometry_for_directory
+from ..image_collection import ImageFileCollection
+from ..script_helpers import handle_destination_dir_logging_check
 
 _default_object_file_name = 'obsinfo.txt'
 
@@ -89,7 +100,6 @@ class TestScript(object):
         self._verify_triage_files_created(destination, triage_dict)
 
     def test_run_astrometry_with_dest_does_not_modify_source(self):
-        from ..image_collection import ImageFileCollection
 
         destination = self.test_dir.make_numbered_dir()
         list_before = self.test_dir.listdir(sort=True)
@@ -120,17 +130,14 @@ def a_parser(request):
         from ..run_triage import construct_parser
     return construct_parser()
 
-from ..script_helpers import handle_destination_dir_logging_check
-from os import getcwd
-
 
 class TestScriptHelper(object):
     """Test functions in script_helpers"""
 
     @pytest.mark.parametrize("argstring,expected", [
         (['--no-log-destination', '--destination-dir', '.', '.'], 'exception'),
-        (['--no-log-destination', getcwd()], 'exception'),
-        (['--no-log-destination', '--destination-dir', '/tmp', getcwd()], True),
+        (['--no-log-destination', os.getcwd()], 'exception'),
+        (['--no-log-destination', '--destination-dir', '/tmp', os.getcwd()], True),
         (['--destination-dir', '/tmp', '.'], False)])
     def test_handle_destination_dir_logging_check(self, argstring, expected,
                                                   a_parser):
@@ -152,17 +159,9 @@ _n_test = {'files': 0, 'need_object': 0,
 _test_dir = ''
 _filters = []
 
-import numpy
-from ..patch_headers import IRAF_image_type
-
 
 @pytest.fixture
 def triage_setup(request):
-    from tempfile import mkdtemp
-    import astropy.io.fits as fits
-    import os
-    import gzip
-
     global _n_test
     global _test_dir
 
@@ -172,7 +171,7 @@ def triage_setup(request):
     _test_dir = mkdtemp()
     original_dir = os.getcwd()
     os.chdir(_test_dir)
-    img = numpy.uint16(numpy.arange(100))
+    img = np.uint16(np.arange(100))
 
     no_filter_no_object = fits.PrimaryHDU(img)
     no_filter_no_object.header['imagetyp'] = IRAF_image_type('light')
@@ -221,7 +220,6 @@ def triage_setup(request):
     _n_test['need_object'] += 1
 
     def teardown():
-        from shutil import rmtree
         global _n_test
 
         for key in _n_test.keys():
@@ -240,6 +238,6 @@ def test_triage():
     assert len(file_info['needs_pointing']) == _n_test['need_pointing']
     assert len(file_info['needs_object_name']) == _n_test['need_object']
     assert len(file_info['needs_filter']) == _n_test['need_filter']
-    bias_check = numpy.where(file_info['files']['imagetyp'] ==
-                             IRAF_image_type('bias'))
+    bias_check = np.where(file_info['files']['imagetyp'] ==
+                          IRAF_image_type('bias'))
     assert (len(bias_check[0]) == 2)

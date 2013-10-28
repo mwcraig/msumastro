@@ -1,9 +1,14 @@
-from ..reduction import trim
-from ..patch_headers import patch_headers
-import astropy.io.fits as fits
 from tempfile import mkdtemp
 from os import path, chdir, getcwd
+from shutil import copytree, rmtree
+
+import astropy.io.fits as fits
 import pytest
+
+from utilities import make_overscan_test_files
+from ..feder import ApogeeAltaU9
+from ..reduction import trim
+from ..patch_headers import patch_headers
 
 test_dir = ''
 original_dir = ''
@@ -12,7 +17,7 @@ original_dir = ''
 def setup():
     global test_dir
     global original_dir
-    from shutil import copytree
+
     original_dir = getcwd()
     test_dir = path.join(mkdtemp(), "data")
     copytree('data', test_dir)
@@ -20,8 +25,6 @@ def setup():
 
 def test_trim():
     global test_dir
-    from utilities import make_overscan_test_files
-    from ..feder import ApogeeAltaU9
 
     oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(test_dir)
     chdir(path.join(test_dir, oscan_dir))
@@ -56,7 +59,5 @@ def test_trim():
 
 
 def teardown():
-    from shutil import rmtree
-
     chdir(original_dir)
     rmtree(test_dir)

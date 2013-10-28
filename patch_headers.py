@@ -1,17 +1,17 @@
 from os import path
 from datetime import datetime
-import numpy as np
+import logging
 
+import numpy as np
 import astropy.io.fits as fits
 from astropy.time import Time
 from astropy.coordinates import Angle, FK5Coordinates, name_resolve
 from astropy import units as u
+from astropy.table import Table
 
 from feder import Feder
-
 from image_collection import ImageFileCollection
-
-import logging
+from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
@@ -262,8 +262,6 @@ def read_object_list(dir='.', input_list=None):
             RR Lyr, 19.423861,42.7843583
 
     """
-    from astropy.table import Table
-
     def normalize_column_name(key, table):
         """
         Find any column in table whose name matches, aside from case, key
@@ -449,8 +447,6 @@ def add_object_info(directory='.',
     RA/Dec of the image and a particular object for the image to be
     considered an image of that object.
     """
-    from fitskeyword import FITSKeyword
-
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])

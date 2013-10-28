@@ -1,8 +1,11 @@
-from astropysics import obstools
-from fitskeyword import FITSKeyword
 from itertools import chain
-import numpy as np
 import logging
+import datetime
+
+from astropysics import obstools
+import numpy as np
+
+from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +37,6 @@ class FederSite(obstools.Site):
                                name='Feder Observatory')
 
     def localSiderialTime(self, seconds_decimal=None, *arg, **kwd):
-        import datetime
         try:
             return_type = kwd['returntype']
         except KeyError:

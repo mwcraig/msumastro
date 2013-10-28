@@ -40,14 +40,18 @@ EXAMPLES
 
 
 """
-import astrometry as ast
 import shutil
-import numpy as np
-import image_collection as tff
-from image import ImageWithWCS
-
+from os import path, getcwd
 import logging
+
+import numpy as np
+
 from customlogger import console_handler, add_file_handlers
+import astrometry as ast
+import image_collection as ic
+from image import ImageWithWCS
+from script_helpers import (construct_default_parser, setup_logging,
+                            handle_destination_dir_logging_check)
 
 logger = logging.getLogger()
 screen_handler = console_handler()
@@ -71,12 +75,11 @@ def astrometry_for_directory(directories,
         Set to True to force blind astrometry. False by default because
         blind astrometry is slow.
     """
-    from os import path
 
     for currentDir in directories:
-        images = tff.ImageFileCollection(currentDir,
-                                         keywords=['imagetyp', 'object',
-                                                   'wcsaxes', 'ra', 'dec'])
+        images = ic.ImageFileCollection(currentDir,
+                                        keywords=['imagetyp', 'object',
+                                                  'wcsaxes', 'ra', 'dec'])
         summary = images.summary_info
         if len(summary) == 0:
             continue
@@ -123,8 +126,6 @@ def astrometry_for_directory(directories,
                 img_new.header['DEC'] = ra_dec[1]
                 img_new.save(img_new.fitsfile.filename(), clobber=True)
 
-from script_helpers import construct_default_parser
-
 
 def construct_parser():
     parser = construct_default_parser(__doc__)
@@ -137,10 +138,6 @@ def construct_parser():
     return parser
 
 if __name__ == "__main__":
-    from os import getcwd
-    from script_helpers import (setup_logging,
-                                handle_destination_dir_logging_check)
-
     parser = construct_parser()
     args = parser.parse_args()
 

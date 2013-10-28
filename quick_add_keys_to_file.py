@@ -7,10 +7,13 @@ DESCRIPTION
     value is updated to the value in ``key_file``.
 """
 
+from argparse import ArgumentParser
+import logging
 
 import astropy.io.fits as fits
 from astropy.table import Table
-import logging
+
+import script_helpers
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +62,6 @@ __doc__ += add_keys.__doc__
 
 
 def construct_parser():
-    from argparse import ArgumentParser
-    import script_helpers
-
     parser = ArgumentParser()
     script_helpers.setup_parser_help(parser, __doc__)
 
