@@ -249,7 +249,7 @@ def construct_parser():
 
 ALWAYS_INCLUDE_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                        'object', 'observer', 'airmass', 'instrume',
-                       'RA', 'Dec']
+                       'RA', 'Dec', 'DATE-OBS', 'JD']
 
 if __name__ == "__main__":
     parser = construct_parser()
