@@ -1,7 +1,10 @@
 import logging
 
 import numpy as np
-import sherpa.ui as ui
+try:
+    import sherpa.ui as ui
+except ImportError:
+    pass
 
 logger = logging.getLogger(__name__)
 
