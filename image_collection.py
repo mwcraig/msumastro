@@ -14,28 +14,27 @@ logger = logging.getLogger(__name__)
 class ImageFileCollection(object):
 
     """
-    Representation of a collection (usually a directory) of image
-    files.
+    Representation of a collection of image files.
 
-    :attrib summary_info: An ATpy table of information about the FITS files in
-    the direction.
+    The image collection is populated by the the FITS files in a directory.
 
-    :param missing: Value to be used for missing entries.
-
-    To extract a desired set of files::
-
-        import image_collection as tff
-        my_files = tff.ImageFileCollection('my_directory',keywords=['object'])
-        summary = my_files.summary_info
-        m101 = (summary['object'] == 'm101')
-        m101_files = summary['file'][m101]
-
-    *TODO:* Correctly handle case when keywords is a single value
-    instead of a list.
+    Parameters
+    ----------
+    location : str, optional
+        path to directory containing FITS files
+    storage_dir : str, optional
+        In principle, a path at which the summary table is stored. In practice,
+        not used.
+    keywords
+    info_file : str
+        Path to file that contains a table of information about FITS files.
     """
 
     def __init__(self, location='.', storage_dir=None, keywords=None,
                  info_file=None):
+        """
+
+        """
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
@@ -411,7 +410,6 @@ class ImageFileCollection(object):
 
         Parameters
         ----------
-
         save_with_name : str
             string added to end of file name (before extension) if
             FITS file should be saved after iteration. Unless

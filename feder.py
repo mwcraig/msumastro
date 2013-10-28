@@ -65,15 +65,6 @@ class Instrument(object):
 
     """
     Telescope instrument with simple properties.
-
-    Properties
-    __________
-
-    name
-    fits_names
-    rows
-    columns
-    overscan_start
     """
 
     def __init__(self, name, fits_names=None,
@@ -88,6 +79,15 @@ class Instrument(object):
         self.overscan_axis = overscan_axis
 
     def has_overscan(self, image_dimensions):
+        """
+        Determine whether an image taken by this instrument has overscan
+
+        Parameters
+        ----------
+
+        image_dimensions : list-like with two elements
+            Shape of the image; can be any type as long as it has two elements.
+        """
         if (image_dimensions[self.overscan_axis - 1] >
                 self.overscan_start):
 
@@ -97,7 +97,9 @@ class Instrument(object):
 
 
 class ApogeeAltaU9(Instrument):
-
+    """
+    The Apogee Alta U9
+    """
     def __init__(self):
         Instrument.__init__(self, "Apogee Alta U9",
                             fits_names=["Apogee Alta", "Apogee USB/Net"],
@@ -112,6 +114,7 @@ class ImageSoftware(object):
     Represents software that takes images at telescope.
 
     Properties
+    ----------
 
     name : str
 

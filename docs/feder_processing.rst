@@ -40,6 +40,7 @@ The underlying python functions are run with a few convenience scripts to accomp
 
   + generate a table summarizing properties of images in a directory. Each image is one row in the table and the columns are keywords from the FITS headers.
   + create files with lists of images missing key information.
+
 * Fix any problems identified by ``run_triage``. The script ``quick_add_keys_to_file`` may be useful for this; it is an easy way to add/modify the values of keywords in FITS headers from the command line; see details at :ref:`header-quick-fix`. After fixing these problems you may need to re-run patch, particularly if you have added pointing information or changed the ``IMAGETYP`` of any of the images.
 *  ``run_astrometry`` to use `astrometry.net
    <http://astrometry.net>`_ to add WCS (astrometry) information to the file. See :ref:`apply-astrometry` for details. **Note
