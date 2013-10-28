@@ -259,8 +259,6 @@ if __name__ == "__main__":
     parser = construct_parser()
     args = parser.parse_args()
 
-    #all_keywords = ['imagetyp', 'filter', 'exptime', 'ccd-temp']
-
     setup_logging(logger, args, screen_handler)
 
     add_file_handlers(logger, getcwd(), 'run_triage')
