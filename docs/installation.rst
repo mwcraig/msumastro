@@ -41,7 +41,7 @@ Nothing will work without these:
 
 + `astropysics`_: Install with::
 
-    pip install --pre astropysics``
+    pip install --pre astropysics
 
 Very strongly recommended if you want to test your install
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -53,7 +53,11 @@ Very strongly recommended if you want to test your install
 Required to build documentation
 +++++++++++++++++++++++++++++++
 
-You only need to install the package below if you want to build the documentation yourself:
+You only need to install the packages below if you want to build the documentation yourself:
+
++ `numpydoc`_: Install using either ``pip``, or, if you have the `Anaconda python distribution`_, like this::
+
+    conda install numpydoc
 
 + `sphinx_argparse`_: Install it this way::
 
@@ -63,9 +67,11 @@ Non-python software: astrometry.net
 ------------------------------------
 
 
-If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_. The easiest way to do that (on a Mac) is with `homebrew`_; instructions are below.
+If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_ and `sextractor`_ (the latter works better than the source detection built into astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once you have installed `homebrew`_ the rest is easy:
 
-+ *Sorry, the homebrew installation of astrometry.net does not seem to be working right now...*
++ ``brew install sextractor`` (note this can take a very long time to compile the linear algebra libraries)
++ ``brew install astrometry.net`` 
+
 
 .. _Anaconda python distribution: http://www.continuum.io/downloads
 .. _astropy: http://www.astropy.org/
@@ -73,4 +79,6 @@ If you want to be able to use the script :ref:`apply-astrometry` you need a loca
 .. _sphinx_argparse: https://github.com/ribozz/sphinx-argparse 
 .. _homebrew: http://brew.sh/
 .. _numpy: http://www.numpy.org/
+.. _numpydoc: https://github.com/numpy/numpydoc
 .. _pytest_capturelog: http://bitbucket.org/memedough/pytest-capturelog/overview
+.. _sextractor: http://www.astromatic.net/software/sextractor
