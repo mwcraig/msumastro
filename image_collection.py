@@ -16,7 +16,11 @@ class ImageFileCollection(object):
     """
     Representation of a collection of image files.
 
-    The image collection is populated by the the FITS files in a directory.
+    The class offers a table summarizing values of
+    keywords in the FITS headers of the files in the collection and offers
+    convenient methods for iterating over the files in the collection. The
+    generator methods use simple filtering syntax and can automate storage
+    of any FITS files modified in the loop using the generator.
 
     Parameters
     ----------
@@ -25,9 +29,17 @@ class ImageFileCollection(object):
     storage_dir : str, optional
         In principle, a path at which the summary table is stored. In practice,
         not used.
-    keywords
+    keywords : list of str, optional
+        Keywords that should be used as column headings in the summary table.
     info_file : str
         Path to file that contains a table of information about FITS files.
+
+    Attributes
+    ----------
+    location
+    storage_dir
+    keywords
+    files
     """
 
     def __init__(self, location='.', storage_dir=None, keywords=None,
@@ -112,8 +124,10 @@ class ImageFileCollection(object):
     @property
     def keywords(self):
         """
-        List of keywords from FITS files about which you want
-        information.
+        List of keywords currently in the summary table.
+
+        Setting this property causes the summary to be regenerated unless the
+        new keywords are a subset of the old.
         """
         if self.summary_info:
             return self.summary_info.keys()
@@ -129,7 +143,7 @@ class ImageFileCollection(object):
 
     @property
     def files(self):
-        """List of FITS files in location.
+        """Unfiltered list of FITS files in location.
         """
         return self._files
 
