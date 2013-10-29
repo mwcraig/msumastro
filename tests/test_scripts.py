@@ -4,6 +4,7 @@ import gzip
 from shutil import rmtree
 
 import astropy.io.fits as fits
+from astropy.table import Table, Column
 import pytest
 import py
 import numpy as np
@@ -15,6 +16,7 @@ from ..run_triage import triage_directories, triage_fits_files
 from ..run_astrometry import astrometry_for_directory
 from ..image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
+from ..quick_add_keys_to_file import add_keys
 
 _default_object_file_name = 'obsinfo.txt'
 
@@ -118,6 +120,34 @@ class TestScript(object):
             blind_path = destination.join(image_path.purebasename + '.blind')
             print blind_path.strpath
             assert (blind_path.check())
+
+    def test_quick_add_keys_records_history(self):
+        ic = ImageFileCollection(self.test_dir.strpath)
+        ic.summary_info.keep_columns('file')
+
+        file_list = os.path.join(ic.location, 'files.txt')
+        keyword_list = os.path.join(ic.location, 'keys.txt')
+
+        full_paths = [os.path.join(self.test_dir.strpath, fil) for
+                      fil in ic.summary_info['file']]
+        print 'fill paths: %s' % ' '.join(full_paths)
+        ic.summary_info['file'][:] = full_paths
+        ic.summary_info.remove_column('file')
+        ic.summary_info.add_column(Column(data=full_paths, name='file'))
+        ic.summary_info.write(file_list, format='ascii')
+        dumb_keyword = 'munkeez'.upper()
+        dumb_value = 'bananaz'
+        keywords = Column(data=[dumb_keyword], name='Keyword')
+        vals = Column(data=[dumb_value], name='value')
+        keyword_table = Table()
+        keyword_table.add_columns([keywords, vals])
+        keyword_table.write(keyword_list, format='ascii')
+        add_keys(file_list=file_list, key_file=keyword_list)
+        for header in ic.headers():
+            assert (header[dumb_keyword] == dumb_value)
+            history_string = ' '.join(header['history'])
+            assert (dumb_keyword in history_string)
+            assert (dumb_value in history_string)
 
 
 @pytest.fixture(params=['run_patch', 'run_triage', 'run_astrometry'])

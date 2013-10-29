@@ -4,7 +4,8 @@ DESCRIPTION
 
     Add each of the keywords in the ``key_file`` to each of the files
     listed in the ``file_list``. If the keyword is already present its
-    value is updated to the value in ``key_file``.
+    value is updated to the value in ``key_file``. A HISTORY comment is
+    added to the header for each keyword indicating which keyword was modified.
 """
 
 from argparse import ArgumentParser
@@ -14,6 +15,7 @@ import astropy.io.fits as fits
 from astropy.table import Table
 
 import script_helpers
+from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +51,14 @@ def add_keys(*files, **kwd):
     file_list = kwd.pop('file_list', None)
     key_file = kwd.pop('key_file', None)
     files = Table.read(file_list, format='ascii')
+    files.keep_columns(['file'])
     key_table = Table.read(key_file, format='ascii')
     for fil in files:
         fil_fits = fits.open(fil[0], mode='update')
         hdr = fil_fits[0].header
         for key, val in key_table:
+            keyword = FITSKeyword(name=key, value=val)
+            keyword.add_to_header(hdr, history=True)
             print key, val
             hdr[key] = val
         fil_fits.close()
