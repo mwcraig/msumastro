@@ -144,10 +144,10 @@ class ImageFileCollection(object):
             return []
 
     @keywords.setter
-    def keywords(self, keywords=[]):
+    def keywords(self, keywords=None):
         # since keywords are drawn from self.summary_info, setting
         # summary_info sets the keywords.
-        if keywords:
+        if keywords is not None:
             self._summary_info = self._fits_summary(keywords=keywords)
 
     @property
