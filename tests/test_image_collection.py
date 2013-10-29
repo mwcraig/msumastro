@@ -186,12 +186,25 @@ class TestImageFileCollection(object):
         print some_files_should_match
         assert(len(some_files_should_match) == _n_test['need_object'])
 
-    def test_keyword_setting(self):
+    @pytest.mark.parametrize("new_keywords,collection_keys", [
+                            (['imagetyp', 'object'], ['imagetyp', 'filter']),
+                            (['imagetyp'], ['imagetyp', 'filter'])])
+    def test_keyword_setting(self, new_keywords, collection_keys):
         collection = tff.ImageFileCollection(location=_test_dir,
-                                             keywords=['imagetyp', 'filter'])
+                                             keywords=collection_keys)
         tbl_orig = collection.summary_info
-        collection.keywords = ['imagetyp', 'object']
+        collection.keywords = new_keywords
         tbl_new = collection.summary_info
+
+        if set(new_keywords).issubset(collection_keys):
+            # should just delete columns without rebuilding table
+            assert(tbl_orig is tbl_new)
+        else:
+            # we need new keywords so must rebuild
+            assert(tbl_orig is not tbl_new)
+
+        for key in new_keywords:
+            assert(key in tbl_new.keys())
         assert (tbl_orig['file'] == tbl_new['file']).all()
         assert (tbl_orig['imagetyp'] == tbl_new['imagetyp']).all()
         assert 'filter' not in tbl_new.keys()

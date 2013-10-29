@@ -147,7 +147,28 @@ class ImageFileCollection(object):
     def keywords(self, keywords=None):
         # since keywords are drawn from self.summary_info, setting
         # summary_info sets the keywords.
-        if keywords is not None:
+        if keywords is None:
+            self._summary_info = []
+            return
+
+        logging.debug('keywords in setter: %s', keywords)
+
+        new_keys = list(keywords)  # force a copy...
+        new_keys.append('file')
+        new_set = set(new_keys)
+        current_set = set(self.keywords)
+        if new_set.issubset(current_set):
+            logging.debug('table columns before trimming: %s',
+                          ' '.join(current_set))
+            cut_keys = current_set.difference(new_set)
+            logging.debug('will try removing columns: %s',
+                          ' '.join(cut_keys))
+            for key in cut_keys:
+                self._summary_info.remove_column(key)
+            logging.debug('after removal column names are: %s',
+                          ' '.join(self.keywords))
+        else:
+            logging.debug('should be building new table...')
             self._summary_info = self._fits_summary(keywords=keywords)
 
     @property
