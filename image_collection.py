@@ -40,6 +40,7 @@ class ImageFileCollection(object):
     storage_dir
     keywords
     files
+    summary_info
     """
 
     def __init__(self, location='.', storage_dir=None, keywords=None,
