@@ -109,7 +109,7 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
         all_file_info.extend(RA.names)
 
     images = ImageFileCollection(dir, keywords=all_file_info)
-    file_info = images.fits_summary(keywords=all_file_info)
+    file_info = images.summary_info
 
     # check for bad image type and halt until that is fixed.
     if contains_maximdl_imagetype(images):

@@ -31,7 +31,7 @@ class ImageFileCollection(object):
         not used.
     keywords : list of str, optional
         Keywords that should be used as column headings in the summary table.
-    info_file : str
+    info_file : str, optional
         Path to file that contains a table of information about FITS files.
 
     Attributes
@@ -45,22 +45,19 @@ class ImageFileCollection(object):
 
     def __init__(self, location='.', storage_dir=None, keywords=None,
                  info_file=None):
-        """
-
-        """
         self._location = location
         self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
-        self.summary_info = {}
+        self._summary_info = {}
 
         if keywords is None:
             keywords = []
         if info_file is not None:
             info_path = path.join(self.location, info_file)
             try:
-                self.summary_info = Table.read(info_path,
-                                               format='ascii',
-                                               delimiter=',')
+                self._summary_info = Table.read(info_path,
+                                                format='ascii',
+                                                delimiter=',')
             except IOError:
                 pass
 
@@ -70,7 +67,18 @@ class ImageFileCollection(object):
                 #print ('Regenerating information summary table for %s' %
                 #       location)
 
-        self.summary_info = self.fits_summary(keywords=keywords)
+        self._summary_info = self._fits_summary(keywords=keywords)
+
+    @property
+    def summary_info(self):
+        """
+        Table of values of FITS keywords for files in the collection.
+
+        Each keyword is a column heading. In addition, there is a column
+        called 'file' that contains the name of the FITS file. The directory
+        is not included as part of that name.
+        """
+        return self._summary_info
 
     @property
     def location(self):
@@ -140,7 +148,7 @@ class ImageFileCollection(object):
         # since keywords are drawn from self.summary_info, setting
         # summary_info sets the keywords.
         if keywords:
-            self.summary_info = self.fits_summary(keywords=keywords)
+            self._summary_info = self._fits_summary(keywords=keywords)
 
     @property
     def files(self):
@@ -184,21 +192,9 @@ class ImageFileCollection(object):
         self._find_keywords_by_values(**kwd)
         return self.summary_info['file'].compressed()
 
-    def fits_summary(self, keywords=['imagetyp']):
+    def _fits_summary(self, keywords=['imagetyp']):
         """
-        Collect information about fits files in a directory.
 
-        `file_list` can be set to the list of FITS files in `dir`,
-        otherwise the list will be generated.
-
-        `keywords` is the list of FITS header keywords for which
-        information will be gathered.
-
-
-        `missing` is the numerical value to be substituted if a particular file
-        doesn't have a keyword. =
-
-        Returns an Astropy table.
         """
         from collections import OrderedDict
         from astropy.table import MaskedColumn
@@ -280,7 +276,7 @@ class ImageFileCollection(object):
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
-            use_info = self.fits_summary(keywords=keywords)
+            use_info = self._fits_summary(keywords=keywords)
 
         matches = np.array([True] * len(use_info))
         for key, value in zip(keywords, values):
