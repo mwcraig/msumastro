@@ -276,7 +276,8 @@ if __name__ == "__main__":
     if not args.dir:
         parser.error('No directory specified')
 
-    do_not_log_in_destination = script_helpers.handle_destination_dir_logging_check(args)
+    do_not_log_in_destination = \
+        script_helpers.handle_destination_dir_logging_check(args)
     triage_directories(args.dir, keywords=ALWAYS_INCLUDE_KEYS,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,

@@ -121,7 +121,8 @@ def astrometry_for_directory(directories,
                 original_fname = path.join(working_dir, light_file)
                 root, ext = path.splitext(original_fname)
                 img_new = ImageWithWCS(original_fname)
-                ra_dec = img_new.wcs_pix2sky(np.trunc(np.array(img_new.shape) / 2))
+                ra_dec = img_new.wcs_pix2sky(np.trunc(np.array(img_new.shape)
+                                             / 2))
                 img_new.header['RA'] = ra_dec[0]
                 img_new.header['DEC'] = ra_dec[1]
                 img_new.save(img_new.fitsfile.filename(), clobber=True)
