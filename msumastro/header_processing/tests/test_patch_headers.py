@@ -16,7 +16,7 @@ from astropy import units as u
 #from ..patch_headers import *
 from .. import patch_headers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
-from utilities import make_overscan_test_files
+from ...reduction.tests.utilities import make_overscan_test_files
 
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
