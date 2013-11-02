@@ -20,9 +20,6 @@ def setup():
 
     original_dir = getcwd()
     test_dir = mkdtemp()
-    print original_dir
-    print test_dir
-    #copytree('data', test_dir)
 
 
 def test_trim():
