@@ -17,6 +17,7 @@ from astropy import units as u
 from .. import patch_headers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
 from ...reduction.tests.utilities import make_overscan_test_files
+from ...tests.data import get_data_dir
 
 test_tuple = (1, 2, 3.1415)
 _test_dir = ''
@@ -162,7 +163,7 @@ def test_purging_maximdl5_keywords():
 
     feder = Feder()
     mdl5_name = 'maximdl5_header.fit'
-    copy(path.join('data', mdl5_name), _test_dir)
+    copy(path.join(get_data_dir(), mdl5_name), _test_dir)
     hdr5 = fits.getheader(path.join(_test_dir, mdl5_name))
     ph.purge_bad_keywords(hdr5, history=True, force=False)
     for software in feder.software:
@@ -410,7 +411,9 @@ def setup_function(function):
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
-    copy(path.join('data', _test_image_name), _test_dir)
+    data_source = get_data_dir()
+    print data_source
+    copy(path.join(data_source, _test_image_name), _test_dir)
 
 
 def teardown_function(function):

@@ -17,6 +17,7 @@ from ..run_astrometry import astrometry_for_directory
 from ..image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
 from ..quick_add_keys_to_file import add_keys
+from data import get_data_dir
 
 _default_object_file_name = 'obsinfo.txt'
 
@@ -32,7 +33,7 @@ class TestScript(object):
     @pytest.fixture(autouse=True)
     def clean_data(self, tmpdir, request):
         self.test_dir = tmpdir
-        test_data_dir = py.path.local('data')
+        test_data_dir = py.path.local(get_data_dir())
         test_data_dir.copy(self.test_dir)
         to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
         object_path = self.test_dir.join(_default_object_file_name)
