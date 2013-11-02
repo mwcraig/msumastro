@@ -2,6 +2,8 @@ import logging
 import subprocess
 from os import path, remove, rename
 
+__all__ = ['call_astrometry', 'add_astrometry']
+
 logger = logging.getLogger(__name__)
 
 
