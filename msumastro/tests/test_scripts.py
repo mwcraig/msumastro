@@ -9,7 +9,7 @@ import pytest
 import py
 import numpy as np
 
-from ..header_processing.patch_headers import IRAF_image_type
+from ..header_processing.patchers import IRAF_image_type
 from ..run_patch import patch_directories
 from ..run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
 from ..run_triage import triage_directories, triage_fits_files

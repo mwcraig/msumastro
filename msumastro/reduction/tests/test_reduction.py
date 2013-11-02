@@ -8,7 +8,7 @@ import pytest
 from utilities import make_overscan_test_files
 from ...header_processing.feder import ApogeeAltaU9
 from ..reduction import trim
-from ...header_processing.patch_headers import patch_headers
+from ...header_processing.patchers import patch_headers
 
 test_dir = ''
 original_dir = ''

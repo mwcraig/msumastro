@@ -14,7 +14,7 @@ from astropy.coordinates import Angle, FK5Coordinates
 from astropy import units as u
 
 #from ..patch_headers import *
-from .. import patch_headers as ph
+from .. import patchers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
 from ...reduction.tests.utilities import make_overscan_test_files
 from ...tests.data import get_data_dir
@@ -288,8 +288,8 @@ def test_read_object_list_with_ra_dec():
 def get_patch_header_warnings(log):
     patch_header_warnings = []
     for record in log.records():
-        if (('patch_headers' in record.name) and (record.levelno ==
-                                                  logging.WARN)):
+        if (('patchers' in record.name) and (record.levelno ==
+                                             logging.WARN)):
 
             patch_header_warnings.append(record.message)
 
