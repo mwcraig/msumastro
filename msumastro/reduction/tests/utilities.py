@@ -18,7 +18,7 @@ def make_overscan_test_files(test_dir):
         has_no_oscan: str
             Name of FITS file that has no overscan region
     """
-    from ..feder import ApogeeAltaU9
+    from ...header_processing.feder import ApogeeAltaU9
     from os import path, mkdir, chdir, getcwd
     import astropy.io.fits as fits
     import numpy as np

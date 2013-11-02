@@ -10,7 +10,7 @@ from astropy import units as u
 from astropy.table import Table
 
 from feder import Feder
-from image_collection import ImageFileCollection
+from ..image_collection import ImageFileCollection
 from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)

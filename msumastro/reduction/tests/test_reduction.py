@@ -6,9 +6,9 @@ import astropy.io.fits as fits
 import pytest
 
 from utilities import make_overscan_test_files
-from ..feder import ApogeeAltaU9
+from ...header_processing.feder import ApogeeAltaU9
 from ..reduction import trim
-from ..patch_headers import patch_headers
+from ...header_processing.patch_headers import patch_headers
 
 test_dir = ''
 original_dir = ''
@@ -19,8 +19,10 @@ def setup():
     global original_dir
 
     original_dir = getcwd()
-    test_dir = path.join(mkdtemp(), "data")
-    copytree('data', test_dir)
+    test_dir = mkdtemp()
+    print original_dir
+    print test_dir
+    #copytree('data', test_dir)
 
 
 def test_trim():

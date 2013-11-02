@@ -4,7 +4,7 @@ from os import path
 from astropysics import ccd, pipeline
 import numpy as np
 
-import image_collection as tff
+from ..image_collection import ImageFileCollection
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +43,10 @@ def reduce(files, source_dir, destination=None,
     flattener.combine = 'median'
     pipe = pipeline.Pipeline([dark_subtractor, flattener])
 
-    image_info = tff.ImageFileCollection(location=source_dir,
-                                         info_file=None,
-                                         keywords=['imagetyp',
-                                                   'exptime', 'filter'])
+    image_info = ImageFileCollection(location=source_dir,
+                                     info_file=None,
+                                     keywords=['imagetyp',
+                                               'exptime', 'filter'])
     images = image_info.summary_info
 
     master_darks = load_masters(images, source_dir=source_dir,
