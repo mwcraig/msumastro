@@ -1,6 +1,6 @@
 from tempfile import mkdtemp
 from os import path, chdir, getcwd
-from shutil import copytree, rmtree
+from shutil import rmtree
 
 import astropy.io.fits as fits
 import pytest
