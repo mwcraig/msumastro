@@ -51,7 +51,7 @@ from astropy.table import Table
 import numpy as np
 
 from customlogger import console_handler, add_file_handlers
-from feder import Feder
+from header_processing.feder import Feder
 from image_collection import ImageFileCollection
 import script_helpers
 

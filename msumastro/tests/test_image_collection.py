@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from .. import image_collection as tff
-from ..patch_headers import IRAF_image_type
+from ..header_processing.patch_headers import IRAF_image_type
 
 _n_test = {'files': 0, 'need_object': 0,
            'need_filter': 0, 'bias': 0,

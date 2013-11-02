@@ -15,7 +15,7 @@ import astropy.io.fits as fits
 from astropy.table import Table
 
 import script_helpers
-from fitskeyword import FITSKeyword
+from header_processing.fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 

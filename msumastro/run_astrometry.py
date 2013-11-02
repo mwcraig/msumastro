@@ -47,7 +47,7 @@ import logging
 import numpy as np
 
 from customlogger import console_handler, add_file_handlers
-import astrometry as ast
+import header_processing.astrometry as ast
 import image_collection as ic
 from image import ImageWithWCS
 from script_helpers import (construct_default_parser, setup_logging,

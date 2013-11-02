@@ -82,7 +82,7 @@ import warnings
 from astropy.logger import LOG_WARNINGS
 import logging
 
-from patch_headers import patch_headers, add_object_info
+from header_processing.patch_headers import patch_headers, add_object_info
 from customlogger import console_handler, add_file_handlers
 from script_helpers import (setup_logging, construct_default_parser,
                             handle_destination_dir_logging_check)
