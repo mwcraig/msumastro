@@ -46,12 +46,12 @@ import logging
 
 import numpy as np
 
-from customlogger import console_handler, add_file_handlers
-import header_processing.astrometry as ast
-import image_collection as ic
-from image import ImageWithWCS
-from script_helpers import (construct_default_parser, setup_logging,
-                            handle_destination_dir_logging_check)
+from msumastro.customlogger import console_handler, add_file_handlers
+import msumastro.header_processing.astrometry as ast
+import msumastro.image_collection as ic
+from msumastro.image import ImageWithWCS
+from msumastro.script_helpers import (construct_default_parser, setup_logging,
+                                      handle_destination_dir_logging_check)
 
 logger = logging.getLogger()
 screen_handler = console_handler()

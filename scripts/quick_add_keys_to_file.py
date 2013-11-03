@@ -14,8 +14,8 @@ import logging
 import astropy.io.fits as fits
 from astropy.table import Table
 
-import script_helpers
-from header_processing.fitskeyword import FITSKeyword
+from msumastro import script_helpers
+from msumastro.header_processing.fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 

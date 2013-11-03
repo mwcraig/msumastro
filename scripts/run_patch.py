@@ -82,10 +82,10 @@ import warnings
 from astropy.logger import LOG_WARNINGS
 import logging
 
-from header_processing.patchers import patch_headers, add_object_info
-from customlogger import console_handler, add_file_handlers
-from script_helpers import (setup_logging, construct_default_parser,
-                            handle_destination_dir_logging_check)
+from msumastro.header_processing import patch_headers, add_object_info
+from msumastro.customlogger import console_handler, add_file_handlers
+from msumastro.script_helpers import (setup_logging, construct_default_parser,
+                                      handle_destination_dir_logging_check)
 
 logger = logging.getLogger()
 screen_handler = console_handler()

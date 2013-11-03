@@ -50,10 +50,10 @@ import logging
 from astropy.table import Table
 import numpy as np
 
-from customlogger import console_handler, add_file_handlers
-from header_processing.feder import Feder
-from image_collection import ImageFileCollection
-import script_helpers
+from msumastro.customlogger import console_handler, add_file_handlers
+from msumastro.header_processing.feder import Feder
+from msumastro.image_collection import ImageFileCollection
+from msumastro import script_helpers
 
 logger = logging.getLogger()
 screen_handler = console_handler()
