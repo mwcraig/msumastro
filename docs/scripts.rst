@@ -25,12 +25,12 @@ Usage summary
 -------------
 
 .. argparse::
-    :module: run_patch
+    :module: msumastro.scripts.run_patch
     :func: construct_parser
     :prog: python run_patch.py
     
 
-.. automodule:: run_patch
+.. automodule:: msumastro.scripts.run_patch
 
 -------------
 
@@ -48,11 +48,11 @@ Usage summary
 -------------
 
 .. argparse::
-    :module: run_astrometry
+    :module: msumastro.scripts.run_astrometry
     :func: construct_parser
     :prog: python run_astrometry.py
 
-.. automodule:: run_astrometry
+.. automodule:: msumastro.scripts.run_astrometry
 
 -------------
 
@@ -65,11 +65,11 @@ Usage summary
 -------------
 
 .. argparse::
-    :module: run_triage
+    :module: msumastro.scripts.run_triage
     :func: construct_parser
     :prog: python run_triage.py
 
-.. automodule:: run_triage
+.. automodule:: msumastro.scripts.run_triage
 
 -------------
 
@@ -87,8 +87,8 @@ Usage summary
 -------------
 
 .. argparse::
-    :module: quick_add_keys_to_file
+    :module: msumastro.scripts.quick_add_keys_to_file
     :func: construct_parser
     :prog: python quick_add_keys_to_file.py
 
-.. automodule:: quick_add_keys_to_file
+.. automodule:: msumastro.scripts.quick_add_keys_to_file
