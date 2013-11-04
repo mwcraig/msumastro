@@ -34,8 +34,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            ('quick_add_keys_to_file = '
-             'msumastro.scripts.quick_add_keys_to_file:main')
+            ('quick_add_keys_to_file.py = '
+             'msumastro.scripts.quick_add_keys_to_file:main'),
+            ('run_patch.py = '
+             'msumastro.scripts.run_patch:main')
         ]
     },
     classifiers=['Development Status :: 4 - Beta',

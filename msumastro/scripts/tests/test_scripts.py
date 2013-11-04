@@ -10,7 +10,7 @@ import py
 import numpy as np
 
 from ...header_processing.patchers import IRAF_image_type
-#from ...run_patch import patch_directories
+from .. import run_patch as run_patch
 #from ...run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
 #from ...run_triage import triage_directories, triage_fits_files
 #from ...run_astrometry import astrometry_for_directory
@@ -56,7 +56,12 @@ class TestScript(object):
         original_mtimes = mtimes(fits_files)
         print original_mtimes
         destination = self.test_dir.make_numbered_dir()
-        patch_directories([str(self.test_dir)], destination=str(destination))
+        arglist = ['--destination-dir', destination.strpath,
+                   self.test_dir.strpath
+                   ]
+        run_patch.main(arglist)
+#        run_patch.patch_directories([str(self.test_dir)],
+#                                    destination=str(destination))
         new_mtimes = mtimes(fits_files)
         print new_mtimes
         print destination
