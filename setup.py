@@ -16,7 +16,7 @@ class PyTest(TestCommand):
 
 setup(
     name='msumastro',
-    version='FIXME',
+    version='0.1dev1',
     description='Process FITS files painlessly',
     url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
@@ -24,7 +24,7 @@ setup(
     author='Matt Craig',
     author_email='mcraig@mnstate.edu',
     packages=find_packages(exclude=['tests*']),
-    include_package_data=True,
+    include_package_data=False,
     install_requires=['astropysics>=0.0.dev0',
                       'astropy',
                       'numpy'],
