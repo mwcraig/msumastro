@@ -46,12 +46,13 @@ import logging
 
 import numpy as np
 
-from msumastro.customlogger import console_handler, add_file_handlers
-import msumastro.header_processing.astrometry as ast
-import msumastro.image_collection as ic
-from msumastro.image import ImageWithWCS
-from msumastro.script_helpers import (construct_default_parser, setup_logging,
-                                      handle_destination_dir_logging_check)
+from ..customlogger import console_handler, add_file_handlers
+from ..header_processing import astrometry as ast
+from .. import ImageFileCollection
+from ..image import ImageWithWCS
+from .script_helpers import (construct_default_parser, setup_logging,
+                             handle_destination_dir_logging_check,
+                             _main_function_docstring)
 
 logger = logging.getLogger()
 screen_handler = console_handler()
@@ -77,9 +78,9 @@ def astrometry_for_directory(directories,
     """
 
     for currentDir in directories:
-        images = ic.ImageFileCollection(currentDir,
-                                        keywords=['imagetyp', 'object',
-                                                  'wcsaxes', 'ra', 'dec'])
+        images = ImageFileCollection(currentDir,
+                                     keywords=['imagetyp', 'object',
+                                               'wcsaxes', 'ra', 'dec'])
         summary = images.summary_info
         if len(summary) == 0:
             continue
@@ -138,9 +139,14 @@ def construct_parser():
 
     return parser
 
-if __name__ == "__main__":
+
+def main(arglist=None):
+    """See script_helpers._main_function_docstring for actual documentation
+    """
+    __doc__ = _main_function_docstring.__doc__
+
     parser = construct_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(arglist)
 
     setup_logging(logger, args, screen_handler)
 

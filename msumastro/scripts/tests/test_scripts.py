@@ -13,7 +13,7 @@ from ...header_processing.patchers import IRAF_image_type
 from .. import run_patch as run_patch
 #from ...run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
 #from ...run_triage import triage_directories, triage_fits_files
-#from ...run_astrometry import astrometry_for_directory
+from .. import run_astrometry
 from ...image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
 from .. import quick_add_keys_to_file
@@ -111,8 +111,10 @@ class TestScript(object):
 
         destination = self.test_dir.make_numbered_dir()
         list_before = self.test_dir.listdir(sort=True)
-        astrometry_for_directory([self.test_dir.strpath], destination.strpath,
-                                 blind=False)
+        arglist = ['--destination-dir', destination.strpath,
+                   self.test_dir.strpath
+                   ]
+        run_astrometry.main(arglist)
         list_after = self.test_dir.listdir(sort=True)
         # nothing should change in the source directory
         assert(list_before == list_after)
