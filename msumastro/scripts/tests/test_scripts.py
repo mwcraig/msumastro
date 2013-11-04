@@ -15,7 +15,7 @@ from ...header_processing.patchers import IRAF_image_type
 #from ...run_triage import triage_directories, triage_fits_files
 #from ...run_astrometry import astrometry_for_directory
 from ...image_collection import ImageFileCollection
-from ...script_helpers import handle_destination_dir_logging_check
+from ..script_helpers import handle_destination_dir_logging_check
 from .. import quick_add_keys_to_file
 from ...tests.data import get_data_dir
 
