@@ -9,15 +9,15 @@ import pytest
 import py
 import numpy as np
 
-from ..header_processing.patchers import IRAF_image_type
-from ..run_patch import patch_directories
-from ..run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
-from ..run_triage import triage_directories, triage_fits_files
-from ..run_astrometry import astrometry_for_directory
-from ..image_collection import ImageFileCollection
-from ..script_helpers import handle_destination_dir_logging_check
-from ..quick_add_keys_to_file import add_keys
-from data import get_data_dir
+from ...header_processing.patchers import IRAF_image_type
+#from ...run_patch import patch_directories
+#from ...run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
+#from ...run_triage import triage_directories, triage_fits_files
+#from ...run_astrometry import astrometry_for_directory
+from ...image_collection import ImageFileCollection
+from ...script_helpers import handle_destination_dir_logging_check
+from .. import quick_add_keys_to_file
+from ...tests.data import get_data_dir
 
 _default_object_file_name = 'obsinfo.txt'
 
@@ -143,7 +143,11 @@ class TestScript(object):
         keyword_table = Table()
         keyword_table.add_columns([keywords, vals])
         keyword_table.write(keyword_list, format='ascii')
-        add_keys(file_list=file_list, key_file=keyword_list)
+        argslist = ['--key-file', keyword_list,
+                    '--file-list', file_list
+                    ]
+        quick_add_keys_to_file.main(argslist)
+#        add_keys(file_list=file_list, key_file=keyword_list)
         for header in ic.headers():
             assert (header[dumb_keyword] == dumb_value)
             history_string = ' '.join(header['history'])

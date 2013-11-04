@@ -14,8 +14,8 @@ import logging
 import astropy.io.fits as fits
 from astropy.table import Table
 
-from msumastro import script_helpers
-from msumastro.header_processing.fitskeyword import FITSKeyword
+from .. import script_helpers
+from ..header_processing.fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,8 @@ __doc__ += add_keys.__doc__
 
 
 def construct_parser():
+    """Add arguments to parser for this script
+    """
     parser = ArgumentParser()
     script_helpers.setup_parser_help(parser, __doc__)
 
@@ -82,8 +84,18 @@ def construct_parser():
     return parser
 
 
-if __name__ == '__main__':
+def main(arglist=None):
+    """
+    Wrapper for invoking add_keys from the command line
+
+    Parameters
+    ----------
+
+    arglist : list of strings, optional
+        If set, use this arglist instead of `sys.argv` for parsing command
+        line arguments. Primarily useful for testing.
+    """
     parser = construct_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(arglist)
 
     add_keys(file_list=args.file_list, key_file=args.key_file)
