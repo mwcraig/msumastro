@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
@@ -16,21 +16,29 @@ class PyTest(TestCommand):
 
 setup(
     name='msumastro',
-    version='IXME',
+    version='FIXME',
     description='Process FITS files painlessly',
+    url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
     license='BSD 3-clause',
     author='Matt Craig',
     author_email='mcraig@mnstate.edu',
-    packages=['msumastro'],
+    packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     install_requires=['astropysics>=0.0.dev0',
                       'astropy',
                       'numpy'],
     extras_require={
-        'testing': ['pytest', 'pytest-capturelog']
+        'testing': ['pytest>1.4', 'pytest-capturelog'],
+        'docs': ['numpydoc', 'sphinx-argparse']
+    },
+    entry_points={
+        'console_scripts': [
+            ('quick_add_keys_to_file = '
+             'msumastro.scripts.quick_add_keys_to_file:main')
+        ]
     },
     classifiers=['Development Status :: 4 - Beta',
                  'License :: OSI Approved :: BSD License',
                  'Programming Language :: Python :: 2 :: Only']
-     )
+    )
