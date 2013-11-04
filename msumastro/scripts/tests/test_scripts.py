@@ -11,8 +11,7 @@ import numpy as np
 
 from ...header_processing.patchers import IRAF_image_type
 from .. import run_patch as run_patch
-#from ...run_triage import DefaultFileNames, ALWAYS_INCLUDE_KEYS
-#from ...run_triage import triage_directories, triage_fits_files
+from .. import run_triage
 from .. import run_astrometry
 from ...image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
@@ -24,7 +23,7 @@ _default_object_file_name = 'obsinfo.txt'
 
 @pytest.fixture
 def triage_dict():
-    default_names = DefaultFileNames()
+    default_names = run_triage.DefaultFileNames()
     names_dict = default_names.as_dict()
     return names_dict
 
@@ -45,6 +44,10 @@ class TestScript(object):
         def cleanup():
             self.test_dir.remove()
         request.addfinalizer(cleanup)
+
+    @pytest.fixture
+    def default_keywords(self):
+        return run_triage.DEFAULT_KEYS
 
     def test_run_patch_does_not_overwite_if_destination_set(self, recwarn):
         mtimes = lambda files: [fil.mtime() for fil in files]
@@ -74,14 +77,14 @@ class TestScript(object):
         assert(len(recwarn.list) == 0)
         destination.remove()
 
-    def test_run_triage_no_output_generated(self):
+    def test_run_triage_no_output_generated(self, default_keywords):
         list_before = self.test_dir.listdir(sort=True)
-        triage_directories([self.test_dir.strpath],
-                           keywords=ALWAYS_INCLUDE_KEYS,
-                           object_file_name=None,
-                           pointing_file_name=None,
-                           filter_file_name=None,
-                           output_table=None)
+        run_triage.triage_directories([self.test_dir.strpath],
+                                      keywords=default_keywords,
+                                      object_file_name=None,
+                                      pointing_file_name=None,
+                                      filter_file_name=None,
+                                      output_table=None)
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
 
@@ -90,19 +93,21 @@ class TestScript(object):
             print option_name, file_name, dir.join(file_name).check()
             assert(dir.join(file_name).check())
 
-    def test_triage_output_file_by_keyword(self, triage_dict):
-        triage_directories([self.test_dir.strpath],
-                           keywords=ALWAYS_INCLUDE_KEYS,
-                           **triage_dict)
+    def test_triage_output_file_by_keyword(self, triage_dict,
+                                           default_keywords):
+        run_triage.triage_directories([self.test_dir.strpath],
+                                      keywords=default_keywords,
+                                      **triage_dict)
         self._verify_triage_files_created(self.test_dir, triage_dict)
 
-    def test_triage_destination_directory(self, triage_dict):
+    def test_triage_destination_directory(self, triage_dict,
+                                          default_keywords):
         destination = self.test_dir.make_numbered_dir()
         list_before = self.test_dir.listdir(sort=True)
-        triage_directories([self.test_dir.strpath],
-                           keywords=ALWAYS_INCLUDE_KEYS,
-                           destination=destination.strpath,
-                           **triage_dict)
+        run_triage.triage_directories([self.test_dir.strpath],
+                                      keywords=default_keywords,
+                                      destination=destination.strpath,
+                                      **triage_dict)
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
         self._verify_triage_files_created(destination, triage_dict)
@@ -275,7 +280,7 @@ def triage_setup(request):
 
 @pytest.mark.usefixtures("triage_setup")
 def test_triage():
-    file_info = triage_fits_files(_test_dir)
+    file_info = run_triage.triage_fits_files(_test_dir)
     print "number of files should be %i" % _n_test['files']
     print file_info['files']['file']
     assert len(file_info['files']['file']) == _n_test['files']

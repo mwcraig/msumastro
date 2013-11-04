@@ -39,7 +39,9 @@ setup(
             ('run_patch.py = '
              'msumastro.scripts.run_patch:main'),
             ('run_astrometry.py = '
-             'msumastro.scripts.run_astrometry:main')
+             'msumastro.scripts.run_astrometry:main'),
+            ('run_triage.py = '
+             'msumastro.scripts.run_triage:main')
         ]
     },
     classifiers=['Development Status :: 4 - Beta',

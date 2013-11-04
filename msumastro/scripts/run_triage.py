@@ -50,10 +50,10 @@ import logging
 from astropy.table import Table
 import numpy as np
 
-from msumastro.customlogger import console_handler, add_file_handlers
-from msumastro.header_processing.feder import Feder
-from msumastro.image_collection import ImageFileCollection
-from msumastro import script_helpers
+from ..customlogger import console_handler, add_file_handlers
+from ..header_processing.feder import Feder
+from .. import ImageFileCollection
+from . import script_helpers
 
 logger = logging.getLogger()
 screen_handler = console_handler()
@@ -207,7 +207,7 @@ def construct_parser():
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'
     parser.add_argument('-k', '--key', action='append',
-                        help=key_help)
+                        help=key_help, default=[])
 
     no_default_help = 'Do not include default list of keywords in table'
     parser.add_argument('--no-default', action='store_true',
@@ -247,29 +247,34 @@ def construct_parser():
 
     return parser
 
-ALWAYS_INCLUDE_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
-                       'object', 'observer', 'airmass', 'instrume',
-                       'RA', 'Dec', 'DATE-OBS', 'JD']
+DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
+                'object', 'observer', 'airmass', 'instrume',
+                'RA', 'Dec', 'DATE-OBS', 'JD']
 
-if __name__ == "__main__":
+
+def main(arglist=None):
+
     parser = construct_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(arglist)
+    logger.debug('args are %s', vars(args))
 
     script_helpers.setup_logging(logger, args, screen_handler)
 
     add_file_handlers(logger, os.getcwd(), 'run_triage')
 
-    try:
-        ALWAYS_INCLUDE_KEYS.extend(args.key)
-    except TypeError as e:
-        pass
-
     if args.no_default:
-        ALWAYS_INCLUDE_KEYS = None
+        use_keys = None
+    else:
+        use_keys = DEFAULT_KEYS
+
+    try:
+        use_keys.extend(args.key)
+    except TypeError:
+        use_keys = args.key
 
     if args.list_default:
         print 'Keys included by default are:\n'
-        keys_print = [key.upper() for key in ALWAYS_INCLUDE_KEYS]
+        keys_print = [key.upper() for key in use_keys]
         print ', '.join(keys_print)
         exit(0)
 
@@ -278,7 +283,7 @@ if __name__ == "__main__":
 
     do_not_log_in_destination = \
         script_helpers.handle_destination_dir_logging_check(args)
-    triage_directories(args.dir, keywords=ALWAYS_INCLUDE_KEYS,
+    triage_directories(args.dir, keywords=use_keys,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,
                        filter_file_name=args.filter_needed_list,
