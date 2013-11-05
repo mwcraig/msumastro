@@ -32,6 +32,7 @@ setup(
         'testing': ['pytest>1.4', 'pytest-capturelog'],
         'docs': ['numpydoc', 'sphinx-argparse']
     },
+    cmdclass={'test': PyTest},
     entry_points={
         'console_scripts': [
             ('quick_add_keys_to_file.py = '
