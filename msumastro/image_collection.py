@@ -67,7 +67,8 @@ class ImageFileCollection(object):
                 #print ('Regenerating information summary table for %s' %
                 #       location)
 
-        self._summary_info = self._fits_summary(keywords=keywords)
+        self.keywords = keywords
+        #self._summary_info = self._fits_summary(header_keywords=keywords)
 
     @property
     def summary_info(self):
@@ -151,16 +152,21 @@ class ImageFileCollection(object):
             self._summary_info = []
             return
 
-        logging.debug('keywords in setter: %s', keywords)
+        logging.debug('keywords in setter before pruning: %s', keywords)
 
-        new_keys = list(keywords)  # force a copy...
-        new_keys.append('file')
-        new_set = set(new_keys)
+        # remove duplicates and force a copy
+        new_keys = list(set(keywords))
+        logging.debug('keywords after pruning %s', new_keys)
+
+        #new_keys.append('file')
+        full_new_keys = list(set(new_keys))
+        full_new_keys.append('file')
+        full_new_set = set(full_new_keys)
         current_set = set(self.keywords)
-        if new_set.issubset(current_set):
+        if full_new_set.issubset(current_set):
             logging.debug('table columns before trimming: %s',
                           ' '.join(current_set))
-            cut_keys = current_set.difference(new_set)
+            cut_keys = current_set.difference(full_new_set)
             logging.debug('will try removing columns: %s',
                           ' '.join(cut_keys))
             for key in cut_keys:
@@ -169,7 +175,7 @@ class ImageFileCollection(object):
                           ' '.join(self.keywords))
         else:
             logging.debug('should be building new table...')
-            self._summary_info = self._fits_summary(keywords=keywords)
+            self._summary_info = self._fits_summary(header_keywords=new_keys)
 
     @property
     def files(self):
@@ -213,7 +219,7 @@ class ImageFileCollection(object):
         self._find_keywords_by_values(**kwd)
         return self.summary_info['file'].compressed()
 
-    def _fits_summary(self, keywords=['imagetyp']):
+    def _fits_summary(self, header_keywords=None):
         """
 
         """
@@ -225,10 +231,11 @@ class ImageFileCollection(object):
 
         dummy_value = -123  # Used as fill value before masked array is created
         summary = OrderedDict()
-        summary['file'] = []
         missing_values = OrderedDict()
-        missing_values['file'] = []
         data_type = {}
+        keywords = list(set(header_keywords))
+        if 'file' not in keywords:
+            keywords.append('file')
         for keyword in keywords:
             summary[keyword] = []
             missing_values[keyword] = []
@@ -244,7 +251,7 @@ class ImageFileCollection(object):
             summary['file'].append(afile)
             missing_values['file'].append(False)
             data_type['file'] = type('string')
-            for keyword in keywords:
+            for keyword in header_keywords:
                 if keyword in header:
                     summary[keyword].append(header[keyword])
                     missing_values[keyword].append(False)
@@ -297,7 +304,7 @@ class ImageFileCollection(object):
             use_info = self.summary_info
         else:
             # we need to load information about these keywords.
-            use_info = self._fits_summary(keywords=keywords)
+            use_info = self._fits_summary(header_keywords=keywords)
 
         matches = np.array([True] * len(use_info))
         for key, value in zip(keywords, values):

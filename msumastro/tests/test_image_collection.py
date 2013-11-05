@@ -25,7 +25,7 @@ def test_fits_summary():
     keywords = ['imagetyp', 'filter']
     image_collection = tff.ImageFileCollection(_test_dir,
                                                keywords=keywords)
-    summary = image_collection._fits_summary(keywords=keywords)
+    summary = image_collection._fits_summary(header_keywords=keywords)
     print summary['file']
     print summary.keys()
     assert len(summary['file']) == _n_test['files']
@@ -77,12 +77,14 @@ class TestImageFileCollection(object):
         assert n_files_found == n_uncompressed
 
     def test_generator_full_path(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         for path, file_name in zip(collection.paths(), collection.files):
             assert path == os.path.join(_test_dir, file_name)
 
     def test_hdus(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         n_hdus = 0
         for hdu in collection.hdus():
             assert isinstance(hdu, fits.PrimaryHDU)
@@ -102,7 +104,8 @@ class TestImageFileCollection(object):
         assert (new_data == old_data).all()
 
     def test_headers(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         n_headers = 0
         for header in collection.headers():
             assert isinstance(header, fits.Header)
@@ -111,12 +114,14 @@ class TestImageFileCollection(object):
         assert n_headers == _n_test['files']
 
     def test_headers_save_location(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         destination = mkdtemp()
         for header in collection.headers(save_location=destination):
             pass
-        new_collection = tff.ImageFileCollection(location=
-                                                 destination)
+        new_collection = \
+            tff.ImageFileCollection(location=destination,
+                                    keywords=['imagetyp'])
         basenames = lambda paths: set(
             [os.path.basename(file) for file in paths])
 
@@ -126,7 +131,8 @@ class TestImageFileCollection(object):
         rmtree(destination)
 
     def test_headers_with_filter(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         cnt = 0
         for header in collection.headers(imagetyp='light'):
             assert header['imagetyp'].lower() == 'light'
@@ -134,7 +140,8 @@ class TestImageFileCollection(object):
         assert cnt == _n_test['light']
 
     def test_headers_with_multiple_filters(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         cnt = 0
         for header in collection.headers(imagetyp='light',
                                          filter='R'):
@@ -144,14 +151,16 @@ class TestImageFileCollection(object):
         assert cnt == _n_test['light'] - _n_test['need_filter']
 
     def test_headers_with_filter_wildcard(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         cnt = 0
         for header in collection.headers(imagetyp='*'):
             cnt += 1
         assert cnt == _n_test['files']
 
     def test_headers_with_filter_missing_keyword(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         for header in collection.headers(imagetyp='light',
                                          object=''):
             assert header['imagetyp'].lower() == 'light'
@@ -159,10 +168,12 @@ class TestImageFileCollection(object):
                 header['object']
 
     def test_generator_headers_save_with_name(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, fits.Header)
-        new_collection = tff.ImageFileCollection(location=_test_dir)
+        new_collection = tff.ImageFileCollection(location=_test_dir,
+                                                 keywords=['imagetyp'])
         assert (len(new_collection.paths()) ==
                 2 * (_n_test['files']) - _n_test['compressed'])
         print glob(_test_dir + '/*_new*')
@@ -170,7 +181,8 @@ class TestImageFileCollection(object):
         print glob(_test_dir + '/*_new*')
 
     def test_generator_data(self):
-        collection = tff.ImageFileCollection(location=_test_dir)
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
         for img in collection.data():
             assert isinstance(img, np.ndarray)
 
@@ -240,6 +252,13 @@ class TestImageFileCollection(object):
                                                    monkeys=None)
         assert(n_files > 0)
         assert(n_files == len(files_missing_this_key))
+
+    def test_duplicate_keywords_in_setting(self):
+        keywords_in = ['imagetyp', 'a', 'a']
+        ic = tff.ImageFileCollection(_test_dir,
+                                     keywords=keywords_in)
+        for key in set(keywords_in):
+            assert (key in ic.keywords)
 
 
 def setup_module():
