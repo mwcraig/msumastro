@@ -49,5 +49,8 @@ setup(
     },
     classifiers=['Development Status :: 4 - Beta',
                  'License :: OSI Approved :: BSD License',
-                 'Programming Language :: Python :: 2 :: Only']
+                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 2 :: Only',
+                 'Intended Audience :: Science/Research',
+                 'Topic :: Scientific/Engineering :: Astronomy'],
     )
