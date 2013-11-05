@@ -13,6 +13,7 @@ from ...header_processing.patchers import IRAF_image_type
 from .. import run_patch as run_patch
 from .. import run_triage
 from .. import run_astrometry
+from .. import run_standard_header_process
 from ...image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
 from .. import quick_add_keys_to_file
@@ -251,6 +252,30 @@ class TestScriptHelper(object):
                 handle_destination_dir_logging_check(args)
         else:
             assert (handle_destination_dir_logging_check(args) == expected)
+
+
+@pytest.mark.usefixtures('clean_data')
+class TestRunStandardHeaderProcess(object):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self, clean_data):
+        self.test_dir = clean_data
+
+    @pytest.fixture()
+    def scratch_destination(self):
+        dest = self.test_dir.mkdtemp()
+        return dest
+
+    def test_source_not_modified_if_dest_set(self, scratch_destination):
+        arglist = ['--dest-root', scratch_destination.strpath]
+        arglist += [self.test_dir.strpath]
+        fits_files = [fil for fil in self.test_dir.visit(fil='*.fit',
+                                                         sort=True)]
+        set_mtimes(fits_files)
+        original_mtimes = mtimes(fits_files)
+        run_standard_header_process.main(arglist)
+        new_mtimes = mtimes(fits_files)
+        for original, new in zip(original_mtimes, new_mtimes):
+            assert(original == new)
 
 
 _n_test = {'files': 0, 'need_object': 0,
