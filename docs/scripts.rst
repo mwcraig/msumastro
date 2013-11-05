@@ -27,7 +27,7 @@ Usage summary
 .. argparse::
     :module: msumastro.scripts.run_patch
     :func: construct_parser
-    :prog: python run_patch.py
+    :prog: run_patch.py
     
 
 .. automodule:: msumastro.scripts.run_patch
@@ -50,7 +50,7 @@ Usage summary
 .. argparse::
     :module: msumastro.scripts.run_astrometry
     :func: construct_parser
-    :prog: python run_astrometry.py
+    :prog: run_astrometry.py
 
 .. automodule:: msumastro.scripts.run_astrometry
 
@@ -67,7 +67,7 @@ Usage summary
 .. argparse::
     :module: msumastro.scripts.run_triage
     :func: construct_parser
-    :prog: python run_triage.py
+    :prog: run_triage.py
 
 .. automodule:: msumastro.scripts.run_triage
 
@@ -89,6 +89,22 @@ Usage summary
 .. argparse::
     :module: msumastro.scripts.quick_add_keys_to_file
     :func: construct_parser
-    :prog: python quick_add_keys_to_file.py
+    :prog: quick_add_keys_to_file.py
 
 .. automodule:: msumastro.scripts.quick_add_keys_to_file
+
+
+.. _script_wrapper:
+
+Convenience script for processing tree of directories
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Usage summary
+-------------
+
+.. argparse::
+    :module: msumastro.scripts.run_standard_header_process
+    :func: construct_parser
+    :prog: run_standard_header_process.py
+
+.. automodule:: msumastro.scripts.run_standard_header_process
