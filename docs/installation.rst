@@ -79,8 +79,9 @@ You only need to install the packages below if you want to build the documentati
 
     pip install sphinx-argparse
 
-Non-python software: astrometry.net
-------------------------------------
+
+(mostly) Non-python software: astrometry.net
+--------------------------------------------
 
 
 If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_ and `sextractor`_ (the latter works better than the source detection built into astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once you have installed `homebrew`_ the rest is easy (unless it fails, of course...):
@@ -90,6 +91,10 @@ If you want to be able to use the script :ref:`apply-astrometry` you need a loca
 + ``brew install sextractor`` (note this can take a very long time to compile the linear algebra libraries)
 + ``brew install astrometry.net`` 
 
+.. note::
+    There is one piece of python software you need for `astrometry.net <http://astrometry.net>`_ and for now you need to do it manually::
+
+        pip install pyfits
 
 .. _Anaconda python distribution: http://www.continuum.io/downloads
 .. _astropy: http://www.astropy.org/
