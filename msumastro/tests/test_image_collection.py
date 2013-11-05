@@ -228,6 +228,11 @@ class TestImageFileCollection(object):
             assert 0
 
     def test_fits_summary_when_keywords_are_not_subset(self):
+        """
+        Catch case when there is overlap between keyword list
+        passed to the ImageFileCollection and to files_filtered
+        but the latter is not a subset of the former.
+        """
         ic = tff.ImageFileCollection(_test_dir,
                                      keywords=['imagetyp', 'exptime'])
         n_files = len(ic.files)
