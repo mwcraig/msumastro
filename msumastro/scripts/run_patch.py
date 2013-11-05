@@ -173,7 +173,6 @@ def construct_parser():
 def main(arglist=None):
     """See script_helpers._main_function_docstring for actual documentation
     """
-    __doc__ = _main_function_docstring.__doc__
     parser = construct_parser()
     args = parser.parse_args(arglist)
 
@@ -187,3 +186,5 @@ def main(arglist=None):
                       object_list=args.object_list,
                       destination=args.destination_dir,
                       no_log_destination=do_not_log_in_destination)
+
+main.__doc__ = _main_function_docstring(__name__)

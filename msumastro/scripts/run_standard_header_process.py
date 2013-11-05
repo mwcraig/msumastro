@@ -73,6 +73,8 @@ def construct_command(script_name, source, destination,
 
 
 def main(arglist=None):
+    """See script_helpers._main_function_docstring for actual documentation
+    """
     parser = construct_parser()
     script_helpers.add_console_output_args(parser)
     script_helpers.add_debug(parser)
@@ -177,3 +179,5 @@ def main(arglist=None):
                 subprocess.call(run_astrometry)
             if triage:
                 subprocess.call(run_triage)
+
+main.__doc__ = script_helpers._main_function_docstring(__name__)

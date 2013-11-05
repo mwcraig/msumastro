@@ -253,7 +253,8 @@ DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
 
 
 def main(arglist=None):
-
+    """See script_helpers._main_function_docstring for actual documentation
+    """
     parser = construct_parser()
     args = parser.parse_args(arglist)
     logger.debug('args are %s', vars(args))
@@ -290,3 +291,5 @@ def main(arglist=None):
                        output_table=args.table_name,
                        destination=args.destination_dir,
                        no_log_destination=do_not_log_in_destination)
+
+main.__doc__ = script_helpers._main_function_docstring(__name__)

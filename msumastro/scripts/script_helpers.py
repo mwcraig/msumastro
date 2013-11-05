@@ -164,9 +164,9 @@ def handle_destination_dir_logging_check(args):
     return do_not_log_in_destination
 
 
-def _main_function_docstring():
+def _main_function_docstring(command_name):
     """
-    Wrapper for invoking add_keys from the command line
+    Wrapper for invoking {} from the command line
 
     Parameters
     ----------
@@ -175,4 +175,4 @@ def _main_function_docstring():
         If set, use this arglist instead of `sys.argv` for parsing command
         line arguments. Primarily useful for testing.
     """
-    pass
+    return _main_function_docstring.__doc__.format(command_name)
