@@ -39,6 +39,12 @@ def construct_parser():
                               'those things.'),
                         action='store_true')
 
+    parser.add_argument('-r', '--run-only',
+                        help=('Select which scripts you want to run. This can '
+                              'be any combination of [p]atch, [a]strometry '
+                              'and [t]riage.'),
+                        choices='atp')
+
     object_list_help = ('Path to file containing list (and optionally '
                         'coordinates of) objects that might be in these files.'
                         ' If not provided it defaults to looking for a file '
@@ -47,16 +53,13 @@ def construct_parser():
                         help=object_list_help,
                         default=None)
 
+    script_helpers.add_console_output_args(parser)
+    script_helpers.add_debug(parser)
     parser.add_argument('--quiet-log',
                         help=('Log only warnings (or worse) to '
                               'FILES AND CONSOLE while running scripts'),
                         action='store_true')
 
-    parser.add_argument('-r', '--run-only',
-                        help=('Select which scripts you want to run. This can '
-                              'be any combination of [p]atch, [a]strometry '
-                              'and [t]riage.'),
-                        choices='atp')
     return parser
 
 
@@ -76,8 +79,6 @@ def main(arglist=None):
     """See script_helpers._main_function_docstring for actual documentation
     """
     parser = construct_parser()
-    script_helpers.add_console_output_args(parser)
-    script_helpers.add_debug(parser)
 
     args = parser.parse_args(arglist)
 

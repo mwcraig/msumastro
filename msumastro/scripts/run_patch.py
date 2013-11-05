@@ -57,20 +57,25 @@ EXAMPLES
 
 Invoking this script from the command line::
 
-    python run_patch.py /my/folder/of/images
+    run_patch.py /my/folder/of/images
 
 To work on the same folder from within python, do this::
 
-    from run_patch import patch_directories
-    patch_directories('/my/folder/of/images')
+    from msumastro.scripts import run_patch
+    run_patch.main(['/my/folder/of/images'])
 
 To use the same object list for several different directories do this::
 
-    python run_patch.py --object-list path/to/list.txt dir1 dir2 dir3
+    run_patch.py --object-list path/to/list.txt dir1 dir2 dir3
 
 where ``path/to/list.txt`` is the path to your object list and ``dir1``,
 ``dir2``, etc. are the directories you want to process.
 
+From within python this would be::
+
+    from msumastro.scripts import run_patch
+    run_patch.main(['--object-list', 'path/to/list.txt',
+                   'dir1', 'dir2', 'dir3'])
 """
 
 from os import getcwd

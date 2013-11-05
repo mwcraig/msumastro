@@ -31,14 +31,12 @@ EXAMPLES
 
     Invoking this script from the command line::
 
-        python run_astrometry.py /my/folder/of/images
+        run_astrometry.py /my/folder/of/images
 
     To work on the same folder from within python, do this::
 
-        from run_astrometry import astrometry_for_directory
-        astrometry_for_directory('/my/folder/of/images')
-
-
+        from msumastro.scripts import run_astrometry
+        run_astrometry.main(['/my/folder/of/images'])
 """
 import shutil
 from os import path, getcwd

@@ -32,9 +32,10 @@ EXAMPLES
 
     To work on the same folder from within python, do this::
 
-        from run_triage import triage_directories
-        astrometry_for_directory('/my/folder/of/images')
-
+        from msumastro.scripts import run_triage
+        run_triage.main(['/my/folder/of/images'])
+        # or...
+        run_triage.main(['--list-default'])
 
 """
 import os
