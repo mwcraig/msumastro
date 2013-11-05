@@ -4,9 +4,25 @@ Installation
 This software
 *************
 
+Users
+-----
+
+Install the way you install most python software::
+
+    pip install msumastro
+
+Developers
+----------
+
 Install this software by downloading a copy from the `github page for the code <https://github.com/mwcraig/msumastro>`_. On Mac/Linux do this by typing, in a terminal in the directory in which you want to run the code::
 
     git clone https://github.com/mwcraig/msumastro.git
+
+Navigate to the directory in which you downloaded it and run::
+
+    python setup.py develop
+
+With this setup any changes you make to the source code will be immediately available to you without additional steps.
 
 Dependencies
 ************
@@ -16,15 +32,15 @@ Python
 
 This software has only been tested in python 2.7.x. It probably does not work in 3.x.
 
+.. note::
+    All of the requirements below will be taken care of automatically if you install with 
+    ``pip`` or ``setup.py`` as described above.
+
 This software requires a python distribution that includes numpy and other packages that support scientific work with python. The easiest way to get these is to download and install the `Anaconda python distribution`_. Note that the Anaconda distribution includes ``astropy``.
 
 
 Python packages
 ----------------
-
-All of the python packages are installed with ``pip``, which is run from the command line (not in a python or ipython session). If you don't have ``pip`` you can almost certainly install it like this::
-
-    easy_install pip
 
 Required
 +++++++++
@@ -67,8 +83,10 @@ Non-python software: astrometry.net
 ------------------------------------
 
 
-If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_ and `sextractor`_ (the latter works better than the source detection built into astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once you have installed `homebrew`_ the rest is easy:
+If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_ and `sextractor`_ (the latter works better than the source detection built into astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once you have installed `homebrew`_ the rest is easy (unless it fails, of course...):
 
++ ``brew tap camphogg/science`` (only needs to be done once; connects the set of science 
+  brew formulae maintained by the maintainers of `astrometry.net <http://astrometry.net>`_)
 + ``brew install sextractor`` (note this can take a very long time to compile the linear algebra libraries)
 + ``brew install astrometry.net`` 
 
