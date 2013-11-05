@@ -1,0 +1,9 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source = msumastro
+omit = 
+    msumastro/*__init__*
+    msumastro/*tests*
+    msumastro/reduction*
+    msumastro/photometry*
