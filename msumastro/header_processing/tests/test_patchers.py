@@ -159,16 +159,22 @@ def test_adding_object_name_to_different_directory(use_list=None,
     return with_name
 
 
-def test_purging_maximdl5_keywords():
+@pytest.mark.parametrize('data_source',
+                         ['maximdl_5_21_header.fit',
+                          'maximdl_5_23_header.fit'])
+def test_purging_maximdl5_keywords(data_source):
 
     feder = Feder()
-    mdl5_name = 'maximdl5_header.fit'
+    mdl5_name = data_source
     copy(path.join(get_data_dir(), mdl5_name), _test_dir)
     hdr5 = fits.getheader(path.join(_test_dir, mdl5_name))
     ph.purge_bad_keywords(hdr5, history=True, force=False)
     for software in feder.software:
         if software.created_this(hdr5[software.fits_keyword]):
             break
+    else:
+        assert(0)
+
     keyword_present = False
     for keyword in software.bad_keywords:
         keyword_present = (keyword_present or (keyword in hdr5))
