@@ -161,7 +161,7 @@ class ImageSoftware(object):
         """
         Indicate whether version string matches this software
         """
-        return version_string == self.fits_name
+        return version_string in self.fits_name
 
 
 class MaximDL4(ImageSoftware):
@@ -188,7 +188,8 @@ class MaximDL5(ImageSoftware):
     def __init__(self):
         bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
                     'OBJCTHA', 'AIRMASS', 'OBSERVER']
-        fits_name = 'MaxIm DL Version 5.21 130912 01A17'
+        fits_name = ['MaxIm DL Version 5.21 130912 01A17',
+                     'MaxIm DL Version 5.23 130912 01A17']
         super(MaximDL5, self).__init__("MaxImDL",
                                        fits_name=fits_name,
                                        major_version=5,
