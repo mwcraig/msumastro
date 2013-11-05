@@ -79,7 +79,7 @@ def main(arglist=None):
     script_helpers.add_console_output_args(parser)
     script_helpers.add_debug(parser)
 
-    args = parser.parse_args()
+    args = parser.parse_args(arglist)
 
     common_args = []
 
