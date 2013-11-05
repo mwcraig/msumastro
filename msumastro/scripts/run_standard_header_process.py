@@ -65,7 +65,7 @@ def construct_parser():
 
 def construct_command(script_name, source, destination,
                       common_arguments, additional_args=None):
-    command = ['python', script_name]
+    command = [script_name]
     command.extend(common_arguments)
     command.extend(['--destination-dir', destination])
     if additional_args:
