@@ -21,6 +21,34 @@ from ...tests.data import get_data_dir
 _default_object_file_name = 'obsinfo.txt'
 
 
+def set_mtimes(files, offset=10):
+    """
+    Set mtime of files to a time in the past
+
+    Parameters
+    ----------
+
+    files : list of py.path.local objects
+        list of files for which mtime should be set
+    """
+    default_mtime = files[0].mtime() - offset
+    for fil in files:
+        fil.setmtime(default_mtime)
+
+
+def mtimes(files):
+    """
+    Find mtimes of files
+
+    Parameters
+    ----------
+
+    files : list of py.path.local objects
+        list of files
+    """
+    return [fil.mtime() for fil in files]
+
+
 @pytest.fixture
 def triage_dict():
     default_names = run_triage.DefaultFileNames()
@@ -28,34 +56,38 @@ def triage_dict():
     return names_dict
 
 
+@pytest.fixture
+def clean_data(tmpdir, request):
+    test_dir = tmpdir
+    test_data_dir = py.path.local(get_data_dir())
+    test_data_dir.copy(test_dir)
+    to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
+    object_path = test_dir.join(_default_object_file_name)
+    print object_path
+    object_file = object_path.open(mode='wb')
+    object_file.write(to_write)
+    object_file.close()
+
+    def cleanup():
+        test_dir.remove()
+    request.addfinalizer(cleanup)
+    return test_dir
+
+
+@pytest.mark.usefixtures('clean_data')
 class TestScript(object):
     @pytest.fixture(autouse=True)
-    def clean_data(self, tmpdir, request):
-        self.test_dir = tmpdir
-        test_data_dir = py.path.local(get_data_dir())
-        test_data_dir.copy(self.test_dir)
-        to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
-        object_path = self.test_dir.join(_default_object_file_name)
-        print object_path
-        object_file = object_path.open(mode='wb')
-        object_file.write(to_write)
-        object_file.close()
-
-        def cleanup():
-            self.test_dir.remove()
-        request.addfinalizer(cleanup)
+    def set_test_dir(self, clean_data):
+        self.test_dir = clean_data
 
     @pytest.fixture
     def default_keywords(self):
         return run_triage.DEFAULT_KEYS
 
-    def test_run_patch_does_not_overwite_if_destination_set(self, recwarn):
-        mtimes = lambda files: [fil.mtime() for fil in files]
+    def test_run_patch_does_not_overwite_fits_if_dest_set(self, recwarn):
         fits_files = [fil for fil in self.test_dir.visit(fil='*.fit',
                                                          sort=True)]
-        default_mtime = fits_files[0].mtime() - 10
-        for fil in fits_files:
-            fil.setmtime(default_mtime)
+        set_mtimes(fits_files)
         original_mtimes = mtimes(fits_files)
         print original_mtimes
         destination = self.test_dir.make_numbered_dir()
