@@ -107,10 +107,10 @@ def main(arglist=None):
 
     SCRIPT_NAME = 'header_process_script.sh'
 
-    if args.run_only is not None:
-        patch = 'p' in args.run_only
-        astrometry = 'a' in args.run_only
-        triage = 't' in args.run_only
+    scripts_to_run = args.run_only or 'pat'
+    patch = 'p' in scripts_to_run
+    astrometry = 'a' in scripts_to_run
+    triage = 't' in scripts_to_run
 
     for root, dirs, files in os.walk(source_root):
 
