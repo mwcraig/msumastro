@@ -63,8 +63,6 @@ class TestScript(object):
                    self.test_dir.strpath
                    ]
         run_patch.main(arglist)
-#        run_patch.patch_directories([str(self.test_dir)],
-#                                    destination=str(destination))
         new_mtimes = mtimes(fits_files)
         print new_mtimes
         print destination
@@ -111,6 +109,29 @@ class TestScript(object):
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
         self._verify_triage_files_created(destination, triage_dict)
+
+    @pytest.mark.parametrize('extra_keys',
+                             [['key1'],
+                              ['key1', 'key2']])
+    def test_run_triage_default_keys_and_extra(self, default_keywords,
+                                               triage_dict, extra_keys):
+        table_file = 'tbl.txt'
+        arglist = []
+        print extra_keys
+        for key in extra_keys:
+            arglist.extend(['--key', key])
+
+        gather_keys = default_keywords[:]
+
+        gather_keys.extend(extra_keys)
+        arglist.extend(['--table-name', table_file,
+                       self.test_dir.strpath])
+        run_triage.main(arglist=arglist)
+        print arglist
+        print gather_keys
+        table = Table.read(self.test_dir.join(table_file), format='ascii')
+        for key in gather_keys:
+            assert (key in table.colnames)
 
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 
