@@ -209,9 +209,11 @@ def construct_parser():
     parser.add_argument('-k', '--key', action='append',
                         help=key_help, default=[])
 
-    no_default_help = 'Do not include default list of keywords in table'
-    parser.add_argument('--no-default', action='store_true',
-                        help=no_default_help)
+#    no_default_help = ('Do not include default list of keywords in table'
+#                       '**EXCEPT** for `file` and `imagetyp`, which are'
+#                       'always included')
+#    parser.add_argument('--no-default', action='store_true',
+#                        help=no_default_help)
 
     list_help = 'Print default list keywords put into table and exit'
     parser.add_argument('-l', '--list-default', action='store_true',
@@ -263,11 +265,11 @@ def main(arglist=None):
 
     add_file_handlers(logger, os.getcwd(), 'run_triage')
 
-    if args.no_default:
-        use_keys = None
-    else:
-        use_keys = DEFAULT_KEYS
-
+#    if args.no_default:
+#        use_keys = ['imagetyp']
+#    else:
+#        use_keys = DEFAULT_KEYS[:]
+    use_keys = list(DEFAULT_KEYS)  # force a copy so DEFAULT_KEYS not modified
     try:
         use_keys.extend(args.key)
     except TypeError:
@@ -282,6 +284,7 @@ def main(arglist=None):
     if not args.dir:
         parser.error('No directory specified')
 
+    logger.debug('use_keys are %s', use_keys)
     do_not_log_in_destination = \
         script_helpers.handle_destination_dir_logging_check(args)
     triage_directories(args.dir, keywords=use_keys,
