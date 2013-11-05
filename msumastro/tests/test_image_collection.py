@@ -227,6 +227,15 @@ class TestImageFileCollection(object):
             # this statement should not be reached if there are no FITS files
             assert 0
 
+    def test_fits_summary_when_keywords_are_not_subset(self):
+        ic = tff.ImageFileCollection(_test_dir,
+                                     keywords=['imagetyp', 'exptime'])
+        n_files = len(ic.files)
+        files_missing_this_key = ic.files_filtered(imagetyp='*',
+                                                   monkeys=None)
+        assert(n_files > 0)
+        assert(n_files == len(files_missing_this_key))
+
 
 def setup_module():
     global _n_test

@@ -292,7 +292,7 @@ class ImageFileCollection(object):
         keywords = kwd.keys()
         values = kwd.values()
 
-        if (set(keywords) & set(self.keywords)):
+        if (set(keywords).issubset(set(self.keywords))):
             # we already have the information in memory
             use_info = self.summary_info
         else:
