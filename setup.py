@@ -17,7 +17,7 @@ class PyTest(TestCommand):
 setup(
     name='msumastro',
     version='0.1',
-    description='Process FITS files painlessly',
+    description='Process FITS files',
     url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
     license='BSD 3-clause',
