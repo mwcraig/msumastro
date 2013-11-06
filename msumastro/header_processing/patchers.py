@@ -73,8 +73,6 @@ def add_time_info(header, history=False):
 
     history : bool
         If `True`, write history for each keyword changed.
-
-    Uses `feder.site.currentobsjd` as the date.
     """
     dateobs = Time(header['date-obs'], scale='utc')
     feder.JD_OBS.value = dateobs.jd
@@ -104,7 +102,7 @@ def add_object_pos_airmass(header, history=False):
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd == feder.JD_OBS.value
     else:
-        raise ValueError('Need to set JD.value before calling.')
+        raise ValueError('Need to set JD_OBS.value before calling.')
 
     try:
         feder.RA.set_value_from_header(header)
