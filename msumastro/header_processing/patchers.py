@@ -139,6 +139,48 @@ def add_object_pos_airmass(header, history=False):
             logger.info(keyword.history_comment())
 
 
+def get_software_name(header, file_name=None, use_observatory=None):
+    """
+    Determine the name of the software that created FITIS header
+
+    Parameters
+    ----------
+
+    header : astropy.io.fits Header
+        Header from a FITS extension/hdu
+
+    file_name : str, optional
+        Name of the file containing this header; used to add information to
+        error/warning messages.
+
+    use_observatory : msumastro.Feder instance, optional
+        Object that contains names of FITS keywords that might be present and
+        contain name of the software that made this header. The default value
+        is the instance defined at the beginning of this module
+
+    Returns
+    -------
+
+    msumastro.feder.Software object
+    """
+    fits_file = file_name or ''
+    observatory = use_observatory or feder
+
+    known_software_keywords = observatory.software_FITS_keywords
+
+    software_name_in_header = FITSKeyword(name=known_software_keywords[0],
+                                          synonyms=known_software_keywords)
+    software_name_in_header.set_value_from_header(header)
+
+    try:
+        software = observatory.software[software_name_in_header.value]
+    except KeyError:
+        raise KeyError('Software named {0} not recognized in header '
+                       'for file {1}'.format(software_name_in_header.value,
+                                             fits_file))
+    return software
+
+
 def purge_bad_keywords(header, history=False, force=False, file_name=''):
     """
     Remove keywords from FITS header that may be incorrect
@@ -150,9 +192,7 @@ def purge_bad_keywords(header, history=False, force=False, file_name=''):
         If `True`, force keywords to be purged even if the FITS header
         indicates it has already been purged.
     """
-    for software in feder.software:
-        if software.created_this(header[software.fits_keyword]):
-            break
+    software = get_software_name(header, file_name=file_name)
 
     try:
         purged = header[software.purged_flag_keyword]
