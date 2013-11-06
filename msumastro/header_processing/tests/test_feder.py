@@ -9,13 +9,14 @@ from ..feder import Feder, ApogeeAltaU9
 
 def test_apogee_has_overscan():
     feder_obj = Feder()
-    assert (feder_obj.instrument["Apogee Alta"].has_overscan([3085, 2048]))
-    assert not (feder_obj.instrument["Apogee Alta"].has_overscan([3073, 2048]))
+    apogee_alta = feder_obj.instruments["Apogee Alta"]
+    assert (apogee_alta.has_overscan([3085, 2048]))
+    assert not (apogee_alta.has_overscan([3073, 2048]))
 
 
 def test_apogee_fits_names():
     feder_obj = Feder()
-    assert isinstance(feder_obj.instrument["Apogee Alta"],
+    assert isinstance(feder_obj.instruments["Apogee Alta"],
                       ApogeeAltaU9)
-    assert isinstance(feder_obj.instrument["Apogee USB/Net"],
+    assert isinstance(feder_obj.instruments["Apogee USB/Net"],
                       ApogeeAltaU9)

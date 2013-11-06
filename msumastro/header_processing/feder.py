@@ -204,9 +204,11 @@ class Feder(object):
     def __init__(self):
         self.site = FederSite()
         self._apogee_alta_u9 = ApogeeAltaU9()
-        self.instrument = {}
-        for name in self._apogee_alta_u9.fits_names:
-            self.instrument[name] = self._apogee_alta_u9
+        self._instrument_objects = [self._apogee_alta_u9]
+        self.instruments = {}
+        for instrument in self._instrument_objects:
+            for name in instrument.fits_names:
+                self.instruments[name] = instrument
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
         self.software = [self._maximdl4, self._maximdl5]

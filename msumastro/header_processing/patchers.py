@@ -408,7 +408,7 @@ def add_overscan_header(header, history=True):
     Add overscan information to a FITS header.
     """
     image_dim = [header['naxis1'], header['naxis2']]
-    instrument = feder.instrument[header['instrume']]
+    instrument = feder.instruments[header['instrume']]
     overscan_present = feder.OSCAN
     overscan_present.value = instrument.has_overscan(image_dim)
     overscan_present.add_to_header(header, history=history)
