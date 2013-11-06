@@ -125,7 +125,7 @@ class ImageSoftware(object):
 
         Name of the FITS keyword that contains the name of the software.
 
-    fits_name : str
+    fits_name : list of str
 
         Name of the software as written in the FITS file
 
@@ -171,8 +171,9 @@ class MaximDL4(ImageSoftware):
     """
 
     def __init__(self):
+        fits_name = ['MaxIm DL Version 4.10']
         super(MaximDL4, self).__init__("MaxImDL",
-                                       fits_name='MaxIm DL Version 4.10',
+                                       fits_name=fits_name,
                                        major_version=4,
                                        minor_version=10,
                                        bad_keywords=['OBSERVER'],
@@ -211,7 +212,14 @@ class Feder(object):
                 self.instruments[name] = instrument
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
-        self.software = [self._maximdl4, self._maximdl5]
+        self._software_objects = [self._maximdl4, self._maximdl5]
+        self.software = {}
+        self.software_FITS_keywords = []
+        for software in self._software_objects:
+            for name in software.fits_name:
+                self.software[name] = software
+                self.software_FITS_keywords.append(software.fits_keyword)
+        self.software_FITS_keywords = list(set(self.software_FITS_keywords))
         self._keywords_for_all_files = []
         self._set_site_keywords_values()
         self._time_keywords_to_set()
