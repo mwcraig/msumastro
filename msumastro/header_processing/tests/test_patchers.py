@@ -180,12 +180,13 @@ def test_purging_maximdl5_keywords(data_source):
     assert not keyword_present
 
 
-def test_patch_headers_stops_if_instrument_or_software_not_found():
+@pytest.mark.parametrize('badkey', ['swcreate', 'instrume'])
+def test_patch_headers_stops_if_instrument_or_software_not_found(badkey):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
     a_fits_file = ic.files[0]
     a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
     hdr = a_fits_hdu[0].header
-    hdr['swcreate'] = 'Nonsense'
+    hdr[badkey] = 'Nonsense'
     a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), clobber=True)
     with pytest.raises(KeyError):
         ph.patch_headers(_test_dir)
