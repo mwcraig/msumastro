@@ -158,7 +158,6 @@ class ImageFileCollection(object):
         new_keys = list(set(keywords))
         logging.debug('keywords after pruning %s', new_keys)
 
-        #new_keys.append('file')
         full_new_keys = list(set(new_keys))
         full_new_keys.append('file')
         full_new_set = set(full_new_keys)
@@ -238,7 +237,7 @@ class ImageFileCollection(object):
         data_type = {}
         keywords = list(set(header_keywords))
         if 'file' not in keywords:
-            keywords.append('file')
+            keywords.insert(0, 'file')
         for keyword in keywords:
             summary[keyword] = []
             missing_values[keyword] = []
