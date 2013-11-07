@@ -435,7 +435,8 @@ def patch_headers(dir='.',
             if add_overscan:
                 add_overscan_header(header, history=True)
         except (KeyError, ValueError) as e:
-            warning_msg = ('Stopped patching header of {0} because of '
+            warning_msg = ('********* FILE NOT PATCHED *********\n'
+                           'Stopped patching header of {0} because of '
                            '{1}: {2}'.format(fname, type(e).__name__, e))
             logger.warn(warning_msg)
             header.add_history(warning_msg)
