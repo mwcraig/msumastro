@@ -249,7 +249,9 @@ class TestScriptHelper(object):
         (['--no-log-destination', '--destination-dir', '.', '.'], 'exception'),
         (['--no-log-destination', os.getcwd()], 'exception'),
         (['--no-log-destination', '--destination-dir', '/tmp', os.getcwd()], True),
-        (['--destination-dir', '/tmp', '.'], False)])
+        (['--destination-dir', '/tmp', '.'], False),
+        (['--destination-dir', os.path.join(os.getcwd(), 'foo'),
+         os.path.join(os.getcwd(), 'foo')], False)])
     def test_handle_destination_dir_logging_check(self, argstring, expected,
                                                   a_parser):
         args = a_parser.parse_args(argstring)
