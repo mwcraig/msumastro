@@ -79,7 +79,7 @@ class TestImageFileCollection(object):
     def test_generator_full_path(self):
         collection = tff.ImageFileCollection(location=_test_dir,
                                              keywords=['imagetyp'])
-        for path, file_name in zip(collection.paths(), collection.files):
+        for path, file_name in zip(collection._paths(), collection.files):
             assert path == os.path.join(_test_dir, file_name)
 
     def test_hdus(self):
@@ -125,8 +125,8 @@ class TestImageFileCollection(object):
         basenames = lambda paths: set(
             [os.path.basename(file) for file in paths])
 
-        assert (len(basenames(collection.paths()) -
-                    basenames(new_collection.paths())) == 0)
+        assert (len(basenames(collection._paths()) -
+                    basenames(new_collection._paths())) == 0)
                 #_n_test['compressed'])
         rmtree(destination)
 
@@ -174,7 +174,7 @@ class TestImageFileCollection(object):
             assert isinstance(header, fits.Header)
         new_collection = tff.ImageFileCollection(location=_test_dir,
                                                  keywords=['imagetyp'])
-        assert (len(new_collection.paths()) ==
+        assert (len(new_collection._paths()) ==
                 2 * (_n_test['files']) - _n_test['compressed'])
         print glob(_test_dir + '/*_new*')
         [os.remove(fil) for fil in iglob(_test_dir + '/*_new*')]
@@ -235,7 +235,7 @@ class TestImageFileCollection(object):
     def test_header_and_filename(self):
         collection = tff.ImageFileCollection(location=_test_dir)
         for header, fname in collection.headers(return_fname=True):
-            assert (fname in collection.paths())
+            assert (fname in collection._paths())
             assert (isinstance(header, fits.Header))
 
     def test_dir_with_no_fits_files(self, tmpdir):

@@ -397,7 +397,7 @@ class ImageFileCollection(object):
         if kwd:
             self._find_keywords_by_values(**kwd)
 
-        for full_path in self.paths():
+        for full_path in self._paths():
             no_scale = do_not_scale_image_data
             hdulist = fits.open(full_path,
                                 do_not_scale_image_data=no_scale)
@@ -434,7 +434,7 @@ class ImageFileCollection(object):
         for col in self.summary_info.columns:
             self.summary_info[col].mask = current_mask[col]
 
-    def paths(self):
+    def _paths(self):
         """
         Full path to each file.
         """
