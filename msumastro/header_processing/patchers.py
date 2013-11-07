@@ -414,31 +414,36 @@ def patch_headers(dir='.',
                                    time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
+        try:
+            # each of the next 3 lines checks for presences of something
+            get_software_name(header)  # is there some software?
+            header['instrume']  # is there an instrument?
+            header['imagetyp']  # is there an image type?
 
-        if purge_bad:
-            purge_bad_keywords(header, history=True, file_name=fname)
+            if purge_bad:
+                purge_bad_keywords(header, history=True, file_name=fname)
 
-        if fix_imagetype:
-            change_imagetype_to_IRAF(header, history=True)
+            if fix_imagetype:
+                change_imagetype_to_IRAF(header, history=True)
 
-        if add_time:
-            add_time_info(header, history=True)
+            if add_time:
+                add_time_info(header, history=True)
 
-        if add_apparent_pos and (header['imagetyp'] == 'LIGHT'):
-            try:
+            if add_apparent_pos and (header['imagetyp'] == 'LIGHT'):
                 add_object_pos_airmass(header,
                                        history=True)
-            except ValueError as e:
-                logger.warn('Skipping file {} because: {}'.format(fname, e))
-                continue
-
-        if add_overscan:
-            add_overscan_header(header, history=True)
-
-        header.add_history(history(patch_headers, mode='end',
-                                   time=run_time))
-
-        logger.info('END PATCHING FILE: {0}'.format(fname))
+            if add_overscan:
+                add_overscan_header(header, history=True)
+        except (KeyError, ValueError) as e:
+            warning_msg = ('Stopped patching header of {0} because of '
+                           '{1}: {2}'.format(fname, type(e).__name__, e))
+            logger.warn(warning_msg)
+            header.add_history(warning_msg)
+            continue
+        finally:
+            header.add_history(history(patch_headers, mode='end',
+                               time=run_time))
+            logger.info('END PATCHING FILE: {0}'.format(fname))
 
 
 def add_overscan_header(header, history=True):

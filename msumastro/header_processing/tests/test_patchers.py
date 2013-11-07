@@ -16,7 +16,6 @@ from astropy import units as u
 #from ..patch_headers import *
 from .. import patchers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
-from ..fitskeyword import FITSKeyword
 from ...reduction.tests.utilities import make_overscan_test_files
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
@@ -181,15 +180,19 @@ def test_purging_maximdl5_keywords(data_source):
 
 
 @pytest.mark.parametrize('badkey', ['swcreate', 'instrume'])
-def test_patch_headers_stops_if_instrument_or_software_not_found(badkey):
+def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
+                                                                 caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
     a_fits_file = ic.files[0]
     a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
     hdr = a_fits_hdu[0].header
-    hdr[badkey] = 'Nonsense'
+    badname = 'Nonsense'
+    hdr[badkey] = badname
     a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), clobber=True)
-    with pytest.raises(KeyError):
-        ph.patch_headers(_test_dir)
+    ph.patch_headers(_test_dir)
+    patch_warnings = get_patch_header_warnings(caplog)
+    assert('KeyError' in patch_warnings)
+    assert(badname in patch_warnings)
 
 
 def test_adding_overscan_apogee_u9():
