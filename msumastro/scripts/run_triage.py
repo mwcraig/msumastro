@@ -85,7 +85,12 @@ def contains_maximdl_imagetype(image_collection):
     """
     import re
     file_info = image_collection.summary_info
-    image_types = ' '.join([typ for typ in file_info['imagetyp']])
+
+    if file_info['imagetyp'].mask.any():
+        logger.warn('One or more image is missing IMAGETYP in header')
+
+    image_types = ' '.join([typ for typ in file_info['imagetyp'].compressed()])
+
     if re.search('[fF]rame', image_types) is not None:
         return True
     else:
