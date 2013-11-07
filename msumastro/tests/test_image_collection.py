@@ -198,6 +198,16 @@ class TestImageFileCollection(object):
         print some_files_should_match
         assert(len(some_files_should_match) == _n_test['need_object'])
 
+    def test_filter_does_not_not_permanently_change_file_mask(self):
+        collection = tff.ImageFileCollection(location=_test_dir,
+                                             keywords=['imagetyp'])
+        # ensure all files are originally unmasked
+        assert(not collection.summary_info['file'].mask.any())
+        # generate list that will match NO files
+        collection.files_filtered(imagetyp='foisajfoisaj')
+        # if the code works, this should have no permanent effect
+        assert(not collection.summary_info['file'].mask.any())
+
     @pytest.mark.parametrize("new_keywords,collection_keys", [
                             (['imagetyp', 'object'], ['imagetyp', 'filter']),
                             (['imagetyp'], ['imagetyp', 'filter'])])
