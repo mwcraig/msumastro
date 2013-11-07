@@ -166,6 +166,14 @@ class TestScript(object):
         for key in gather_keys:
             assert (key in table.colnames)
 
+    def test_run_triage_on_set_with_no_light_files(self):
+        ic = ImageFileCollection(self.test_dir.strpath, keywords=['imagetyp'])
+        for header in ic.headers(imagetyp='light', clobber=True):
+            header['imagetyp'] = 'BIAS'
+        arglist = [self.test_dir.strpath]
+        run_triage.main(arglist)
+        assert 1
+
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 
         destination = self.test_dir.make_numbered_dir()
