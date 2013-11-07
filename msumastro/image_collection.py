@@ -215,9 +215,12 @@ class ImageFileCollection(object):
 
         NOTE: Value comparison is case *insensitive* for strings.
         """
-
+        # force a copy by explicitly converting to a list
+        current_file_mask = list(self.summary_info['file'].mask)
         self._find_keywords_by_values(**kwd)
-        return self.summary_info['file'].compressed()
+        filtered_files = self.summary_info['file'].compressed()
+        self.summary_info['file'].mask = current_file_mask
+        return filtered_files
 
     def _fits_summary(self, header_keywords=None):
         """
