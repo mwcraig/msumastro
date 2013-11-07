@@ -100,7 +100,7 @@ def add_object_pos_airmass(header, history=False):
     also assume JD.value has been set.
     """
     if feder.JD_OBS.value is not None:
-        feder.site.currentobsjd == feder.JD_OBS.value
+        feder.site.currentobsjd = feder.JD_OBS.value
     else:
         raise ValueError('Need to set JD_OBS.value before calling.')
 
