@@ -350,7 +350,7 @@ class ImageFileCollection(object):
         self.summary_info['file'].mask = ma.nomask
         self.summary_info['file'][~matches] = ma.masked
 
-    def _fits_files_in_directory(self, extensions=['fit', 'fits'],
+    def _fits_files_in_directory(self, extensions=None,
                                  compressed=True):
         """
         Get names of FITS files in directory, based on filename extension.
@@ -363,12 +363,9 @@ class ImageFileCollection(object):
         Returns only the *names* of the files (with extension), not the full
         pathname.
         """
-        # trick below is necessary to make sure we start with a clean copy of
-        # extensions each time
-        full_extensions = []
-        full_extensions.extend(extensions)
+        full_extensions = extensions or ['fit', 'fits']
         if compressed:
-            with_gz = [extension + '.gz' for extension in extensions]
+            with_gz = [extension + '.gz' for extension in full_extensions]
             full_extensions.extend(with_gz)
 
         all_files = listdir(self.location)
