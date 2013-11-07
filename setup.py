@@ -24,7 +24,7 @@ setup(
     author='Matt Craig',
     author_email='mcraig@mnstate.edu',
     packages=find_packages(exclude=['tests*']),
-    include_package_data=False,
+    include_package_data=True,
     install_requires=['astropysics>=0.0.dev0',
                       'astropy',
                       'numpy'],
