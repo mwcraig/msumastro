@@ -134,18 +134,21 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
                                    object=None))
 
     lights = file_info[file_info['imagetyp'] == 'LIGHT']
-    has_no_ra = np.array([True] * len(lights))
-    for ra_name in RA.names:
-        try:
-            has_no_ra &= (lights[ra_name].mask)
-        except KeyError:
-            pass
+    file_needs_pointing = []
+    if lights:
+        has_no_ra = np.array([True] * len(lights))
+        for ra_name in RA.names:
+            try:
+                has_no_ra &= (lights[ra_name].mask)
+            except KeyError:
+                pass
 
-    needs_minimal_pointing = (lights['object'].mask) & has_no_ra
+        needs_minimal_pointing = (lights['object'].mask) & has_no_ra
+        file_needs_pointing = list(lights['file'][needs_minimal_pointing])
 
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
-                'needs_pointing': list(lights['file'][needs_minimal_pointing]),
+                'needs_pointing': file_needs_pointing,
                 'needs_object_name': file_needs_object_name}
     return dir_info
 
