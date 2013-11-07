@@ -138,23 +138,21 @@ def handle_destination_dir_logging_check(args):
     """
     Perform error checking for command line arguments
     """
-    do_not_log_in_destination = args.no_log_destination
     # turn off destination logging if we are running in the destination
     # directory because we always create logs in the working directory...
-    if args.dir:
-        dir_abs = [path.abspath(d) for d in args.dir]
-    else:
-        dir_abs = None
-
-    if args.destination_dir:
-        dest_abs = path.abspath(args.destination_dir)
-    else:
-        dest_abs = None
-
-    effective_destination = dest_abs or dir_abs or None
-
+    do_not_log_in_destination = args.no_log_destination
     cwd = getcwd()
-    if effective_destination and (path.abspath(cwd) in effective_destination):
+
+    logger.debug('cwd: %s', cwd)
+    if args.destination_dir:
+        dest_is_cwd = path.samefile(args.destination_dir, cwd)
+    elif args.dir:
+        dest_is_cwd = any([path.samefile(d, cwd) for d in args.dir])
+    else:
+        dest_is_cwd = False
+
+    logger.debug('dest_is_cwd: %s', dest_is_cwd)
+    if dest_is_cwd:
         if do_not_log_in_destination:
             raise RuntimeError('option --no-log-destination cannot be used '
                                'when running in the destination directory '

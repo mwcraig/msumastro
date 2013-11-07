@@ -2,6 +2,7 @@ import os
 from tempfile import mkdtemp
 import gzip
 from shutil import rmtree
+from contextlib import contextmanager
 
 import astropy.io.fits as fits
 from astropy.table import Table, Column
@@ -241,27 +242,37 @@ def a_parser(request):
     the_parser = parsers[request.param]
     return the_parser()
 
+## snippet below is from http://stackoverflow.com/a/13847807
+
+
+@contextmanager
+def pushd(newDir):
+    previousDir = os.getcwd()
+    os.chdir(newDir)
+    yield
+    os.chdir(previousDir)
+
 
 class TestScriptHelper(object):
     """Test functions in script_helpers"""
 
-    @pytest.mark.parametrize("argstring,expected", [
-        (['--no-log-destination', '--destination-dir', '.', '.'], 'exception'),
-        (['--no-log-destination', os.getcwd()], 'exception'),
-        (['--no-log-destination', '--destination-dir', '/tmp', os.getcwd()], True),
-        (['--destination-dir', '/tmp', '.'], False),
-        (['--destination-dir', os.path.join(os.getcwd(), 'foo'),
-         os.path.join(os.getcwd(), 'foo')], False)])
-    def test_handle_destination_dir_logging_check(self, argstring, expected,
-                                                  a_parser):
-        args = a_parser.parse_args(argstring)
-        print argstring, expected
-        print type(expected)
-        if expected == 'exception':
-            with pytest.raises(RuntimeError):
-                handle_destination_dir_logging_check(args)
-        else:
-            assert (handle_destination_dir_logging_check(args) == expected)
+    @pytest.mark.parametrize("argstring,run_in,expected", [
+        (['--no-log-destination', '--destination-dir', '.', '.'], '.', 'exception'),
+        (['--no-log-destination', os.getcwd()], '.', 'exception'),
+        (['--no-log-destination', '--destination-dir', '/tmp', os.getcwd()], '.', True),
+        (['--destination-dir', '/tmp', '.'], '.', False),
+        (['--destination-dir', os.getcwd(), os.getcwd()], '..', False)])
+    def test_handle_destination_dir_logging_check(self, argstring, run_in,
+                                                  expected, a_parser):
+        with pushd(run_in):
+            args = a_parser.parse_args(argstring)
+            print argstring, expected
+            print type(expected)
+            if expected == 'exception':
+                with pytest.raises(RuntimeError):
+                    handle_destination_dir_logging_check(args)
+            else:
+                assert (handle_destination_dir_logging_check(args) == expected)
 
 
 @pytest.mark.usefixtures('clean_data')
