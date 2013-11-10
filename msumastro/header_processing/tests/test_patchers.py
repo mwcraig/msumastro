@@ -10,7 +10,7 @@ pytest_plugins = "capturelog"
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
-from astropy.coordinates import Angle, FK5Coordinates
+from astropy.coordinates import Angle, FK5
 from astropy import units as u
 
 #from ..patch_headers import *
@@ -352,8 +352,8 @@ def test_add_ra_dec_from_object_name():
     ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=None)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
-    m101_ra_dec_correct = FK5Coordinates('14h03m12.58s +54d20m55.50s')
-    header_m101 = FK5Coordinates(ra=h['ra'], dec=h['dec'],
+    m101_ra_dec_correct = FK5('14h03m12.58s +54d20m55.50s')
+    header_m101 = FK5(ra=h['ra'], dec=h['dec'],
                                  unit=(u.hour, u.degree))
 
     assert_almost_equal(m101_ra_dec_correct.ra.hour,

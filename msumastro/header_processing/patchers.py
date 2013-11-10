@@ -5,7 +5,7 @@ import logging
 import numpy as np
 import astropy.io.fits as fits
 from astropy.time import Time
-from astropy.coordinates import Angle, FK5Coordinates, name_resolve
+from astropy.coordinates import Angle, FK5, name_resolve
 from astropy import units as u
 from astropy.table import Table
 
@@ -114,7 +114,7 @@ def add_object_pos_airmass(header, history=False):
     feder.RA.value = feder.RA.value.replace(' ', ':')
     feder.DEC.value = feder.DEC.value.replace(' ', ':')
 
-    obj_coord2 = FK5Coordinates(feder.RA.value, feder.DEC.value,
+    obj_coord2 = FK5(feder.RA.value, feder.DEC.value,
                                 unit=(u.hour, u.degree))
 
     # monkeypatch obj_coord2 so it looks like an astropysics coord
@@ -520,11 +520,11 @@ def add_object_info(directory='.',
     default_angle_units = (u.hour, u.degree)
 
     if (RAs is not None) and (Decs is not None):
-        ra_dec = [FK5Coordinates(RA, Dec, unit=default_angle_units)
+        ra_dec = [FK5(RA, Dec, unit=default_angle_units)
                   for RA, Dec in zip(RAs, Decs)]
     else:
         try:
-            ra_dec = [FK5Coordinates.from_name(obj) for obj in object_names]
+            ra_dec = [FK5.from_name(obj) for obj in object_names]
         except name_resolve.NameResolveError as e:
             logger.error('Unable to do lookup of object positions')
             logger.error(e)
@@ -555,7 +555,7 @@ def add_object_info(directory='.',
 
         logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
         matched_object = False
-        image_ra_dec = FK5Coordinates(header['ra'],
+        image_ra_dec = FK5(header['ra'],
                                       header['dec'],
                                       unit=default_angle_units)
         logger.debug('Checking whether we had a match last time.')
@@ -658,7 +658,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
 
     objects = np.unique(missing_dec['object'])
     for object_name in objects:
-        object_coords = FK5Coordinates.from_name(object_name)
+        object_coords = FK5.from_name(object_name)
         common_format_keywords = {'sep': ':',
                                   'precision': 2,
                                   'pad': True}
