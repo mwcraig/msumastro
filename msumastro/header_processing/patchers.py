@@ -120,6 +120,10 @@ def add_object_pos_airmass(header, history=False):
     # monkeypatch obj_coord2 so it looks like an astropysics coord
     obj_coord2.raerr = None
     obj_coord2.decerr = None
+    # and, for astropy 0.3, monkeypatch an hours method and a radians method:
+    obj_coord2.ra.hours = obj_coord2.ra.hour
+    obj_coord2.dec.radians = obj_coord2.dec.radian
+
     alt_az = feder.site.apparentCoordinates(obj_coord2, refraction=False)
 
     feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
@@ -560,7 +564,7 @@ def add_object_info(directory='.',
             logger.debug('We had a match last time...')
             last_ra_dec = (object_ra_dec[object_names == last_found_object])
             last_ra_dec = last_ra_dec[0]
-            sep = last_ra_dec.separation(image_ra_dec).arcmins
+            sep = last_ra_dec.separation(image_ra_dec).arcmin
             matched_object = (sep < match_radius)
             if matched_object:
                 logger.debug('And that object matches again')
@@ -626,7 +630,7 @@ def find_object_match(target_coords, in_coord_list=None, return_names=None,
         return_value = in_coord_list
 
     for target in target_coords:
-        distance = [(rd_tmp.separation(target)).arcmins
+        distance = [(rd_tmp.separation(target)).arcmin
                     for rd_tmp in in_coord_list]
         matches_at = np.array(distance) < match_radius
         if matches_at.sum() > max_matches:

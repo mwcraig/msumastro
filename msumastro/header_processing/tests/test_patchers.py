@@ -356,10 +356,10 @@ def test_add_ra_dec_from_object_name():
     header_m101 = FK5Coordinates(ra=h['ra'], dec=h['dec'],
                                  unit=(u.hour, u.degree))
 
-    assert_almost_equal(m101_ra_dec_correct.ra.hours,
-                        header_m101.ra.hours)
-    assert_almost_equal(m101_ra_dec_correct.dec.degrees,
-                        header_m101.dec.degrees)
+    assert_almost_equal(m101_ra_dec_correct.ra.hour,
+                        header_m101.ra.hour)
+    assert_almost_equal(m101_ra_dec_correct.dec.degree,
+                        header_m101.dec.degree)
 
 
 def test_times_apparent_pos_added():
@@ -398,19 +398,19 @@ def test_times_apparent_pos_added():
     assert_almost_equal(HA_correct, header_HA)
 
     # calculate, then check, altitude
-    latitude = f.latitude.radians
+    latitude = f.latitude.radians  # this is an astropysics object--has radians
     Dec_a = Angle(Dec_correct, unit=u.degree)
     HA_a = Angle(HA_correct, unit=u.hour)
-    sin_alt = (np.sin(latitude) * np.sin(Dec_a.radians) +
-               (np.cos(latitude) * np.cos(Dec_a.radians) *
-                np.cos(HA_a.radians)))
+    sin_alt = (np.sin(latitude) * np.sin(Dec_a.radian) +
+               (np.cos(latitude) * np.cos(Dec_a.radian) *
+                np.cos(HA_a.radian)))
     alt = Angle(np.arcsin(sin_alt), unit=u.radian)
     header_alt = header['alt-obj']
-    assert_almost_equal(alt.degrees, header_alt, decimal=5)
+    assert_almost_equal(alt.degree, header_alt, decimal=5)
 
     # calculate, then check, airmass
-    zenith_angle = Angle(90 - alt.degrees, unit=u.degree)
-    airmass_correct = 1/np.cos(zenith_angle.radians)
+    zenith_angle = Angle(90 - alt.degree, unit=u.degree)
+    airmass_correct = 1/np.cos(zenith_angle.radian)
     assert_almost_equal(airmass_correct, header['airmass'], decimal=3)
 
 
