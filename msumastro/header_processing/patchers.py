@@ -520,8 +520,7 @@ def add_object_info(directory='.',
     default_angle_units = (u.hour, u.degree)
 
     if (RAs is not None) and (Decs is not None):
-        ra_dec = [FK5(RA, Dec, unit=default_angle_units)
-                  for RA, Dec in zip(RAs, Decs)]
+        ra_dec = FK5(RAs, Decs, unit=default_angle_units)
     else:
         try:
             ra_dec = [FK5.from_name(obj) for obj in object_names]
@@ -529,14 +528,18 @@ def add_object_info(directory='.',
             logger.error('Unable to do lookup of object positions')
             logger.error(e)
             return
-
-    object_ra_dec = np.array(ra_dec)
+        ra = []
+        dec = []
+        for a_coord in ra_dec:
+            ra.append(a_coord.ra.radian)
+            dec.append(a_coord.dec.radian)
+        ra_dec = FK5(ra, dec, unit=(u.radian, u.radian))
     # sanity check object list--the objects should not be so close together
     # that any pair is within match radius of each other.
     logger.debug('Testing object list for self-consistency')
     try:
-        find_object_match(object_ra_dec,
-                          in_coord_list=object_ra_dec,
+        find_object_match(ra_dec,
+                          in_coord_list=ra_dec,
                           match_radius=match_radius,
                           max_matches=1)
     except RuntimeError as e:
@@ -562,7 +565,7 @@ def add_object_info(directory='.',
         if last_found_object is not None:
             # Check if the last object matches this image...
             logger.debug('We had a match last time...')
-            last_ra_dec = (object_ra_dec[object_names == last_found_object])
+            last_ra_dec = (ra_dec[object_names == last_found_object])
             last_ra_dec = last_ra_dec[0]
             sep = last_ra_dec.separation(image_ra_dec).arcmin
             matched_object = (sep < match_radius)
@@ -575,7 +578,7 @@ def add_object_info(directory='.',
         if not matched_object:
             logger.debug('No match found yet, checking full object list')
             matches = find_object_match([image_ra_dec],
-                                        in_coord_list=object_ra_dec,
+                                        in_coord_list=ra_dec,
                                         return_names=object_names,
                                         match_radius=match_radius,
                                         max_matches=1)
