@@ -106,7 +106,13 @@ class TestScript(object):
         # assertion below is to catch whether add_object_info raised a warning
         # if it did, it means object names were not added and the test wasn't
         # complete
-        assert(len(recwarn.list) == 0)
+        #
+        # originally tested for this by looking at number of warnings
+        # emitted, but changing astropy versions made it emit warnings
+        # instead, do the stupid thing below...check for text of the message.
+        #
+        for wrn in recwarn.list:
+            assert('No object list' not in wrn.message)
         destination.remove()
 
     def test_run_triage_no_output_generated(self, default_keywords):
