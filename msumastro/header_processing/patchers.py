@@ -608,15 +608,16 @@ def find_object_match(target_coords, in_coord_list=None, return_names=None,
     Parameters
     ----------
 
-    target_coords : list or list-like of astropy.coordinates objects
-        Positions at which you would like a matching object
+    target_coords : astropy.coordinates object
+        Position(s) at which you would like a matching object
 
-    in_coord_list : list or list-like of astropy.coordinates objects
+    in_coord_list : astropy.coordinates object
         Positions of objects you want to match to.
 
     return_names : list of str
         List of object names; the name of the matching object is returned
         instead of the coordinates of the matching object if this is not None.
+        Must be the the same length as `in_coorc_list`.
 
     match_radius : float
         Radius, in **arcminutes**, for a match_radius
@@ -630,7 +631,34 @@ def find_object_match(target_coords, in_coord_list=None, return_names=None,
     matches : a list with a match, if any, for each of the ```target_coords``
     """
     matches = []
+
+    def fake_coords_length(c):
+        """
+        Return a length for an astropy.coordinates SphericalCoordinateBase
+
+        Parameters
+        ----------
+
+        c : instance of any subclass of SphericalCoordinateBase
+            Can be one or many coordinates
+
+        Returns
+        -------
+
+        len : int
+            Number of coordinates in object
+        """
+        if c.isscalar:
+            return 1
+        else:
+            for i, a_coord in enumerate(c):
+                pass
+            return i+1
+
     if return_names is not None:
+        if len(return_names) != fake_coords_length(in_coord_list):
+            raise ValueError('return_names must be same '
+                             'length as in_coord_list')
         return_value = return_names
     else:
         return_value = in_coord_list
