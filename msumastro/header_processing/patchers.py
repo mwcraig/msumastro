@@ -544,6 +544,7 @@ def add_object_info(directory='.',
                      'pair of objects that '
                      'are closer together than match radius %f arcmin',
                      object_list, object_list_dir, match_radius)
+        raise
 
     n_found_image_objects = 0
     last_found_object = None
