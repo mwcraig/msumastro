@@ -559,8 +559,8 @@ def add_object_info(directory='.',
         logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
         matched_object = False
         image_ra_dec = FK5(header['ra'],
-                                      header['dec'],
-                                      unit=default_angle_units)
+                           header['dec'],
+                           unit=default_angle_units)
         logger.debug('Checking whether we had a match last time.')
         if last_found_object is not None:
             # Check if the last object matches this image...
