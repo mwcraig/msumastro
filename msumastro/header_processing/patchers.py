@@ -614,11 +614,16 @@ def find_object_match(target_coords, in_coord_list=None, return_names=None,
     in_coord_list : list or list-like of astropy.coordinates objects
         Positions of objects you want to match to.
 
+    return_names : list of str
+        List of object names; the name of the matching object is returned
+        instead of the coordinates of the matching object if this is not None.
+
     match_radius : float
         Radius, in **arcminutes**, for a match_radius
 
     max_matches : int
         Maximum number of matches each target may have.
+
     Returns
     -------
 
