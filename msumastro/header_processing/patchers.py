@@ -512,9 +512,6 @@ def add_object_info(directory='.',
         logger.warn(warn_msg.format(directory))
         return
 
-#    ra_dec_obj = {'er ori':(93.190,12.382), 'm101':(210.826,54.335),
-#                  'ey uma':(135.575,49.810)}
-
     object_names = np.array(object_names)
     ra_dec = []
     default_angle_units = (u.hour, u.degree)
