@@ -288,6 +288,22 @@ def test_add_object_name_uses_object_list_dir():
                             use_obj_dir=a_temp_dir)
 
 
+def test_ambiguous_object_file_raises_error():
+    a_temp_dir = mkdtemp()
+    obj_name = 'bad_list.txt'
+    obj_path = path.join(a_temp_dir, obj_name)
+    object_in = 'ey uma'
+    RA_in = "09:02:20.76"
+    Dec_in = "+49:49:09.3"
+    to_write = 'object, RA, Dec\n{},{},{}\n'.format(object_in, RA_in, Dec_in)
+    to_write += '{},{},{}\n'.format('crap', RA_in, Dec_in)
+    object_file = open(obj_path, 'wb')
+    object_file.write(to_write)
+    object_file.close()
+    with pytest.raises(RuntimeError):
+        test_adding_object_name(use_list=obj_name, use_obj_dir=a_temp_dir)
+
+
 def test_read_object_list_with_ra_dec():
     temp_dir = mkdtemp()
     obj_name = 'objects_with_ra.txt'
