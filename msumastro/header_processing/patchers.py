@@ -500,6 +500,7 @@ def add_object_info(directory='.',
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
+    im_table = images.summary_info
 
     object_dir = directory if object_list_dir is None else object_list_dir
 
@@ -534,20 +535,34 @@ def add_object_info(directory='.',
     # sanity check object list--the objects should not be so close together
     # that any pair is within match radius of each other.
     logger.debug('Testing object list for self-consistency')
+
+    # need 2nd neighbor below or objects will match themselves
     try:
-        find_object_match(ra_dec,
-                          in_coord_list=ra_dec,
-                          match_radius=match_radius,
-                          max_matches=1)
-    except RuntimeError as e:
-        logger.error('Object list %s in directory %s contains at least one '
-                     'pair of objects that '
-                     'are closer together than match radius %f arcmin',
-                     object_list, object_list_dir, match_radius)
-        raise
+        matches, d2d, d3d = ra_dec.match_to_catalog_sky(ra_dec,
+                                                        nthneighbor=2)
+        bad_object_list = (d2d.arcmin < match_radius).any()
+    except IndexError:
+        # There was only one item in the table...so no object can
+        # be duplicated, so make a fake distance that doesn't match
+        bad_object_list = False
+
+    if bad_object_list:
+        err_msg = ('Object list {} in directory {} contains at least one '
+                   'pair of objects that '
+                   'are closer together than '
+                   'match radius {} arcmin').format(object_list,
+                                                    object_list_dir,
+                                                    match_radius)
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
 
     n_found_image_objects = 0
     last_found_object = None
+    good_pos = np.logical_not(im_table['RA'].mask | im_table['Dec'].mask)
+    img_pos = FK5(im_table['RA'][good_pos], im_table['Dec'][good_pos],
+                  unit=default_angle_units)
+    match_idx, d2d, d3d = img_pos.match_to_catalog_sky(ra_dec)
+    good_match = (d2d.arcmin <= match_radius)
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         clobber=overwrite,
                                         save_location=save_location,
