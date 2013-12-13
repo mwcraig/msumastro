@@ -556,63 +556,53 @@ def add_object_info(directory='.',
         logger.error(err_msg)
         raise RuntimeError(err_msg)
 
-    n_found_image_objects = 0
-    last_found_object = None
-    good_pos = np.logical_not(im_table['RA'].mask | im_table['Dec'].mask)
-    img_pos = FK5(im_table['RA'][good_pos], im_table['Dec'][good_pos],
+    # I want rows which...
+    #
+    # ...have no OBJECT...
+    needs_object = im_table['object'].mask
+    # ...and have coordinates.
+    needs_object &= ~ (im_table['RA'].mask | im_table['Dec'].mask)
+
+    # Qualifying rows need a search for a match.
+    # the search returns a match for every row provided, but some matches
+    # may be farther away than desired, so...
+    #
+    # ...`and` the previous index mask with those that matched, and
+    # ...construct list of object names for those images.
+
+    img_pos = FK5(im_table['RA'][needs_object], im_table['Dec'][needs_object],
                   unit=default_angle_units)
     match_idx, d2d, d3d = img_pos.match_to_catalog_sky(ra_dec)
     good_match = (d2d.arcmin <= match_radius)
-    for header, fname in images.headers(save_with_name=new_file_ext,
-                                        clobber=overwrite,
-                                        save_location=save_location,
-                                        object=None, RA='*', Dec='*',
-                                        return_fname=True):
+    found_object = np.array(needs_object)
+    found_object[~good_match] = False
+    matched_object_name = object_names[match_idx][good_match]
 
-        logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
-        matched_object = False
-        image_ra_dec = FK5(header['ra'],
-                           header['dec'],
-                           unit=default_angle_units)
-        logger.debug('Checking whether we had a match last time.')
-        if last_found_object is not None:
-            # Check if the last object matches this image...
-            logger.debug('We had a match last time...')
-            last_ra_dec = (ra_dec[object_names == last_found_object])
-            last_ra_dec = last_ra_dec[0]
-            sep = last_ra_dec.separation(image_ra_dec).arcmin
-            matched_object = (sep < match_radius)
-            if matched_object:
-                logger.debug('And that object matches again')
-                matches = [last_found_object]
-
-        # we either failed on the last object or there wasn't one...
-        # either way, need to do a full search
-        if not matched_object:
-            logger.debug('No match found yet, checking full object list')
-            matches = find_object_match([image_ra_dec],
-                                        in_coord_list=ra_dec,
-                                        return_names=object_names,
-                                        match_radius=match_radius,
-                                        max_matches=1)
-            # we only need the list that matched the first object...
-            matches = matches[0]
-            logger.debug('%s', matches)
-
-        if matches is None:
+    no_match_found = needs_object & ~found_object
+    if no_match_found.any():
+        for fname in np.array(images.files)[no_match_found]:
             warn_msg = "No object found for image {0}".format(fname)
             logger.warn(warn_msg)
-            continue
-        n_found_image_objects += 1
-        object_name = matches[0]
+
+    if not found_object.any():
+        logger.info('NO OBJECTS MATCHED TO IMAGES IN: {0}'.format(directory))
+        return
+
+    im_table['file'].mask = ~found_object
+
+    for idx, (header, fname) in enumerate(images.headers(save_with_name=new_file_ext,
+                                          clobber=overwrite,
+                                          save_location=save_location,
+                                          return_fname=True)):
+
+        logger.info('START ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
+
+        object_name = matched_object_name[idx]
         logger.debug('Found matching object named %s', object_name)
-        last_found_object = object_name
         obj_keyword = FITSKeyword('object', value=object_name)
         obj_keyword.add_to_header(header, history=True)
         logger.info(obj_keyword.history_comment())
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
-    if n_found_image_objects == 0:
-        logger.info('NO OBJECTS MATCHED TO IMAGES IN: {0}'.format(directory))
 
 
 def find_object_match(target_coords, in_coord_list=None, return_names=None,
