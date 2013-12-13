@@ -122,13 +122,6 @@ def test_adding_object_name(use_list=None,
     return with_name
 
 
-def test_adding_object_name_using_last_object():
-    copy(path.join(_test_dir, 'uint16.fit'),
-         path.join(_test_dir, 'uint16_2.fit'))
-    test_adding_object_name(check_fits_file='uint16')
-    test_adding_object_name(check_fits_file='uint16_2')
-
-
 def test_writing_patched_files_to_directory():
     files = glob(path.join(_test_dir, '*.fit*'))
     n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
