@@ -115,7 +115,7 @@ def add_object_pos_airmass(header, history=False):
     feder.DEC.value = feder.DEC.value.replace(' ', ':')
 
     obj_coord2 = FK5(feder.RA.value, feder.DEC.value,
-                                unit=(u.hour, u.degree))
+                     unit=(u.hour, u.degree))
 
     # monkeypatch obj_coord2 so it looks like an astropysics coord
     obj_coord2.raerr = None
