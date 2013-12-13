@@ -1,5 +1,5 @@
 from os import path, chdir, getcwd, remove
-from shutil import rmtree, copy, move
+from shutil import rmtree, copy, copytree, move
 from tempfile import mkdtemp
 from glob import glob
 import warnings
@@ -226,6 +226,12 @@ def test_adding_object_name(use_list=None,
     return with_name
 
 
+def test_add_object_name_warns_if_no_match(caplog):
+    test_adding_object_name()
+    patch_header_warnings = get_patch_header_warnings(caplog)
+    assert('No object found for image ' in patch_header_warnings)
+
+
 def test_adding_object_name_to_different_directory(use_list=None,
                                                    use_obj_dir=None):
     new_ext = '_obj_name_test'
@@ -439,14 +445,15 @@ def setup_function(function):
     global _test_dir
     global _test_image_name
 
-    _test_dir = mkdtemp()
+    _test_dir = path.join(mkdtemp(), 'data')
+    data_source = get_data_dir()
+    print data_source
+    #copy(path.join(data_source, _test_image_name), _test_dir)
+    copytree(data_source, _test_dir)
     to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
-    data_source = get_data_dir()
-    print data_source
-    copy(path.join(data_source, _test_image_name), _test_dir)
 
 
 def teardown_function(function):
