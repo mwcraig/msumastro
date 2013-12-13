@@ -618,12 +618,19 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
                           (summary['Dec'].mask) &
                           (summary['object'] != '') &
                           (summary['imagetyp'] == 'LIGHT')]
+
     if not missing_dec:
         return
 
     objects = np.unique(missing_dec['object'])
     for object_name in objects:
-        object_coords = FK5.from_name(object_name)
+        try:
+            object_coords = FK5.from_name(object_name)
+        except name_resolve.NameResolveError as e:
+            logger.warning('Unable to lookup position for %s', object_name)
+            logger.warning(e)
+            return
+
         common_format_keywords = {'sep': ':',
                                   'precision': 2,
                                   'pad': True}
