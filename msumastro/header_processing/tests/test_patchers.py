@@ -77,7 +77,8 @@ def test_data_is_unmodified_by_patch_headers():
     """No changes should be made to the data."""
     new_ext = '_new'
     ph.patch_headers(_test_dir, new_file_ext=new_ext)
-    fname = path.join(_test_dir, 'uint16')
+    test_file_basename = path.splitext(_test_image_name)[0]
+    fname = path.join(_test_dir, test_file_basename)
     fname_new = fname + new_ext
     orig = fits.open(fname + '.fit',
                      do_not_scale_image_data=True)
@@ -191,7 +192,8 @@ def test_data_is_unmodified_by_adding_object():
     new_ext = '_obj'
     ph.patch_headers(_test_dir, new_file_ext=new_ext)
     ph.add_object_info(_test_dir, new_file_ext=new_ext)
-    fname = path.join(_test_dir, 'uint16')
+    test_file_basename = path.splitext(_test_image_name)[0]
+    fname = path.join(_test_dir, test_file_basename)
     fname_new = fname + new_ext + new_ext
     orig = fits.open(fname + '.fit',
                      do_not_scale_image_data=True)
@@ -202,7 +204,7 @@ def test_data_is_unmodified_by_adding_object():
 
 def test_adding_object_name(use_list=None,
                             use_obj_dir=None,
-                            check_fits_file='uint16'):
+                            check_fits_file=None):
     """
     Test adding object name
 
@@ -212,10 +214,11 @@ def test_adding_object_name(use_list=None,
     `use_obj_dir` is None.
     """
     new_ext = '_obj_name_test'
+    check_file = check_fits_file or path.splitext(_test_image_name)[0]
     ph.patch_headers(_test_dir, new_file_ext=new_ext)
     ph.add_object_info(_test_dir, new_file_ext=new_ext,
                        object_list=use_list, object_list_dir=use_obj_dir)
-    fname = path.join(_test_dir, check_fits_file)
+    fname = path.join(_test_dir, check_file)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
     print 'add object name: %s' % fname
@@ -231,7 +234,8 @@ def test_adding_object_name_to_different_directory(use_list=None,
     ph.add_object_info(_test_dir, new_file_ext=new_ext,
                        save_location=destination_dir,
                        object_list=use_list, object_list_dir=use_obj_dir)
-    fname = path.join(destination_dir, 'uint16')
+    test_file_basename = path.splitext(_test_image_name)[0]
+    fname = path.join(destination_dir, test_file_basename)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
     print 'add object name: %s' % fname
