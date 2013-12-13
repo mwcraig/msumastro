@@ -301,13 +301,6 @@ def test_ambiguous_object_file_raises_error():
         test_adding_object_name(use_list=obj_name, use_obj_dir=a_temp_dir)
 
 
-def test_find_object_match_detects_bad_object_name_list():
-    c = FK5([1, 2, 3], [10, 20, 30], unit=(u.hour, u.degree))
-    with pytest.raises(ValueError):
-        ph.find_object_match([0, 1], in_coord_list=c,
-                             return_names=['a', 'b'])
-
-
 def test_read_object_list_with_ra_dec():
     temp_dir = mkdtemp()
     obj_name = 'objects_with_ra.txt'
