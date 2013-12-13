@@ -86,42 +86,6 @@ def test_data_is_unmodified_by_patch_headers():
     assert np.all(orig[0].data == modified[0].data)
 
 
-def test_data_is_unmodified_by_adding_object():
-    new_ext = '_obj'
-    ph.patch_headers(_test_dir, new_file_ext=new_ext)
-    ph.add_object_info(_test_dir, new_file_ext=new_ext)
-    fname = path.join(_test_dir, 'uint16')
-    fname_new = fname + new_ext + new_ext
-    orig = fits.open(fname + '.fit',
-                     do_not_scale_image_data=True)
-    modified = fits.open(fname_new + '.fit',
-                         do_not_scale_image_data=True)
-    assert np.all(orig[0].data == modified[0].data)
-
-
-def test_adding_object_name(use_list=None,
-                            use_obj_dir=None,
-                            check_fits_file='uint16'):
-    """
-    Test adding object name
-
-    Provide `use_list` to override the default object file name.
-    Provide `use_obj_dir` to specify directory in which the object file
-    is found. Defaults to directory in which the images reside if
-    `use_obj_dir` is None.
-    """
-    new_ext = '_obj_name_test'
-    ph.patch_headers(_test_dir, new_file_ext=new_ext)
-    ph.add_object_info(_test_dir, new_file_ext=new_ext,
-                       object_list=use_list, object_list_dir=use_obj_dir)
-    fname = path.join(_test_dir, check_fits_file)
-    fname += new_ext + new_ext
-    with_name = fits.open(fname + '.fit')
-    print 'add object name: %s' % fname
-    assert (with_name[0].header['object'] == 'm101')
-    return with_name
-
-
 def test_writing_patched_files_to_directory():
     files = glob(path.join(_test_dir, '*.fit*'))
     n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
@@ -135,22 +99,6 @@ def test_writing_patched_files_to_directory():
     rmtree(dest_dir)
     assert ((n_files_init == n_files_after) &
             (n_files_init == n_files_destination))
-
-
-def test_adding_object_name_to_different_directory(use_list=None,
-                                                   use_obj_dir=None):
-    new_ext = '_obj_name_test'
-    ph.patch_headers(_test_dir, new_file_ext=new_ext)
-    destination_dir = mkdtemp()
-    ph.add_object_info(_test_dir, new_file_ext=new_ext,
-                       save_location=destination_dir,
-                       object_list=use_list, object_list_dir=use_obj_dir)
-    fname = path.join(destination_dir, 'uint16')
-    fname += new_ext + new_ext
-    with_name = fits.open(fname + '.fit')
-    print 'add object name: %s' % fname
-    assert (with_name[0].header['object'] == 'm101')
-    return with_name
 
 
 @pytest.mark.parametrize('data_source',
@@ -239,6 +187,58 @@ def test_fix_imagetype():
         assert('history' in header)
 
 
+def test_data_is_unmodified_by_adding_object():
+    new_ext = '_obj'
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.add_object_info(_test_dir, new_file_ext=new_ext)
+    fname = path.join(_test_dir, 'uint16')
+    fname_new = fname + new_ext + new_ext
+    orig = fits.open(fname + '.fit',
+                     do_not_scale_image_data=True)
+    modified = fits.open(fname_new + '.fit',
+                         do_not_scale_image_data=True)
+    assert np.all(orig[0].data == modified[0].data)
+
+
+def test_adding_object_name(use_list=None,
+                            use_obj_dir=None,
+                            check_fits_file='uint16'):
+    """
+    Test adding object name
+
+    Provide `use_list` to override the default object file name.
+    Provide `use_obj_dir` to specify directory in which the object file
+    is found. Defaults to directory in which the images reside if
+    `use_obj_dir` is None.
+    """
+    new_ext = '_obj_name_test'
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
+    ph.add_object_info(_test_dir, new_file_ext=new_ext,
+                       object_list=use_list, object_list_dir=use_obj_dir)
+    fname = path.join(_test_dir, check_fits_file)
+    fname += new_ext + new_ext
+    with_name = fits.open(fname + '.fit')
+    print 'add object name: %s' % fname
+    assert (with_name[0].header['object'] == 'm101')
+    return with_name
+
+
+def test_adding_object_name_to_different_directory(use_list=None,
+                                                   use_obj_dir=None):
+    new_ext = '_obj_name_test'
+    ph.patch_headers(_test_dir, new_file_ext=new_ext)
+    destination_dir = mkdtemp()
+    ph.add_object_info(_test_dir, new_file_ext=new_ext,
+                       save_location=destination_dir,
+                       object_list=use_list, object_list_dir=use_obj_dir)
+    fname = path.join(destination_dir, 'uint16')
+    fname += new_ext + new_ext
+    with_name = fits.open(fname + '.fit')
+    print 'add object name: %s' % fname
+    assert (with_name[0].header['object'] == 'm101')
+    return with_name
+
+
 def test_add_object_name_uses_object_list_name():
 
     custom_object_name = 'my_object_list.txt'
@@ -321,18 +321,6 @@ def test_read_object_list_with_ra_dec():
     assert(Dec[0] == Dec_in)
 
 
-def get_patch_header_warnings(log):
-    patch_header_warnings = []
-    for record in log.records():
-        if (('patchers' in record.name) and (record.levelno ==
-                                             logging.WARN)):
-
-            patch_header_warnings.append(record.message)
-
-    patch_headers_message_text = '\n'.join(patch_header_warnings)
-    return patch_headers_message_text
-
-
 def test_missing_object_file_issues_warning(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     ph.add_object_info(_test_dir)
@@ -376,6 +364,18 @@ def test_add_ra_dec_from_object_name():
                         header_m101.ra.hour)
     assert_almost_equal(m101_ra_dec_correct.dec.degree,
                         header_m101.dec.degree)
+
+
+def get_patch_header_warnings(log):
+    patch_header_warnings = []
+    for record in log.records():
+        if (('patchers' in record.name) and (record.levelno ==
+                                             logging.WARN)):
+
+            patch_header_warnings.append(record.message)
+
+    patch_headers_message_text = '\n'.join(patch_header_warnings)
+    return patch_headers_message_text
 
 
 def test_times_apparent_pos_added():
