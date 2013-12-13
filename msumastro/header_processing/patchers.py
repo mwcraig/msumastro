@@ -575,7 +575,7 @@ def add_object_info(directory='.',
     match_idx, d2d, d3d = img_pos.match_to_catalog_sky(ra_dec)
     good_match = (d2d.arcmin <= match_radius)
     found_object = np.array(needs_object)
-    found_object[~good_match] = False
+    found_object[needs_object] = good_match
     matched_object_name = object_names[match_idx][good_match]
 
     no_match_found = needs_object & ~found_object
@@ -615,7 +615,9 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     summary = images.summary_info
     missing_dec = summary[(np.logical_not(summary['object'].mask)) &
                           (summary['RA'].mask) &
-                          (summary['Dec'].mask)]
+                          (summary['Dec'].mask) &
+                          (summary['object'] != '') &
+                          (summary['imagetyp'] == 'LIGHT')]
     if not missing_dec:
         return
 
