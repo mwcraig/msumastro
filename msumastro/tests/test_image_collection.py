@@ -3,6 +3,7 @@ from shutil import rmtree
 import gzip
 from tempfile import mkdtemp
 from glob import iglob, glob
+import logging
 
 import astropy.io.fits as fits
 import numpy as np
@@ -248,6 +249,23 @@ class TestImageFileCollection(object):
         for hdr in collection.headers():
             # this statement should not be reached if there are no FITS files
             assert 0
+
+    def test_dir_with_bad_fits_and_no_keys(self, tmpdir, caplog):
+        # This test should fail if the FITS files in the directory
+        # are actually read.
+        bad_dir = tmpdir.mkdtemp()
+        not_really_fits = bad_dir.join('not_fits.fit')
+        not_really_fits.dump('I am not really a FITS file')
+        # make sure an error will be generated if the FITS file is read
+        with pytest.raises(IOError):
+            fits.getheader(not_really_fits.strpath)
+        ic = tff.ImageFileCollection(location=bad_dir.strpath)
+        # ImageFileCollection will suppress the IOError but log a warning
+        # so check the log for the appropriate warning
+        warnings = [rec for rec in caplog.records()
+                    if ((rec.levelno == logging.WARN) &
+                        ('Unable to get FITS header' in rec.message))]
+        assert (len(warnings) == 0)
 
     def test_fits_summary_when_keywords_are_not_subset(self):
         """
