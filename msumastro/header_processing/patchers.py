@@ -133,7 +133,7 @@ def add_object_pos_airmass(header, history=False):
     HA = feder.site.localSiderialTime() - obj_coord2.ra.hours
     HA = Angle(HA, unit=u.hour)
 
-    feder.HA.value = HA.format(unit=u.hour, sep=':')
+    feder.HA.value = HA.to_string(unit=u.hour, sep=':')
 
     for keyword in feder.keywords_for_light_files:
         if keyword.value is not None:
@@ -634,11 +634,11 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
         common_format_keywords = {'sep': ':',
                                   'precision': 2,
                                   'pad': True}
-        feder.RA.value = object_coords.ra.format(unit=u.hour,
-                                                 **common_format_keywords)
-        feder.DEC.value = object_coords.dec.format(unit=u.degree,
-                                                   alwayssign=True,
-                                                   **common_format_keywords)
+        feder.RA.value = object_coords.ra.to_string(unit=u.hour,
+                                                    **common_format_keywords)
+        feder.DEC.value = object_coords.dec.to_string(unit=u.degree,
+                                                      alwayssign=True,
+                                                      **common_format_keywords)
         these_files = missing_dec[missing_dec['object'] == object_name]
         for image in these_files:
             full_name = path.join(directory, image['file'])
