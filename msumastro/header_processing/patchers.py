@@ -20,41 +20,6 @@ feder = Feder()
 __all__ = ['patch_headers', 'add_object_info', 'add_ra_dec_from_object_name']
 
 
-def sexagesimal_string(dms, precision=2, sign=False):
-    """Convert degrees, minutes, seconds into a string
-
-    `dms` should be a list or tuple of (degrees or hours, minutes,
-    seconds)
-
-    `precision` is the number of digits to be kept to the right of the
-    decimal in the seconds (default is 2)
-
-    Set `sign` to `True` if a leading sign should be displayed for
-    positive values.
-    """
-    if sign:
-        degree_format = '{0[0]:+03}'
-    else:
-        degree_format = '{0[0]:02}'
-
-    seconds_width = str(precision + 3)
-    format_string = degree_format + \
-        ':{0[1]:02}:{0[2]:0' + seconds_width + '.' + str(precision) + 'f}'
-    return format_string.format(dms)
-
-
-def deg2dms(dd):
-    """Convert decimal degrees to degrees, minutes, seconds.
-
-    `dd` is decimal degrees.
-
-    Poached from stackoverflow.
-    """
-    mnt, sec = divmod(dd * 3600, 60)
-    deg, mnt = divmod(mnt, 60)
-    return int(deg), int(mnt), sec
-
-
 def IRAF_image_type(image_type):
     """Convert MaximDL default image type names to IRAF
 
@@ -82,8 +47,9 @@ def add_time_info(header, history=False):
     # for calculations
 
     feder.site.currentobsjd = feder.JD_OBS.value
-    feder.LST.value = feder.site.localSiderialTime()
-    feder.LST.value = sexagesimal_string(deg2dms(feder.LST.value))
+    LST_tmp = Angle(feder.site.localSiderialTime(), unit=u.hour)
+    feder.LST.value = LST_tmp.to_string(unit=u.hour, sep=':', precision=2,
+                                        pad=True)
 
     for keyword in feder.keywords_for_all_files:
         keyword.add_to_header(header, history=history)

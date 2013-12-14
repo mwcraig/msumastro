@@ -20,27 +20,9 @@ from ...reduction.tests.utilities import make_overscan_test_files
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
 
-test_tuple = (1, 2, 3.1415)
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
-
-
-def test_sexagesimal_string():
-    assert ph.sexagesimal_string(test_tuple) == '01:02:03.14'
-
-
-def test_sexagesimal_string_with_sign():
-    assert ph.sexagesimal_string(test_tuple, sign=True) == '+01:02:03.14'
-
-
-def test_sexagesimal_string_with_precision():
-    assert ph.sexagesimal_string(test_tuple, precision=3) == '01:02:03.142'
-
-
-def test_sexagesimal_string_with_precision_and_sign():
-    assert (ph.sexagesimal_string(test_tuple, sign=True, precision=3) ==
-            '+01:02:03.142')
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
