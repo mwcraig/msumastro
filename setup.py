@@ -26,7 +26,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     install_requires=['astropysics>=0.0.dev0',
-                      'astropy',
+                      'astropy>=0.3',
                       'numpy'],
     extras_require={
         'testing': ['pytest>1.4', 'pytest-capturelog'],
