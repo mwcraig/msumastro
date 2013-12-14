@@ -41,11 +41,6 @@ EXAMPLES
 import os
 from argparse import ArgumentParser
 from sys import exit
-# The import below
-# MUST happen before any logging...oddly, setting the VALUE
-# doesn't change anything. True story.
-
-from astropy.logger import LOG_WARNINGS
 import logging
 
 from astropy.table import Table

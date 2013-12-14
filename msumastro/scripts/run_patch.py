@@ -81,10 +81,6 @@ From within python this would be::
 from os import getcwd
 from os import path
 import warnings
-# The import below
-# MUST happen before any logging...oddly, setting the VALUE
-# doesn't change anything. True story.
-from astropy.logger import LOG_WARNINGS
 import logging
 
 from ..header_processing import patch_headers, add_object_info
