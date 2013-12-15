@@ -44,7 +44,6 @@ class ImageFileCollection(object):
         self._location = location
         self._files = self._fits_files_in_directory()
         self._summary_info = {}
-
         if keywords is None:
             keywords = []
         if info_file is not None:
@@ -55,15 +54,7 @@ class ImageFileCollection(object):
                                                 delimiter=',')
             except IOError:
                 pass
-
-        if keywords:
-            if not set(keywords).issubset(set(self.keywords)):
-                pass
-                #print ('Regenerating information summary table for %s' %
-                #       location)
-
         self.keywords = keywords
-        #self._summary_info = self._fits_summary(header_keywords=keywords)
 
     @property
     def summary_info(self):
