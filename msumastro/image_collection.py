@@ -26,9 +26,6 @@ class ImageFileCollection(object):
     ----------
     location : str, optional
         path to directory containing FITS files
-    storage_dir : str, optional
-        In principle, a path at which the summary table is stored. In practice,
-        not used.
     keywords : list of str, optional
         Keywords that should be used as column headings in the summary table.
     info_file : str, optional
@@ -43,10 +40,8 @@ class ImageFileCollection(object):
     summary_info
     """
 
-    def __init__(self, location='.', storage_dir=None, keywords=None,
-                 info_file=None):
+    def __init__(self, location='.', keywords=None, info_file=None):
         self._location = location
-        self.storage_dir = storage_dir
         self._files = self._fits_files_in_directory()
         self._summary_info = {}
 
@@ -89,47 +84,6 @@ class ImageFileCollection(object):
         Path name to directory if it is a directory.
         """
         return self._location
-
-    @property
-    def storage_dir(self):
-        """
-        Directory information about this collection should be stored.
-
-        `None` or `False` means it is not stored on disk; `True` means the
-        storage is in the same place as `self.location`; a `string` is
-        interpreted as the full path name of the directory where information
-        should be stored.
-
-        The storage location must be writeable by the user; this is
-        automatically checked when the property is set.
-
-        """
-        return self._storage
-
-    @storage_dir.setter
-    def storage_dir(self, loc):
-        """
-        On setting, check that `loc` is writable.
-        """
-        from tempfile import TemporaryFile
-
-        if ((isinstance(loc, bool) and not loc) or
-                (loc is None)):
-            self._storage = loc
-            return
-
-        if isinstance(loc, basestring):
-            temp_storage = loc
-        else:
-            temp_storage = self.location
-
-        # try writing a file to this location...
-        try:
-            tmpfile = TemporaryFile(dir=temp_storage)
-        except OSError:
-            raise
-        tmpfile.close()
-        self._storage = temp_storage
 
     @property
     def keywords(self):

@@ -43,17 +43,7 @@ def test_fits_summary():
 
 class TestImageFileCollection(object):
 
-    def test_storage_dir_set(self):
-        try:
-            should_work = tff.ImageFileCollection(location=_test_dir,
-                                                  storage_dir=_test_dir)
-            assert True
-        except OSError:
-            assert False
-
-        with pytest.raises(OSError):
-            tff.ImageFileCollection(location=_test_dir, storage_dir='/')
-
+    def test_filter_files(self):
         img_collection = tff.ImageFileCollection(
             location=_test_dir, keywords=['imagetyp', 'filter'])
         print img_collection.files_filtered(imagetyp='bias')
