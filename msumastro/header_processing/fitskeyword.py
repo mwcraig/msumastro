@@ -53,16 +53,23 @@ class FITSKeyword(object):
     @name.setter
     def name(self, keyword_name):
         self._name = self._set_keyword_case(keyword_name)
+        # set synonyms again in case the new name matches one the synonyms
+        self.synonyms = self.synonyms
 
     @property
     def synonyms(self):
         """
         List of synonyms for the keyword.
         """
-        return self._synonyms
+        try:
+            return self._synonyms
+        except AttributeError:
+            return None
 
     @synonyms.setter
     def synonyms(self, inp_synonyms):
+        if not inp_synonyms:
+            return []
         if isinstance(inp_synonyms, basestring):
             synonym_list = [inp_synonyms]
         elif isinstance(inp_synonyms, list):

@@ -76,3 +76,10 @@ class TestGoodFITSKeyword(object):
         good_synonyms = ['bobby', 'robert']
         k = FITSKeyword(name=name, synonyms=[name] + good_synonyms)
         assert(len(k.names) == len(good_synonyms) + 1)
+
+    def test_setting_name_to_one_of_synonyms(self):
+        # doing so should remove that new name as a synonym
+        k = FITSKeyword(name=self.name,
+                        synonyms=self.synonyms)
+        k.name = self.synonyms[0]
+        assert(len(k.synonyms) == len(self.synonyms) - 1)
