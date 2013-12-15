@@ -66,12 +66,13 @@ class FITSKeyword(object):
         if isinstance(inp_synonyms, basestring):
             synonym_list = [inp_synonyms]
         elif isinstance(inp_synonyms, list):
-            synonym_list = inp_synonyms
+            synonym_list = set(inp_synonyms)
         else:
             raise ValueError(
                 'Synonyms must either be a string or a list of strings')
-        self._synonyms = [self._set_keyword_case(synonym)
-                          for synonym in synonym_list]
+        synonym_list = [self._set_keyword_case(syn) for syn in synonym_list]
+        self._synonyms = [synonym for synonym in synonym_list
+                          if synonym != self.name]
         return
 
     @property
