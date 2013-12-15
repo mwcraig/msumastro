@@ -244,15 +244,17 @@ class ImageFileCollection(object):
 
         for afile in self.files:
             file_path = path.join(self.location, afile)
+            summary['file'].append(afile)
+            missing_values['file'].append(False)
+            data_type['file'] = type('string')
+            if not header_keywords:
+                continue
             try:
                 header = fits.getheader(file_path)
             except IOError as e:
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
                 continue
-            summary['file'].append(afile)
-            missing_values['file'].append(False)
-            data_type['file'] = type('string')
             for keyword in header_keywords:
                 if keyword in header:
                     summary[keyword].append(header[keyword])
