@@ -63,7 +63,6 @@ class FITSKeyword(object):
 
     @synonyms.setter
     def synonyms(self, inp_synonyms):
-        self._synonyms = []
         if isinstance(inp_synonyms, basestring):
             synonym_list = [inp_synonyms]
         elif isinstance(inp_synonyms, list):
@@ -71,8 +70,8 @@ class FITSKeyword(object):
         else:
             raise ValueError(
                 'Synonyms must either be a string or a list of strings')
-        for synonym in synonym_list:
-            self._synonyms.append(self._set_keyword_case(synonym))
+        self._synonyms = [self._set_keyword_case(synonym)
+                          for synonym in synonym_list]
         return
 
     @property
