@@ -250,7 +250,7 @@ class TestImageFileCollection(object):
             # this statement should not be reached if there are no FITS files
             assert 0
 
-    def test_dir_with_bad_fits_and_no_keys(self, tmpdir, caplog):
+    def test_dir_with_no_keys(self, tmpdir, caplog):
         # This test should fail if the FITS files in the directory
         # are actually read.
         bad_dir = tmpdir.mkdtemp()
