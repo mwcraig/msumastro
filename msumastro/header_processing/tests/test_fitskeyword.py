@@ -65,3 +65,14 @@ class TestGoodFITSKeyword(object):
         self.keyword.add_to_header(clean_hdu.header)
         for name in self.keyword.names:
             assert clean_hdu.header[name] == self.keyword.value
+
+    def test_handling_of_duplicate_synonyms(self):
+        # should fail if duplicate synonyms are not removed in initialization
+        bad_synonyms = ['bad', 'bad']
+        k = FITSKeyword(name='good', synonyms=bad_synonyms)
+        assert(len(k.synonyms) == len(set(bad_synonyms)))
+
+    def test_handling_of_synonym_that_duplicates_name(self):
+        name = 'bob'
+        k = FITSKeyword(name=name, synonyms=name)
+        assert(len(k.names) == len(name))
