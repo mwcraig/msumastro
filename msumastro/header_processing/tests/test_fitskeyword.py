@@ -6,27 +6,24 @@ from ..fitskeyword import FITSKeyword
 class TestGoodFITSKeyword(object):
 
     def setup_method(self, method):
-        self.keyword = FITSKeyword(name="kwd", value=12,
-                                   comment='This is a comment',
-                                   synonyms=['kwdalt1', 'kwdalt2'])
-        self.hdu = PrimaryHDU()
-
-    def setUp(self):
         self.name = "kwd"
         self.value = 12
         self.comment = 'This is a comment'
         self.synonyms = ['kwdalt1', 'kwdalt2']
+        self.keyword = FITSKeyword(name=self.name, value=self.value,
+                                   comment=self.comment,
+                                   synonyms=self.synonyms)
         self.hdu = PrimaryHDU()
 
     def test_name_setter(self):
-        assert self.keyword.name == "KWD"
+        assert self.keyword.name == self.name.upper()
 
     def test_synonym_setter_length(self):
         assert len(self.keyword.synonyms) == 2
 
     def test_synonym_setter_values(self):
-        assert ((self.keyword.synonyms[0] == 'KWDALT1') and
-                (self.keyword.synonyms[1] == 'KWDALT2'))
+        synonyms_should_be = set([syn.upper() for syn in self.synonyms])
+        assert(not synonyms_should_be.difference(self.keyword.synonyms))
 
     def test_names(self):
         assert (self.keyword.names == [self.keyword.name,
@@ -35,7 +32,7 @@ class TestGoodFITSKeyword(object):
     def test_history_comment(self):
         assert (self.keyword.history_comment() ==
                 "Updated keyword KWD to value 12")
-        assert(self.keyword.history_comment(with_name=self.keyword.synonyms[0])
+        assert(self.keyword.history_comment(with_name=self.synonyms[0])
                == "Updated keyword KWDALT1 to value 12")
 
     def test_add_header(self):
@@ -75,4 +72,7 @@ class TestGoodFITSKeyword(object):
     def test_handling_of_synonym_that_duplicates_name(self):
         name = 'bob'
         k = FITSKeyword(name=name, synonyms=name)
-        assert(len(k.names) == len(name))
+        assert(len(k.names) == 1)
+        good_synonyms = ['bobby', 'robert']
+        k = FITSKeyword(name=name, synonyms=[name] + good_synonyms)
+        assert(len(k.names) == len(good_synonyms) + 1)
