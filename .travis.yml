@@ -1,6 +1,11 @@
 language: python
 python:
   - "2.7"
+
+before_install:
+    # grabbed this from astropy--to get scipy working, I think...
+    - sudo apt-get update
+    - sudo apt-get install python-scipy
 install:
     - python setup.py install
     - pip install scipy
