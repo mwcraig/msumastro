@@ -2,12 +2,14 @@ language: python
 python:
   - "2.7"
 
+virtualenv:
+    system_site_packages: true
+
 before_install:
     # grabbed this from astropy--to get scipy working, I think...
     - sudo apt-get update
-    - sudo apt-get install python-scipy
+    - sudo apt-get install python-scipy python-numpy
 install:
     - python setup.py install
-    - pip install scipy
 script:
     - python setup.py test
