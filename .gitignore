@@ -11,3 +11,4 @@ dest
 dist
 msumastro.egg-info
 .coverage
+*.egg
