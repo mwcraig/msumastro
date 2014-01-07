@@ -4,13 +4,14 @@ from tempfile import mkdtemp
 from glob import glob
 import warnings
 import logging
+from socket import timeout
 
 import pytest
 pytest_plugins = "capturelog"
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
-from astropy.coordinates import Angle, FK5
+from astropy.coordinates import Angle, FK5, name_resolve
 from astropy import units as u
 
 #from ..patch_headers import *
@@ -23,7 +24,7 @@ from ... import ImageFileCollection
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
-
+simbad_down = False
 
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
@@ -31,6 +32,24 @@ def test_read_object_list():
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
+    assert not (RA or Dec)
+
+
+def test_read_object_list_ra_dec():
+    temp_dir = mkdtemp()
+    obj_name = 'objects_with_ra.txt'
+    object_path = path.join(temp_dir, obj_name)
+    object_in = 'ey uma'
+    RA_in = "09:02:20.76"
+    Dec_in = "+49:49:09.3"
+    to_write = 'object, RA, Dec\n{},{},{}'.format(object_in, RA_in, Dec_in)
+    object_file = open(object_path, 'wb')
+    object_file.write(to_write)
+    object_file.close()
+    obj, RA, Dec = ph.read_object_list(temp_dir, obj_name)
+    assert(obj[0] == object_in)
+    assert(RA[0] == RA_in)
+    assert(Dec[0] == Dec_in)
 
 
 def test_history_bad_mode():
@@ -207,6 +226,12 @@ def test_adding_object_name(use_list=None,
     assert (with_name[0].header['object'] == 'm101')
     return with_name
 
+@pytest.mark.usefixtures('object_file_no_ra')
+def test_adding_object_from_name_only():
+    if simbad_down:
+        pytest.xfail("Simbad is down")
+    test_adding_object_name()
+
 
 def test_add_object_name_warns_if_no_match(caplog):
     test_adding_object_name()
@@ -289,23 +314,6 @@ def test_ambiguous_object_file_raises_error():
         test_adding_object_name(use_list=obj_name, use_obj_dir=a_temp_dir)
 
 
-def test_read_object_list_with_ra_dec():
-    temp_dir = mkdtemp()
-    obj_name = 'objects_with_ra.txt'
-    object_path = path.join(temp_dir, obj_name)
-    object_in = 'ey uma'
-    RA_in = "09:02:20.76"
-    Dec_in = "+49:49:09.3"
-    to_write = 'object, RA, Dec\n{},{},{}'.format(object_in, RA_in, Dec_in)
-    object_file = open(object_path, 'wb')
-    object_file.write(to_write)
-    object_file.close()
-    obj, RA, Dec = ph.read_object_list(temp_dir, obj_name)
-    assert(obj[0] == object_in)
-    assert(RA[0] == RA_in)
-    assert(Dec[0] == Dec_in)
-
-
 def test_missing_object_file_issues_warning(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     ph.add_object_info(_test_dir)
@@ -315,7 +323,7 @@ def test_missing_object_file_issues_warning(caplog):
 
 def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
-    to_write = '# comment 1\n# comment 2\nobject\nsz lyn'
+    to_write = '# comment 1\n# comment 2\nobject,RA,Dec\nsz lyn,8:09:35.75,+44:28:17.59'
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
@@ -327,6 +335,8 @@ def test_no_object_match_for_image_warning_includes_file_name(caplog):
 
 
 def test_add_ra_dec_from_object_name():
+    if simbad_down:
+        pytest.xfail("Simbad is down")
     full_path = path.join(_test_dir, _test_image_name)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
@@ -423,6 +433,25 @@ def object_file_no_ra(request):
     object_file.close()
 
 
+def object_file_with_ra_dec(dir):
+    objs = ["ey uma, 09:02:20.76, +49:49:09.3",
+            "m101,14:03:12.58,+54:20:55.50"
+    ]
+    to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
+    object_file = open(path.join(dir, _default_object_file_name), 'wb')
+    object_file.write(to_write)
+    object_file.close()
+
+
+def setup_module(module):
+    global simbad_down
+
+    try:
+        foo = FK5.from_name("m101")
+    except (name_resolve.NameResolveError, timeout):
+        simbad_down = True
+
+
 def setup_function(function):
     global _test_dir
     global _test_image_name
@@ -430,12 +459,8 @@ def setup_function(function):
     _test_dir = path.join(mkdtemp(), 'data')
     data_source = get_data_dir()
     print data_source
-    #copy(path.join(data_source, _test_image_name), _test_dir)
     copytree(data_source, _test_dir)
-    to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
-    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
-    object_file.write(to_write)
-    object_file.close()
+    object_file_with_ra_dec(_test_dir)
 
 
 def teardown_function(function):
