@@ -29,9 +29,9 @@ setup(
                       'astropy>=0.3',
                       'numpy'],
     extras_require={
-        'testing': ['pytest>1.4', 'pytest-capturelog'],
-        'docs': ['numpydoc', 'sphinx-argparse']
+        'docs': ['numpydoc', 'sphinx-argparse'],
     },
+    tests_require=['pytest>1.4', 'pytest-capturelog'],
     cmdclass={'test': PyTest},
     entry_points={
         'console_scripts': [
