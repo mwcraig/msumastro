@@ -63,7 +63,10 @@ def clean_data(tmpdir, request):
     test_dir = tmpdir
     test_data_dir = py.path.local(get_data_dir())
     test_data_dir.copy(test_dir)
-    to_write = '# comment 1\n# comment 2\nobject\ney uma\nm101'
+    objs = ["ey uma, 09:02:20.76, +49:49:09.3",
+            "m101,14:03:12.58,+54:20:55.50"
+    ]
+    to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
     object_path = test_dir.join(_default_object_file_name)
     print object_path
     object_file = object_path.open(mode='wb')
