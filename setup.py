@@ -14,6 +14,8 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
 
+INSTALL_REQUIRES = ['astropysics>=0.0.dev0', 'astropy>=0.3', 'numpy']
+
 setup(
     name='msumastro',
     version='0.2dev',
@@ -25,13 +27,11 @@ setup(
     author_email='mcraig@mnstate.edu',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
-    install_requires=['astropysics>=0.0.dev0',
-                      'astropy>=0.3',
-                      'numpy'],
+    install_requires=INSTALL_REQUIRES,
     extras_require={
         'docs': ['numpydoc', 'sphinx-argparse'],
     },
-    tests_require=['pytest>1.4', 'pytest-capturelog'],
+    tests_require=['pytest>1.4', 'pytest-capturelog'] + INSTALL_REQUIRES,
     cmdclass={'test': PyTest},
     entry_points={
         'console_scripts': [
