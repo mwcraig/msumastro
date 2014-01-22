@@ -3,6 +3,25 @@ from collections import Iterable
 from astropy.table import Table
 
 
+class RecursiveTree(dict):
+    """docstring for RecursiveTree"""
+    def __init__(self):
+        super(RecursiveTree, self).__init__()
+
+    def __missing__(self, key):
+        """
+        Add the method that makes this tree recursive
+
+        When an unknown key is encountered its default value is an empty
+        instance a dict.
+
+        Idea is from `Stack Overflow 
+        <http://stackoverflow.com/questions/6780952/how-to-change-behavior-of-dict-for-an-instance>`_
+        """
+        print type(self)
+        value = self[key] = type(self)()
+        return value
+
 class ImageGroup(object):
     """
     Base class for grouping images hierarchically into a tree based on metadata
@@ -28,6 +47,7 @@ class ImageGroup(object):
 
     """
     def __init__(self, table, tree_keys, index_key):
+        super(ImageGroup, self).__init__()
         if not isinstance(table, Table):
             raise TypeError('First argument must be an '
                             'astropy.table.Table instance')
@@ -42,6 +62,7 @@ class ImageGroup(object):
         self._validate_group_keys()
         self._index_key = index_key
         self._validate_index()
+        self._tree = RecursiveTree()
 
     def _validate_group_keys(self):
         """
@@ -76,3 +97,10 @@ class ImageGroup(object):
     @property
     def index_key(self):
         return self._index_key
+
+    @property
+    def tree(self):
+        """
+        Tree constructed from table and keys
+        """
+        return self._tree
