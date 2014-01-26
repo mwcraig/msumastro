@@ -40,13 +40,21 @@ def expected_tree(testing_table):
               'y': {1: [1],
                     5: [3]},
               'z': {19: [4]}}
+    # the decimal entries in the table are subject to rounding, so use those 
+    # entries rather than hand entering them below.
     # if the keys are c (only) then:
-    tree_3 = {4.1: [0, 1, 2, 3],
-              5.2: [4]}
+    tree_3 = {testing_table['c'][0]: [0, 1, 2, 3],
+              testing_table['c'][4]: [4]}
     # if keys are c and b:
-    tree_4 = {4.1: {'x': [0, 2],
+    tree_4 = {testing_table['c'][0]: {'x': [0, 2],
                     'y': [1, 3]},
-              5.2: {'z': [4]}}
+              testing_table['c'][4]: {'z': [4]}}
+    tree_for_keys = {'a,b': tree_1,
+                     'b,a': tree_2,
+                     'c': tree_3,
+                     'c,b': tree_4}
+    return tree_for_keys
+
 
 @pytest.fixture
 def good_grouper(testing_table):
@@ -58,7 +66,7 @@ def good_grouper(testing_table):
 
 @pytest.fixture
 def known_attributes():
-    attributes = ['table', 'tree_keys', 'index_key', 'tree']
+    attributes = ['table', 'tree_keys', 'index_key']
     return attributes
 
 
@@ -77,8 +85,15 @@ def test_grouper_docsting_for_sections(bare_group_class):
         assert section in bare_group_class.__doc__
 
 
-def test_grouper_initializer_number_arguments(good_grouper):
+def test_grouper_initializer_number_arguments(good_grouper, testing_table):
     assert isinstance(good_grouper, ig.ImageGroup)
+    # should fail because too few arguments
+    with pytest.raises(TypeError):
+        print ig.ImageGroup(['a'])
+    # should fail because too many arguments
+    with pytest.raises(TypeError):
+        print ig.ImageGroup(testing_table, testing_table.colnames[0:2],
+                            testing_table.meta['index_key'], 5)
 
 
 def test_group_initialization_with_bad_group_key(testing_table):
@@ -128,9 +143,64 @@ def test_grouper_attributes_are_not_settable(good_grouper, known_attributes):
 
 
 def test_grouper_tree_type(good_grouper):
-    assert isinstance(good_grouper.tree, ig.RecursiveTree)
+    assert isinstance(good_grouper, ig.RecursiveTree)
 
 
 def test_grouper_tree_manual_key_addition(good_grouper):
-    good_grouper.tree['one']['two']
-    assert 'one' in good_grouper.tree.keys()
+    good_grouper['one']['two']
+    assert 'one' in good_grouper.keys()
+    assert 'two' in good_grouper['one'].keys()
+    new_keys = range(4)
+    good_grouper.add_keys(new_keys)
+    for key in new_keys:
+        assert key in good_grouper.keys()
+        good_grouper = good_grouper[key]
+
+
+def compare_trees(tree1, tree2):
+    """
+    Recursively compare two trees
+
+    This only terminates if the leaves of the trees are instances of a list. In
+    other words, it works fine for testing the trees created by ImageGroup but
+    isn't really a general tree comparer.
+    """
+    for key in tree1.keys():
+        print(key)
+        assert key in tree2.keys()
+        if isinstance(tree1[key], list):
+            print(tree1[key])
+            assert tree1[key] == tree2[key]
+        else:
+            print('Calling compare_trees recursively')
+            compare_trees(tree1[key], tree2[key])
+
+
+def test_grouper_with_expected_trees(testing_table, expected_tree):
+    index_with = testing_table.meta['index_key']
+    for grouping_string, good_tree in expected_tree.iteritems():
+        grouping_keys = grouping_string.split(',')
+        grouper = ig.ImageGroup(testing_table, grouping_keys, index_with)
+        compare_trees(grouper, good_tree)
+
+
+def validate_walk(grouper, good_tree):
+    for parents, children, index in grouper.walk():
+        working_tree = dict(good_tree)
+        # walk the comparison tree down to the same level as the grouper tree
+        print parents
+        for parent in parents:
+            print parent
+            working_tree = working_tree[parent]
+        if children:
+            assert set(children) == set(working_tree.keys())
+        if index:
+            assert set(index) == set(working_tree)
+
+
+def test_grouper_walk(testing_table, expected_tree):
+    index_with = testing_table.meta['index_key']
+    for grouping_string, good_tree in expected_tree.iteritems():
+        grouping_keys = grouping_string.split(',')
+        grouper = ig.ImageGroup(testing_table, grouping_keys, index_with)
+        validate_walk(grouper, good_tree)

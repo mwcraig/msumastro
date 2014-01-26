@@ -1,4 +1,5 @@
 from collections import Iterable
+from itertools import izip
 
 from astropy.table import Table
 
@@ -13,16 +14,24 @@ class RecursiveTree(dict):
         Add the method that makes this tree recursive
 
         When an unknown key is encountered its default value is an empty
-        instance a dict.
+        instance of a RecursiveTree.
 
         Idea is from `Stack Overflow 
         <http://stackoverflow.com/questions/6780952/how-to-change-behavior-of-dict-for-an-instance>`_
         """
-        print type(self)
         value = self[key] = type(self)()
         return value
 
-class ImageGroup(object):
+    def add_keys(self, keys, value=None):
+        for key in keys[:-1]:
+            self = self[key]
+        if value is not None:
+            self[keys[-1]] = value
+        else:
+            self = self[keys[-1]]
+
+
+class ImageGroup(RecursiveTree):
     """
     Base class for grouping images hierarchically into a tree based on metadata
 
@@ -46,8 +55,19 @@ class ImageGroup(object):
     ----------
 
     """
-    def __init__(self, table, tree_keys, index_key):
+    def __init__(self, *args):
         super(ImageGroup, self).__init__()
+        if not args:
+            return
+
+        if len(args) != 3:
+            raise TypeError("ImageGroup must be initialized with three "
+                            "arguments")            
+        table = args[0]
+        tree_keys = args[1]
+        index_key = args[2]
+
+
         if not isinstance(table, Table):
             raise TypeError('First argument must be an '
                             'astropy.table.Table instance')
@@ -62,7 +82,7 @@ class ImageGroup(object):
         self._validate_group_keys()
         self._index_key = index_key
         self._validate_index()
-        self._tree = RecursiveTree()
+        self._build_tree()
 
     def _validate_group_keys(self):
         """
@@ -86,6 +106,21 @@ class ImageGroup(object):
                              'and index because its values are '
                              'not unique'.format(self._index_key))
 
+    def _build_tree(self):
+        """
+        Construct tree from grouping done by astropy table
+
+        Because the tree is constructed
+        """
+        grouped = self.table.group_by(self.tree_keys)
+        columns = list(self.tree_keys)
+        columns.append(self.index_key)
+        for group_key, members in izip(grouped.groups.keys,
+                                       grouped.groups):
+            key_list = list(group_key)  # table rows can't be indexed w/slice
+            indexes = list(members[self.index_key])
+            self.add_keys(key_list, value=indexes)
+
     @property
     def table(self):
         return self._table
@@ -98,9 +133,45 @@ class ImageGroup(object):
     def index_key(self):
         return self._index_key
 
-    @property
-    def tree(self):
+    def walk(self, *args, **kwd):
         """
-        Tree constructed from table and keys
+        Walk the grouped tree
+
+        The functionality provided is similar to that in os.walk
+
+        Parameters
+        ----------
+
+        None
+
+        Returns
+        -------
+        parents, children, index : lists
+        parents : list
+            Dictionary keys that led to this return
+        children : list
+            Child nodes at this level
+        index : list
+            Index values for the items in the table that correspond to the
+            values in `parents`
         """
-        return self._tree
+
+        parent = kwd.pop("parent", [])
+        if args:
+            use_dict = args[0]
+        else:
+            use_dict = self
+
+        try:
+            tree_nodes = use_dict.keys()
+            indexes = []
+            yield parent, tree_nodes, indexes
+        except AttributeError:
+            tree_nodes = []
+            yield parent, tree_nodes, use_dict
+
+        for node in tree_nodes:
+            new_parent = list(parent)
+            new_parent.append(node)
+            for val in self.walk(use_dict[node], parent=new_parent):
+                yield val
