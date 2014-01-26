@@ -16,7 +16,7 @@ class RecursiveTree(dict):
         When an unknown key is encountered its default value is an empty
         instance of a RecursiveTree.
 
-        Idea is from `Stack Overflow 
+        Idea is from `Stack Overflow
         <http://stackoverflow.com/questions/6780952/how-to-change-behavior-of-dict-for-an-instance>`_
         """
         value = self[key] = type(self)()
@@ -62,11 +62,10 @@ class ImageGroup(RecursiveTree):
 
         if len(args) != 3:
             raise TypeError("ImageGroup must be initialized with three "
-                            "arguments")            
+                            "arguments")
         table = args[0]
         tree_keys = args[1]
         index_key = args[2]
-
 
         if not isinstance(table, Table):
             raise TypeError('First argument must be an '
