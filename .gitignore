@@ -12,3 +12,4 @@ dist
 msumastro.egg-info
 .coverage
 *.egg
+htmlcov
