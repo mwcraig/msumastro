@@ -157,10 +157,6 @@ def triage_directories(directories,
                        destination=None,
                        no_log_destination=False):
 
-    use_keys = []
-    if keywords is not None:
-        use_keys = keywords
-
     for currentDir in directories:
         if destination is not None:
             target_dir = destination
@@ -169,7 +165,7 @@ def triage_directories(directories,
         if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, destination, 'run_triage')
         logger.info('Examining directory %s', currentDir)
-        result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
+        result = triage_fits_files(currentDir, file_info_to_keep=keywords)
         outfiles = [pointing_file_name, filter_file_name,
                     object_file_name, output_table]
         for fil in [outfile for outfile in outfiles if outfile is not None]:
@@ -269,21 +265,15 @@ def main(arglist=None):
 
     add_file_handlers(logger, os.getcwd(), 'run_triage')
 
-#    if args.no_default:
-#        use_keys = ['imagetyp']
-#    else:
-#        use_keys = DEFAULT_KEYS[:]
     use_keys = list(DEFAULT_KEYS)  # force a copy so DEFAULT_KEYS not modified
-    try:
-        use_keys.extend(args.key)
-    except TypeError:
-        use_keys = args.key
 
     if args.list_default:
         print 'Keys included by default are:\n'
         keys_print = [key.upper() for key in use_keys]
         print ', '.join(keys_print)
-        exit(0)
+        return use_keys
+
+    use_keys.extend(args.key)
 
     if not args.dir:
         parser.error('No directory specified')
