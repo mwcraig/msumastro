@@ -43,7 +43,7 @@ from argparse import ArgumentParser
 from sys import exit
 import logging
 
-from astropy.table import Table
+from astropy.table import Table, Column
 import numpy as np
 
 from ..customlogger import console_handler, add_file_handlers
@@ -140,6 +140,13 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
 
         needs_minimal_pointing = (lights['object'].mask) & has_no_ra
         file_needs_pointing = list(lights['file'][needs_minimal_pointing])
+
+    full_path = os.path.abspath(dir)
+    path_column = Column(data=[full_path] * len(file_info), name='Source path')
+    containing_dir = os.path.basename(full_path)
+    containing_dir_col = Column(data=[containing_dir] * len(file_info),
+                                name='Source directory')
+    file_info.add_columns([path_column, containing_dir_col])
 
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
