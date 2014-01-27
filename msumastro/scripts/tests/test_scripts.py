@@ -65,7 +65,7 @@ def clean_data(tmpdir, request):
     test_data_dir.copy(test_dir)
     objs = ["ey uma, 09:02:20.76, +49:49:09.3",
             "m101,14:03:12.58,+54:20:55.50"
-    ]
+            ]
     to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
     object_path = test_dir.join(_default_object_file_name)
     print object_path
@@ -183,6 +183,44 @@ class TestScript(object):
         arglist = [self.test_dir.strpath]
         run_triage.main(arglist)
         assert 1
+
+    def test_run_triage_on_set_with_maximdl_imagetype_fails(self):
+        hdu = fits.PrimaryHDU()
+        hdu.header['imagetyp'] = 'Bias Frame'
+        hdu.header['exptime'] = 0.0
+        hdu.data = np.random.random([100, 100])
+        hdu.writeto(self.test_dir.join('maxim.fits').strpath)
+        with pytest.raises(ValueError):
+            run_triage.triage_fits_files(self.test_dir.strpath)
+
+    def test_run_triage_contains_columns_with_extended_location_info(self):
+        result = run_triage.triage_fits_files(self.test_dir.strpath)
+        location_keys = ['Source path', 'Source directory']
+        for key in location_keys:
+            assert key in result['files'].colnames
+
+    def test_run_triage_correctly_sets_extended_location_info(self):
+        result = run_triage.triage_fits_files(self.test_dir.strpath)
+        table = result['files']
+        assert table['Source path'][0] == self.test_dir.strpath
+        assert (table['Source directory'][0] ==
+                os.path.basename(self.test_dir.strpath))
+
+    def test_run_triage_with_only_list_default_keys(self):
+        assert run_triage.main(arglist=['-l']) == run_triage.DEFAULT_KEYS
+        assert (run_triage.main(arglist=['-l', '-k should_not_be_added']) ==
+                run_triage.DEFAULT_KEYS)
+
+    def test_run_triage_raises_error_if_no_dir_supplied(self):
+        with pytest.raises(SystemExit):
+            # dummy argument to ensure coverage knows the test is happening
+            run_triage.main(arglist=['-k cow'])
+
+    def test_run_triage_with_no_keywords_makes_right_keywords(self):
+        result = run_triage.triage_fits_files(self.test_dir.strpath)
+        expected_keys = ['imagetyp', 'object', 'filter']
+        for key in expected_keys:
+            assert key in result['files'].colnames
 
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 
