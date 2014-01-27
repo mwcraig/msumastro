@@ -2,12 +2,12 @@ import pytest
 
 from astropy.table import Table
 
-from .. import image_grouper as ig
+from .. import table_tree as tt
 
 
 @pytest.fixture
 def bare_group_class():
-    return ig.TableTree
+    return tt.TableTree
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def expected_tree(testing_table):
 def good_grouper(testing_table):
     group_keys = testing_table.colnames[0:2]
     index_key = testing_table.meta['index_key']
-    grouper = ig.TableTree(testing_table, group_keys, index_key)
+    grouper = tt.TableTree(testing_table, group_keys, index_key)
     return grouper
 
 
@@ -71,7 +71,7 @@ def known_attributes():
 
 
 def test_create_grouper(bare_group_class):
-    assert issubclass(bare_group_class, ig.TableTree)
+    assert issubclass(bare_group_class, tt.TableTree)
 
 
 def test_grouper_has_docstring(bare_group_class):
@@ -86,13 +86,13 @@ def test_grouper_docsting_for_sections(bare_group_class):
 
 
 def test_grouper_initializer_number_arguments(good_grouper, testing_table):
-    assert isinstance(good_grouper, ig.TableTree)
+    assert isinstance(good_grouper, tt.TableTree)
     # should fail because too few arguments
     with pytest.raises(TypeError):
-        print ig.TableTree(['a'])
+        print tt.TableTree(['a'])
     # should fail because too many arguments
     with pytest.raises(TypeError):
-        print ig.TableTree(testing_table, testing_table.colnames[0:2],
+        print tt.TableTree(testing_table, testing_table.colnames[0:2],
                             testing_table.meta['index_key'], 5)
 
 
@@ -101,7 +101,7 @@ def test_group_initialization_with_bad_group_key(testing_table):
                   testing_table.meta['bad_group_key']]
     index_key = testing_table.meta['index_key']
     with pytest.raises(KeyError):
-        bad_grouper = ig.TableTree(testing_table, group_keys, index_key)
+        bad_grouper = tt.TableTree(testing_table, group_keys, index_key)
 
 
 def test_group_initialization_checks_input_types(testing_table):
@@ -109,24 +109,24 @@ def test_group_initialization_checks_input_types(testing_table):
     index_key = testing_table.meta['index_key']
     # should error because first argument is not a table
     with pytest.raises(TypeError):
-        bad_grouper = ig.TableTree(group_keys, group_keys, index_key)
+        bad_grouper = tt.TableTree(group_keys, group_keys, index_key)
     # should error because second argument is a string, which is iterable but
     # not a list
     with pytest.raises(TypeError):
-        bad_grouper = ig.TableTree(testing_table, index_key, index_key)
+        bad_grouper = tt.TableTree(testing_table, index_key, index_key)
     # should error because second argument is not iterable
     with pytest.raises(TypeError):
-        bad_grouper = ig.TableTree(testing_table, 5, index_key)
+        bad_grouper = tt.TableTree(testing_table, 5, index_key)
     # should error because third argument is not a string
     with pytest.raises(TypeError):
-        bad_grouper = ig.TableTree(testing_table, group_keys, [1, 2])
+        bad_grouper = tt.TableTree(testing_table, group_keys, [1, 2])
     # should error because third argument is not a column in the table
     with pytest.raises(KeyError):
-        bad_grouper = ig.TableTree(testing_table, group_keys,
+        bad_grouper = tt.TableTree(testing_table, group_keys,
                                     testing_table.meta['bad_group_key'])
     # should error because third argument has values that are not unique
     with pytest.raises(ValueError):
-        bad_grouper = ig.TableTree(testing_table, group_keys,
+        bad_grouper = tt.TableTree(testing_table, group_keys,
                                     testing_table.colnames[0])
 
 
@@ -143,7 +143,7 @@ def test_grouper_attributes_are_not_settable(good_grouper, known_attributes):
 
 
 def test_grouper_tree_type(good_grouper):
-    assert isinstance(good_grouper, ig.RecursiveTree)
+    assert isinstance(good_grouper, tt.RecursiveTree)
 
 
 def test_grouper_tree_manual_key_addition(good_grouper):
@@ -180,7 +180,7 @@ def test_grouper_with_expected_trees(testing_table, expected_tree):
     index_with = testing_table.meta['index_key']
     for grouping_string, good_tree in expected_tree.iteritems():
         grouping_keys = grouping_string.split(',')
-        grouper = ig.TableTree(testing_table, grouping_keys, index_with)
+        grouper = tt.TableTree(testing_table, grouping_keys, index_with)
         compare_trees(grouper, good_tree)
 
 
@@ -202,5 +202,5 @@ def test_grouper_walk(testing_table, expected_tree):
     index_with = testing_table.meta['index_key']
     for grouping_string, good_tree in expected_tree.iteritems():
         grouping_keys = grouping_string.split(',')
-        grouper = ig.TableTree(testing_table, grouping_keys, index_with)
+        grouper = tt.TableTree(testing_table, grouping_keys, index_with)
         validate_walk(grouper, good_tree)
