@@ -31,7 +31,7 @@ class RecursiveTree(dict):
             self = self[keys[-1]]
 
 
-class ImageGroup(RecursiveTree):
+class TableTree(RecursiveTree):
     """
     Base class for grouping images hierarchically into a tree based on metadata
 
@@ -56,12 +56,12 @@ class ImageGroup(RecursiveTree):
 
     """
     def __init__(self, *args):
-        super(ImageGroup, self).__init__()
+        super(TableTree, self).__init__()
         if not args:
             return
 
         if len(args) != 3:
-            raise TypeError("ImageGroup must be initialized with three "
+            raise TypeError("TableTree must be initialized with three "
                             "arguments")
         table = args[0]
         tree_keys = args[1]
