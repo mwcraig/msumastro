@@ -67,7 +67,8 @@ class DefaultFileNames(object):
         return self.__dict__
 
 
-def write_list(dir, file, info, column_name='File'):
+def write_list(dir, file, info, column_name=None):
+    col_name = column_name or 'File'
     temp_table = Table(data=[info],
                        names=[column_name])
     temp_table.write(os.path.join(dir, file),
@@ -92,9 +93,7 @@ def contains_maximdl_imagetype(image_collection):
         return False
 
 
-def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
-                                                  'object',
-                                                  'filter']):
+def triage_fits_files(dir=None, file_info_to_keep=None):
     """
     Check FITS files in a directory for deficient headers
 
@@ -103,7 +102,8 @@ def triage_fits_files(dir='.', file_info_to_keep=['imagetyp',
     `file_info_to_keep` is a list of the FITS keywords to get values
     for for each FITS file in `dir`.
     """
-    all_file_info = file_info_to_keep
+    dir = dir or '.'
+    all_file_info = file_info_to_keep or ['imagetyp', 'object', 'filter']
     feder = Feder()
     RA = feder.RA
     if 'ra' not in [key.lower() for key in all_file_info]:
