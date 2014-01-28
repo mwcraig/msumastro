@@ -44,7 +44,9 @@ setup(
             ('run_triage.py = '
              'msumastro.scripts.run_triage:main'),
             ('run_standard_header_process.py = '
-             'msumastro.scripts.run_standard_header_process:main')
+             'msumastro.scripts.run_standard_header_process:main'),
+            ('sort_files.py = '
+             'msumastro.scripts.sort_files:main')
         ]
     },
     classifiers=['Development Status :: 4 - Beta',

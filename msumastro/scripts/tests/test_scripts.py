@@ -15,6 +15,7 @@ from .. import run_patch as run_patch
 from .. import run_triage
 from .. import run_astrometry
 from .. import run_standard_header_process
+from .. import sort_files
 from ...image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
 from .. import quick_add_keys_to_file
@@ -345,6 +346,156 @@ class TestRunStandardHeaderProcess(object):
         for original, new in zip(original_mtimes, new_mtimes):
             assert(original == new)
 
+
+class TestSortFiles(object):
+    """docstring for TestSortFiles"""
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self, tmpdir):
+        self.test_dir = tmpdir
+
+    def write_names(self, hdu, names):
+        for name in names:
+            hdu.writeto(self.test_dir.join(name).strpath)
+
+    def make_filter_exp(self, hdu, filter_dict, extra_name=None):
+        add_to_name = extra_name or ''
+        hdr = hdu.header
+        make_base = lambda hdr, band: \
+            hdr['imagetyp'] + add_to_name + band + str(hdr['exptime'])
+        for band, num_or_exp_dict in filter_dict.iteritems():
+            hdr['filter'] = band
+            if isinstance(num_or_exp_dict, dict):
+                for exp, number in num_or_exp_dict.iteritems():
+                    hdr['exptime'] = exp
+                    base = make_base(hdr, band)
+                    print base
+                    self.write_names(hdu, [base + str(i) + '.fit' for i in range(number)])
+            else:
+                hdr['exptime'] = 17.0
+                base = make_base(hdr, band)
+                print base
+                print hdr['imagetyp']
+                self.write_names(hdu, [base + str(i) + '.fit' for i in range(num_or_exp_dict)])
+
+    @pytest.fixture
+    def set_test_files(self):
+        """
+        A set of file is created from the dictionary below; the number
+        of files of each type is set by the 'number' key.
+        """
+        bias = 'BIAS'
+        dark = 'DARK'
+        flat = 'FLAT'
+        light = 'LIGHT'
+        files = {bias: 5,
+                 dark: {20.0: 5,
+                        30.0: 5},
+                 flat: {'R': {17.0: 3},
+                        'V': {15.0: 2,
+                              25.0: 2},
+                        'I': {17.0: 5}},
+                 light: {'m81': {'R': {17.0: 3},
+                                 'V': {17.0: 2}},
+                         'm101': {'I': {17.0: 5}},
+                         None: {'I': {17.0: 2},
+                                'R': {17.0: 3},
+                                'V': {17.0: 4}}}
+                 }
+        data = np.random.random([100, 100])
+        make_hdu = lambda im_type: \
+            fits.PrimaryHDU(data,
+                            fits.Header.fromkeys(['imagetyp'], value=im_type))
+        make_file_names = lambda base, number: \
+            [base + str(i) + '.fit' for i in range(number)]
+        bias_names = make_file_names(bias, files[bias])
+        bias_hdu = make_hdu(bias)
+        self.write_names(bias_hdu, bias_names)
+        for exp, number in files[dark].iteritems():
+            dark_hdu = make_hdu(dark)
+            dark_hdu.header['exptime'] = exp
+            dark_names = make_file_names(dark + str(exp), number)
+            self.write_names(dark_hdu, dark_names)
+        flat_hdu = make_hdu(flat)
+        self.make_filter_exp(flat_hdu, files[flat])
+        light_hdu = make_hdu(light)
+        for obj, filter_dict in files[light].iteritems():
+            if not obj:
+                del light_hdu.header['object']
+            else:
+                light_hdu.header['object'] = obj
+            obj_name = obj or None
+            self.make_filter_exp(light_hdu, filter_dict, extra_name=obj_name)
+
+        return files
+
+    def test_sort_files_can_be_called(self):
+        sort_files.main([self.test_dir.strpath])
+
+    def test_sort_called_with_no_directory_raises_error(self):
+        with pytest.raises(SystemExit):
+            sort_files.main(arglist=['-v', '-n'])
+
+    def _walk_dict_string_keys(self, d, parent=None):
+        if parent is None:
+            parent = []
+        for key, val in d.iteritems():
+            new_parent = list(parent) + [str(key)]
+            if isinstance(val, dict):
+                for d in self._walk_dict_string_keys(val, parent=new_parent):
+                    yield d
+            else:
+                yield new_parent, val
+
+    @pytest.mark.parametrize('dest', ['tmp', None])
+    def test_sort_called_with_destination(self, set_test_files, dest):
+        print set_test_files
+        if dest:
+            dest_path = self.test_dir.mkdtemp().strpath
+            args = ['-d', dest_path, self.test_dir.strpath]
+        else:
+            dest_path = self.test_dir.strpath
+            args = [self.test_dir.strpath]
+        files_before_sort = os.listdir(self.test_dir.strpath)
+        sort_files.main(arglist=args)
+        if dest:
+            files_after_sort = os.listdir(self.test_dir.strpath)
+            assert files_before_sort == files_after_sort
+        expected_unsorted = 0
+        for key in set_test_files['LIGHT'][None]:
+            expected_unsorted += set_test_files['LIGHT'][None][key][17.0]
+        for parents, num_files in self._walk_dict_string_keys(set_test_files):
+            print parents
+            if 'None' in parents:
+                path = os.path.join(dest_path, parents[0],
+                                    sort_files.UNSORTED_DIR)
+                assert len(os.listdir(path)) == expected_unsorted
+            else:
+                path = os.path.join(dest_path, *parents)
+                assert len(os.listdir(path)) == num_files
+
+    def test_sort_creates_destination_if_needed(self, set_test_files):
+        dest = self.test_dir.mkdtemp()
+        dest = dest.join('crazy_dir')
+        args = ['-d', dest.strpath, self.test_dir.strpath]
+        sort_files.main(arglist=args)
+        assert os.path.isdir(dest.strpath)
+
+    def test_sort_handles_cannot_form_tree(self, set_test_files):
+        # the object keyword is stripped from all headers, which means
+        # you cannot for a tree for the light files. As a result, all
+        # light files should end up in "unsorted" and no error should
+        # be raised.
+        images = ImageFileCollection(self.test_dir.strpath,
+                                     keywords=['imagetyp', 'object'])
+        n_light = 0
+        for header in images.headers(clobber=True, imagetyp='LIGHT'):
+            del header['object']
+            n_light += 1
+        dest = self.test_dir.mkdtemp()
+        sort_files.main(['-d', dest.strpath, self.test_dir.strpath])
+        unsorted_path = os.path.join(dest.strpath,
+                                     'LIGHT', sort_files.UNSORTED_DIR)
+        assert len(os.listdir(unsorted_path)) == n_light
 
 _n_test = {'files': 0, 'need_object': 0,
            'need_filter': 0, 'bias': 0,
