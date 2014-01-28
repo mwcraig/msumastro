@@ -145,9 +145,15 @@ def handle_destination_dir_logging_check(args):
 
     logger.debug('cwd: %s', cwd)
     if args.destination_dir:
-        dest_is_cwd = path.samefile(args.destination_dir, cwd)
+        try:
+            dest_is_cwd = path.samefile(args.destination_dir, cwd)
+        except OSError:
+            dest_is_cwd = False
     elif args.dir:
-        dest_is_cwd = any([path.samefile(d, cwd) for d in args.dir])
+        try:
+            dest_is_cwd = any([path.samefile(d, cwd) for d in args.dir])
+        except OSError:
+            dest_is_cwd = False
     else:
         dest_is_cwd = False
 
