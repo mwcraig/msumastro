@@ -46,7 +46,7 @@ class TableTree(RecursiveTree):
         Keys to be used in grouping images. Each key must be the name of a
         column in `table`.
     index_key : str
-        Key which is used to indicate which row of the input table are in each
+        Key which is used to indicate which rows of the input table are in each
         group; it must be the name of one of the columns in `table`. Values of
         the index must uniquely identify rows of the table (in database
         parlance, index must be able to serve as a primary key for the table).
