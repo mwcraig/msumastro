@@ -78,7 +78,7 @@ screen_handler = console_handler()
 logger.addHandler(screen_handler)
 
 
-def copy_files(files, dest):
+def copy_files(files, dest, copy_or_move):
     """
     Copy a list of files to a directory
 
@@ -90,13 +90,14 @@ def copy_files(files, dest):
         Name of dirctory to which files should be copied
     """
     for f in files:
-        shutil.copy2(f, dest)
+        copy_or_move(f, dest)
 
 
 def sort_directory(directory, verbose=False,
                    destination=None,
                    no_log_destination=False,
-                   script_name=None):
+                   script_name=None,
+                   move=False):
     """
     Sort files in a directory into a tree
 
@@ -127,6 +128,11 @@ def sort_directory(directory, verbose=False,
     if (not no_log_destination) and (destination is not None):
         add_file_handlers(logger, working_dir, script_name)
 
+    if move:
+        copy_or_move = shutil.move
+    else:
+        copy_or_move = shutil.copy2
+
     logger.info("Working on directory: %s", directory)
     logger.info("Destination directory is: %s", destination)
 
@@ -155,7 +161,7 @@ def sort_directory(directory, verbose=False,
             # bias
             source_files = prepend_path(directory, table['file'])
             this_dest = os.makedirs(dest_dir)
-            copy_files(source_files, dest_dir)
+            copy_files(source_files, dest_dir, copy_or_move)
             continue
         mask = [False] * len(table)
         for key in tree_keys:
@@ -164,7 +170,7 @@ def sort_directory(directory, verbose=False,
             source_files = prepend_path(directory, table['file'][mask])
             this_dest = os.path.join(dest_dir, UNSORTED_DIR)
             os.makedirs(this_dest)
-            copy_files(source_files, this_dest)
+            copy_files(source_files, this_dest, copy_or_move)
         clean_table = table[~mask]
         try:
             tree = TableTree(clean_table, tree_keys, 'file')
@@ -176,11 +182,13 @@ def sort_directory(directory, verbose=False,
                 this_dest = os.path.join(dest_dir, *str_parents)
                 os.makedirs(this_dest)
                 source_files = prepend_path(directory, files)
-                copy_files(source_files, this_dest)
+                copy_files(source_files, this_dest, copy_or_move)
 
 
 def construct_parser():
     parser = script_helpers.construct_default_parser(__doc__)
+    parser.add_argument('--move', '-m', action='store_true',
+                        help='Move files instead of copying them.')
     return parser
 
 
@@ -201,9 +209,11 @@ def main(arglist=None):
 
     do_not_log_in_destination = \
         script_helpers.handle_destination_dir_logging_check(args)
+
     sort_directory(args.dir[0],
                    verbose=args.verbose,
                    destination=args.destination_dir,
-                   no_log_destination=do_not_log_in_destination)
+                   no_log_destination=do_not_log_in_destination,
+                   move=args.move)
 
 main.__doc__ = script_helpers._main_function_docstring(__name__)

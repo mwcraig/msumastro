@@ -446,8 +446,12 @@ class TestSortFiles(object):
             else:
                 yield new_parent, val
 
-    @pytest.mark.parametrize('dest', ['tmp', None])
-    def test_sort_called_with_destination(self, set_test_files, dest):
+    @pytest.mark.parametrize('dest,move',
+                             [('tmp', False),
+                              (None, False),
+                              ('tmp', True),
+                              (None, True)])
+    def test_sort_called_with_destination(self, set_test_files, dest, move):
         print set_test_files
         if dest:
             dest_path = self.test_dir.mkdtemp().strpath
@@ -455,11 +459,17 @@ class TestSortFiles(object):
         else:
             dest_path = self.test_dir.strpath
             args = [self.test_dir.strpath]
+        if move:
+            args.insert(0, '--move')
         files_before_sort = os.listdir(self.test_dir.strpath)
         sort_files.main(arglist=args)
-        if dest:
-            files_after_sort = os.listdir(self.test_dir.strpath)
+        files_after_sort = os.listdir(self.test_dir.strpath)
+        if dest and not move:
             assert files_before_sort == files_after_sort
+        if move:
+            for f in files_after_sort:
+                print f
+                assert os.path.isdir(os.path.join(self.test_dir.strpath, f))
         expected_unsorted = 0
         for key in set_test_files['LIGHT'][None]:
             expected_unsorted += set_test_files['LIGHT'][None][key][17.0]
