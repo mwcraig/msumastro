@@ -203,6 +203,9 @@ class ImageFileCollection(object):
             except IOError as e:
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
+                # remove this bad file from list
+                summary['file'].pop()
+                missing_values['file'].pop()
                 continue
             for keyword in header_keys:
                 if keyword in header:
