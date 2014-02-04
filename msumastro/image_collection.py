@@ -180,9 +180,13 @@ class ImageFileCollection(object):
         summary = OrderedDict()
         missing_values = OrderedDict()
         data_type = {}
-        keywords = list(set(header_keywords))
+        header_keys = list(set(header_keywords))
+        keywords = list(set(header_keys))
         if 'file' not in keywords:
             keywords.insert(0, 'file')
+        else:
+            # the file column should be populated from file name, not header
+            header_keys.remove('file')
         for keyword in keywords:
             summary[keyword] = []
             missing_values[keyword] = []
@@ -192,7 +196,7 @@ class ImageFileCollection(object):
             summary['file'].append(afile)
             missing_values['file'].append(False)
             data_type['file'] = type('string')
-            if not header_keywords:
+            if not header_keys:
                 continue
             try:
                 header = fits.getheader(file_path)
@@ -200,7 +204,7 @@ class ImageFileCollection(object):
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
                 continue
-            for keyword in header_keywords:
+            for keyword in header_keys:
                 if keyword in header:
                     summary[keyword].append(header[keyword])
                     missing_values[keyword].append(False)
