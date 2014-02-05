@@ -40,21 +40,34 @@ class ImageFileCollection(object):
     summary_info
     """
 
-    def __init__(self, location='.', keywords=None, info_file=None):
+    def __init__(self, location=None, keywords=None, info_file=None):
         self._location = location
-        self._files = self._fits_files_in_directory()
+        self._files = []
+        if location:
+            self._files = self._fits_files_in_directory()
         self._summary_info = {}
         if keywords is None:
             keywords = []
         if info_file is not None:
-            info_path = path.join(self.location, info_file)
+            try:
+                info_path = path.join(self.location, info_file)
+            except AttributeError:
+                info_path = info_file
             try:
                 self._summary_info = Table.read(info_path,
                                                 format='ascii',
                                                 delimiter=',')
+                self._summary_info = Table(self._summary_info,
+                                           masked=True)
             except IOError:
-                pass
-        self.keywords = keywords
+                if location:
+                    logger.warning('Unable to open table file %s, will try '
+                                   'initializing from location instead',
+                                   info_path)
+                else:
+                    raise
+        if keywords:
+            self.keywords = keywords
 
     @property
     def summary_info(self):

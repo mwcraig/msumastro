@@ -1,7 +1,4 @@
 import os
-from tempfile import mkdtemp
-import gzip
-from shutil import rmtree
 from contextlib import contextmanager
 
 import astropy.io.fits as fits
@@ -246,7 +243,8 @@ class TestScript(object):
             assert (blind_path.check())
 
     def test_quick_add_keys_records_history(self):
-        ic = ImageFileCollection(self.test_dir.strpath)
+        ic = ImageFileCollection(self.test_dir.strpath,
+                                 keywords=['imagetyp'])
         ic.summary_info.keep_columns('file')
 
         file_list = os.path.join(ic.location, 'files.txt')
@@ -507,93 +505,17 @@ class TestSortFiles(object):
                                      'LIGHT', sort_files.UNSORTED_DIR)
         assert len(os.listdir(unsorted_path)) == n_light
 
-_n_test = {'files': 0, 'need_object': 0,
-           'need_filter': 0, 'bias': 0,
-           'compressed': 0, 'light': 0,
-           'need_pointing': 0}
 
-_test_dir = ''
-_filters = []
-
-
-@pytest.fixture
-def triage_setup(request):
-    global _n_test
-    global _test_dir
-
-    for key in _n_test.keys():
-        _n_test[key] = 0
-
-    _test_dir = mkdtemp()
-    original_dir = os.getcwd()
-    os.chdir(_test_dir)
-    img = np.uint16(np.arange(100))
-
-    no_filter_no_object = fits.PrimaryHDU(img)
-    no_filter_no_object.header['imagetyp'] = IRAF_image_type('light')
-    no_filter_no_object.writeto('no_filter_no_object_light.fit')
-    _n_test['files'] += 1
-    _n_test['need_object'] += 1
-    _n_test['need_filter'] += 1
-    _n_test['light'] += 1
-    _n_test['need_pointing'] += 1
-
-    no_filter_no_object.header['imagetyp'] = IRAF_image_type('bias')
-    no_filter_no_object.writeto('no_filter_no_object_bias.fit')
-    _n_test['files'] += 1
-    _n_test['bias'] += 1
-
-    filter_no_object = fits.PrimaryHDU(img)
-    filter_no_object.header['imagetyp'] = IRAF_image_type('light')
-    filter_no_object.header['filter'] = 'R'
-    filter_no_object.writeto('filter_no_object_light.fit')
-    _n_test['files'] += 1
-    _n_test['need_object'] += 1
-    _n_test['light'] += 1
-    _n_test['need_pointing'] += 1
-
-    filter_no_object.header['imagetyp'] = IRAF_image_type('bias')
-    filter_no_object.writeto('filter_no_object_bias.fit')
-    _n_test['files'] += 1
-    _n_test['bias'] += 1
-
-    filter_object = fits.PrimaryHDU(img)
-    filter_object.header['imagetyp'] = IRAF_image_type('light')
-    filter_object.header['filter'] = 'R'
-    filter_object.header['OBJCTRA'] = '00:00:00'
-    filter_object.header['OBJCTDEC'] = '00:00:00'
-    filter_object.writeto('filter_object_light.fit')
-    _n_test['files'] += 1
-    _n_test['light'] += 1
-    _n_test['need_object'] += 1
-    filter_file = open('filter_object_light.fit', 'rb')
-    fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
-    fzipped.writelines(filter_file)
-    fzipped.close()
-    _n_test['files'] += 1
-    _n_test['compressed'] += 1
-    _n_test['light'] += 1
-    _n_test['need_object'] += 1
-
-    def teardown():
-        global _n_test
-
-        for key in _n_test.keys():
-            _n_test[key] = 0
-        rmtree(_test_dir)
-        os.chdir(original_dir)
-    request.addfinalizer(teardown)
-
-
-@pytest.mark.usefixtures("triage_setup")
-def test_triage():
-    file_info = run_triage.triage_fits_files(_test_dir)
-    print "number of files should be %i" % _n_test['files']
+def test_triage(triage_setup):
+    file_info = run_triage.triage_fits_files(triage_setup.test_dir)
+    print "number of files should be %i" % triage_setup.n_test['files']
     print file_info['files']['file']
-    assert len(file_info['files']['file']) == _n_test['files']
-    assert len(file_info['needs_pointing']) == _n_test['need_pointing']
-    assert len(file_info['needs_object_name']) == _n_test['need_object']
-    assert len(file_info['needs_filter']) == _n_test['need_filter']
+    assert len(file_info['files']['file']) == triage_setup.n_test['files']
+    assert len(file_info['needs_pointing']) == \
+        triage_setup.n_test['need_pointing']
+    assert len(file_info['needs_object_name']) == \
+        triage_setup.n_test['need_object']
+    assert len(file_info['needs_filter']) == triage_setup.n_test['need_filter']
     bias_check = np.where(file_info['files']['imagetyp'] ==
                           IRAF_image_type('bias'))
     assert (len(bias_check[0]) == 2)
