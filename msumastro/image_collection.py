@@ -378,7 +378,8 @@ class ImageFileCollection(object):
                 try:
                     hdulist.writeto(new_path, clobber=clobber)
                 except IOError:
-                    pass
+                    logger.error('Error writing file %s', new_path)
+                    raise
             hdulist.close()
 
         # reset mask
