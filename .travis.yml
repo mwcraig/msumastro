@@ -12,6 +12,7 @@ before_install:
 install:
     - pip install Cython
     - pip install git+git://github.com/astropy/astropy
-    - python setup.py install
+    # need to install scripts because one test ends up invoking a subprocess
+    - python setup.py install_scripts
 script:
     - python setup.py test
