@@ -12,7 +12,11 @@ before_install:
 install:
     - pip install Cython
     - pip install git+git://github.com/astropy/astropy
+    - pip install coverage
+    - pip install coveralls
     # need to install scripts because one test ends up invoking a subprocess
     - python setup.py install_scripts
 script:
-    - python setup.py test
+    coverage run --source=msumastro setup.py test
+after_success:
+    coveralls
