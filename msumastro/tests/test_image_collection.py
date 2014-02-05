@@ -4,6 +4,7 @@ import gzip
 from tempfile import mkdtemp
 from glob import iglob, glob
 import logging
+import stat
 
 import astropy.io.fits as fits
 import numpy as np
@@ -277,6 +278,80 @@ class TestImageFileCollection(object):
                                      keywords=keywords_in)
         for key in set(keywords_in):
             assert (key in ic.keywords)
+        # one keyword gets added: file
+        assert len(ic.keywords) < len(keywords_in) + 1
+
+    def test_keyword_includes_file(self):
+        keywords_in = ['file', 'imagetyp']
+        ic = tff.ImageFileCollection(_test_dir, keywords=keywords_in)
+        assert 'file' in ic.keywords
+        file_keywords = [key for key in ic.keywords if key == 'file']
+        assert len(file_keywords) == 1
+
+    def test_setting_keywords_to_none(self):
+        ic = tff.ImageFileCollection(_test_dir, keywords=['imagetyp'])
+        ic.keywords = None
+        assert ic.summary_info == []
+
+    def test_getting_value_for_keyword(self):
+        ic = tff.ImageFileCollection(_test_dir, keywords=['imagetyp'])
+        # Does it fail if the keyword is not in the summary?
+        with pytest.raises(ValueError):
+            ic.values('filter')
+        # If I ask for unique values do I get them?
+        values = ic.values('imagetyp', unique=True)
+        print ic.summary_info['imagetyp']
+        assert values == list(set(ic.summary_info['imagetyp']))
+        assert len(values) < len(ic.summary_info['imagetyp'])
+        # Does the list of non-unique values match the raw column?
+        values = ic.values('imagetyp', unique=False)
+        assert values == list(ic.summary_info['imagetyp'])
+        # Does unique actually default to false?
+        values2 = ic.values('imagetyp')
+        assert values == values2
+
+    def test_collection_when_one_file_not_fits(self):
+        not_fits = 'foo.fit'
+        path_bad = os.path.join(_test_dir, not_fits)
+        # create an empty file...
+        with open(path_bad, 'w'):
+            pass
+        ic = tff.ImageFileCollection(_test_dir, keywords=['imagetyp'])
+        assert not_fits not in ic.summary_info['file']
+        os.remove(path_bad)
+
+    def test_data_type_mismatch_in_fits_keyword_values(self, tmpdir):
+        # If one keyword has an unexpected type, do we notice?
+        img = np.uint16(np.arange(100))
+        bad_filter = fits.PrimaryHDU(img)
+        bad_filter.header['imagetyp'] = IRAF_image_type('light')
+        bad_filter.header['filter'] = 15.0
+        path_bad = os.path.join(_test_dir, 'bad_filter.fit')
+        bad_filter.writeto(path_bad)
+        with pytest.raises(ValueError):
+            tff.ImageFileCollection(_test_dir, keywords=['filter'])
+        os.remove(path_bad)
+
+    def test_filter_by_numerical_value(self):
+        ic = tff.ImageFileCollection(_test_dir, keywords=['naxis'])
+        should_be_zero = ic.files_filtered(naxis=2)
+        assert len(should_be_zero) == 0
+        should_not_be_zero = ic.files_filtered(naxis=1)
+        assert len(should_not_be_zero) == _n_test['files']
+
+    def test_unknown_generator_type_raises_error(self):
+        ic = tff.ImageFileCollection(_test_dir, keywords=['naxis'])
+        with pytest.raises(ValueError):
+            for foo in ic._generator('not a real generator'):
+                pass
+
+    def test_setting_write_location_to_bad_dest_raises_error(self, tmpdir):
+        new_tmp = tmpdir.mkdtemp()
+        os.chmod(new_tmp.strpath, stat.S_IREAD)
+        ic = tff.ImageFileCollection(_test_dir, keywords=['naxis'])
+        with pytest.raises(IOError):
+            for hdr in ic.headers(save_location=new_tmp.strpath):
+                pass
 
 
 def setup_module():
