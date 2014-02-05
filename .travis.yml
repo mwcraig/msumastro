@@ -10,6 +10,7 @@ before_install:
     - sudo apt-get update
     - sudo apt-get install python-scipy python-numpy
 install:
+    - pip install Cython
     - pip install git+git://github.com/astropy/astropy
 script:
     - python setup.py test
