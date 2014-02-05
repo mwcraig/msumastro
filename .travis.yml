@@ -9,7 +9,7 @@ before_install:
     # grabbed this from astropy--to get scipy working, I think...
     - sudo apt-get update
     - sudo apt-get install python-scipy python-numpy
-#install:
-#    - python setup.py install
+install:
+    - pip install git+git://github.com/astropy/astropy
 script:
     - python setup.py test
