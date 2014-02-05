@@ -357,9 +357,10 @@ class ImageFileCollection(object):
                               'data': hdulist[0].data}
 
             try:
-                yield (return_options[return_type] if (not return_fname) else
+                yield (return_options[return_type]  # pragma: no branch
+                       if (not return_fname) else
                        (return_options[return_type], full_path))
-            except ValueError:
+            except KeyError:
                 raise ValueError('No generator for {}'.format(return_type))
 
             if save_location:
