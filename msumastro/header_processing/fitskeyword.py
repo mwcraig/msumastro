@@ -29,7 +29,6 @@ class FITSKeyword(object):
             self.synonyms = []
         else:
             self.synonyms = synonyms
-        return
 
     def __str__(self):
         if self.value is None:
@@ -38,7 +37,7 @@ class FITSKeyword(object):
             value_string = str(self.value)
         return ("%s = %s    / %s \n with synonyms: %s" %
                 (self.name.upper(), value_string, self.comment,
-                 ",".join(str(syn).upper() for syn in self.synonyms)))
+                 ",".join([str(syn).upper() for syn in self.synonyms])))
 
     def _set_keyword_case(self, keyword):
         return keyword.upper()
@@ -69,7 +68,8 @@ class FITSKeyword(object):
     @synonyms.setter
     def synonyms(self, inp_synonyms):
         if not inp_synonyms:
-            return []
+            self._synonyms = []
+            return
         if isinstance(inp_synonyms, basestring):
             synonym_list = [inp_synonyms]
         elif isinstance(inp_synonyms, list):
@@ -156,7 +156,8 @@ class FITSKeyword(object):
             if len(set(values)) > 1:
                 error_msg = 'Found multiple values for keyword %s:\nValues: %s'
                 raise ValueError(error_msg %
-                                 (','.join(self.names), ','.join(values)))
+                                 (','.join(self.names),
+                                  ','.join([str(v) for v in values])))
             self.value = values[0]
         else:
             raise ValueError('Keyword not found in header: %s' % self)

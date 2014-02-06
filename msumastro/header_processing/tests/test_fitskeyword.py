@@ -1,4 +1,6 @@
+import pytest
 from astropy.io.fits.hdu import PrimaryHDU
+from astropy.io.fits import Header
 
 from ..fitskeyword import FITSKeyword
 
@@ -83,3 +85,48 @@ class TestGoodFITSKeyword(object):
                         synonyms=self.synonyms)
         k.name = self.synonyms[0]
         assert(len(k.synonyms) == len(self.synonyms) - 1)
+
+    def test_string_repesentation(self):
+        # If I have no value does my string contain only my name and comment?
+        k = FITSKeyword(name=self.name, comment=self.comment)
+        string_k = str(k)
+        assert self.name.upper() in string_k
+        assert self.comment in string_k
+        # Does value and synonyms appear in string?
+        k = FITSKeyword(name=self.name, comment=self.comment, value=self.value,
+                        synonyms=self.synonyms)
+        string_k = str(k)
+        assert str(self.value) in string_k
+        for syn in self.synonyms:
+            assert syn.upper() in string_k
+
+    def test_error_raised_if_invalid_synonym(self):
+        # Does synonym which is neither string nor list raise error?
+        with pytest.raises(ValueError):
+            FITSKeyword(name='adfa', synonyms=12)
+
+    def test_bad_hdu_or_header_arg_raises_error(self):
+        hdu_or_header = 'Not a header or hdu'
+        with pytest.raises(ValueError):
+            self.keyword.add_to_header(hdu_or_header)
+        with pytest.raises(ValueError):
+            self.keyword.set_value_from_header(hdu_or_header)
+
+    def test_set_value_from_header(self):
+        # Do I raise a value error if the keyword isn't found?
+        with pytest.raises(ValueError):
+            self.keyword.set_value_from_header(self.hdu.header)
+        new_value = 3 * self.value
+        self.hdu.header[self.name] = new_value
+        # Did I get the new value from the hdu?
+        self.keyword.set_value_from_header(self.hdu)
+        assert self.keyword.value == new_value
+        # reset to original value
+        self.keyword.value = self.value
+        # Can I get the value from the header?
+        self.keyword.set_value_from_header(self.hdu.header)
+        assert self.keyword.value == new_value
+        # Do multiple (non-identical) values raise a value error?
+        self.hdu.header[self.synonyms[0]] = 7 * new_value
+        with pytest.raises(ValueError):
+            self.keyword.set_value_from_header(self.hdu.header)
