@@ -9,18 +9,29 @@ logger = logging.getLogger(__name__)
 class FITSKeyword(object):
 
     """
-    Represents a FITS keyword.
+    Represents a FITS keyword, which may have several synonyms.
 
-    Useful if one logical keyword (e.g. `airmass`) has several
-    often-used synonyms (e.g. secz and `airmass`).
+    Parameters
+    ----------
 
-    Checks whether the keyword is a valid FITS keyword when initialized.
+    name : str, optional
+        Name of the keyword; case insensitive
+
+    value : str or numeric type, optional
+        Value of the keyword; this class imposes no constraints on the type of
+        the keyword but if you intend to save the value in a FITS header you
+        should be aware of the restrictions the FITS standard places on keyword
+        values.
+
+    comment : str, optional
+        Description of the keyword.
+
+    synonyms : str or list of str, optional
+        Synonyms for this keyword. Synonyms are to look for a value in a FITS
+        header and to set multiple keywords to the same value in a FITS header.
     """
 
     def __init__(self, name=None, value=None, comment=None, synonyms=None):
-        """
-        All inputs are optional.
-        """
         self._hdr = Header()
         self.name = name
         self.value = value
@@ -94,8 +105,14 @@ class FITSKeyword(object):
 
     def history_comment(self, with_name=None):
         """
-        Method to add HISTORY line to header.
-        Use `with_name` to override the name of the keyword object.
+        Produce a string describing changes to the keyword value.
+
+        Parameters
+        ----------
+
+        with_name : str, optional
+            Name to use for the keyword in the history comment. Default is the
+            `name` attribute of the `Keyword`.
         """
         if with_name is None:
             with_name = self.name
@@ -104,14 +121,22 @@ class FITSKeyword(object):
 
     def add_to_header(self, hdu_or_header, with_synonyms=True, history=False):
         """
-        Method to add keyword to FITS header.
+        Add keyword to FITS header.
 
-        `hdu_or_header` can be either a astropy.io.fits `PrimaryHDU` or a
-        pytfits `Header` object.
-        `with_synonyms` determines whether the keyword's synonynms are
-        also added to the header.j
-        `history` determines whether a history comment is added when
-        the keyword is added to the header.
+        Parameters
+        ----------
+
+        hdu_or_header : astropy.io.fits.Header or astropy.io.fits.PrimaryHDU
+            Header/HDU to which the keyword is to be added.
+
+        with_synonyms : bool, optional
+            Control whether a keyword is added for each of the synonyms for the
+            keyword. Default is True.
+
+        history : bool, optional
+            Control whether a history comment is added to the header; if True
+            a history comment is added for *each* of the keyword names added
+            to the header, including synonyms.
         """
         if isinstance(hdu_or_header, PrimaryHDU):
             header = hdu_or_header.header
@@ -131,14 +156,25 @@ class FITSKeyword(object):
 
     def set_value_from_header(self, hdu_or_header):
         """
-        Determine value of keyword from FITS header.
+        Set value of keyword from FITS header.
 
-        `hdu_or_header` can be either an astropy.io.fits `PrimaryHDU` or a
-        astropy.fits `Header` object.
+        Values are obtained from the header by looking for the keyword by its
+        primary name and any synonyms. If multiple values are found they are
+        checked for consistency.
 
-        If both the primary name of the keyword and its synonyms are
-        present in the FITS header, checks whether the values are
-        identical, and if they aren't, raises an error.
+        Parameters
+        ----------
+
+        hdu_or_header: astropy.io.fits.Header or astrop.io.fits.PrimaryHDU
+            Header from which the keyword value should be taken.
+
+        Raises
+        ------
+
+        ValueError
+            If `hdu_or_header` is of the wrong type, or the keyword
+            (or synonyms) are not found in the header, or multiple
+            non-identical values are found.
         """
         if isinstance(hdu_or_header, PrimaryHDU):
             header = hdu_or_header.header
