@@ -37,7 +37,7 @@ extensions = ['sphinx.ext.autodoc',
               'numpydoc',
               ]
 
-numpydoc_show_class_members = True
+numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
