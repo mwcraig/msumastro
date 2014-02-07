@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-MSUM python toolbox
+MSUBTATROTMSM python toolbox
 =======================================================
 
 This set of tools is currently a mix of routines to fix up the headers
