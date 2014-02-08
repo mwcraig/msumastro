@@ -29,7 +29,7 @@ setup(
     include_package_data=True,
     install_requires=INSTALL_REQUIRES,
     extras_require={
-        'docs': ['numpydoc', 'sphinx-argparse'],
+        'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme'],
     },
     tests_require=['pytest>1.4', 'pytest-capturelog'] + INSTALL_REQUIRES,
     cmdclass={'test': PyTest},
