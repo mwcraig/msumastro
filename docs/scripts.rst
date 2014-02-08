@@ -1,7 +1,8 @@
 .. _script-documentation:
 
+###############################################
 Command-line scripts for processing Feder files
-===============================================
+###############################################
 
 Each of the command-line scripts described below is also callable from python. The details of how you call it from python are described below. 
 
@@ -11,8 +12,9 @@ Both these ways of invoking the script (from the command line or from python) is
 
 .. _header-patching:
 
+*****************
 Header processing
-+++++++++++++++++
+*****************
 
 For a detailed description of which header keywords are modified see :ref:`header-patch-detail`.
 
@@ -22,7 +24,7 @@ For a detailed description of which header keywords are modified see :ref:`heade
     option.
 
 Usage summary
--------------
+=============
 
 .. argparse::
     :module: msumastro.scripts.run_patch
@@ -36,8 +38,9 @@ Usage summary
 
 .. _apply-astrometry:
 
+**********
 Astrometry
-+++++++++++
+**********
 
 .. WARNING::
     This script OVERWRITES the image files in the directories
@@ -45,7 +48,7 @@ Astrometry
     option.
 
 Usage summary
--------------
+=============
 
 .. argparse::
     :module: msumastro.scripts.run_astrometry
@@ -58,11 +61,12 @@ Usage summary
 
 .. _summary-table:
 
+*************
 Summary table
-+++++++++++++
+*************
 
 Usage summary
--------------
+=============
 
 .. argparse::
     :module: msumastro.scripts.run_triage
@@ -75,8 +79,9 @@ Usage summary
 
 .. _header-quick-fix:
 
+***************************
 Quickly modify FITS headers
-+++++++++++++++++++++++++++
+***************************
 
 .. WARNING::
         This script OVERWRITES the image files in the directories
@@ -84,7 +89,7 @@ Quickly modify FITS headers
         this behavior.
 
 Usage summary
--------------
+=============
 
 .. argparse::
     :module: msumastro.scripts.quick_add_keys_to_file
@@ -96,11 +101,12 @@ Usage summary
 
 .. _script_wrapper:
 
+*****************************************************
 Convenience script for processing tree of directories
-+++++++++++++++++++++++++++++++++++++++++++++++++++++
+*****************************************************
 
 Usage summary
--------------
+=============
 
 .. argparse::
     :module: msumastro.scripts.run_standard_header_process

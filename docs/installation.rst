@@ -1,18 +1,20 @@
+############
 Installation
-=============
+############
 
+*************
 This software
 *************
 
 Users
------
+=====
 
 Install the way you install most python software::
 
     pip install msumastro
 
 Developers
-----------
+==========
 
 Install this software by downloading a copy from the `github page for the code <https://github.com/mwcraig/msumastro>`_. On Mac/Linux do this by typing, in a terminal in the directory in which you want to run the code::
 
@@ -24,11 +26,12 @@ Navigate to the directory in which you downloaded it and run::
 
 With this setup any changes you make to the source code will be immediately available to you without additional steps.
 
+************
 Dependencies
 ************
 
 Python
-------
+======
 
 This software has only been tested in python 2.7.x. It probably does not work in 3.x.
 
@@ -40,10 +43,10 @@ This software requires a python distribution that includes numpy and other packa
 
 
 Python packages
-----------------
+===============
 
 Required
-+++++++++
+--------
 
 Nothing will work without these:
 
@@ -60,14 +63,14 @@ Nothing will work without these:
     pip install --pre astropysics
 
 Very strongly recommended if you want to test your install
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------------------------------------------
 
 + `pytest_capturelog`_: Install with::
 
     pip install pytest-capturelog
 
 Required to build documentation
-+++++++++++++++++++++++++++++++
+-------------------------------
 
 You only need to install the packages below if you want to build the documentation yourself:
 
@@ -81,7 +84,7 @@ You only need to install the packages below if you want to build the documentati
 
 
 (mostly) Non-python software: astrometry.net
---------------------------------------------
+============================================
 
 
 If you want to be able to use the script :ref:`apply-astrometry` you need a local installation of `astrometry.net <http://astrometry.net>`_ and `sextractor`_ (the latter works better than the source detection built into astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once you have installed `homebrew`_ the rest is easy (unless it fails, of course...):
