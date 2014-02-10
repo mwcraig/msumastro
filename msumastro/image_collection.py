@@ -34,7 +34,6 @@ class ImageFileCollection(object):
     Attributes
     ----------
     location
-    storage_dir
     keywords
     files
     summary_info
@@ -72,7 +71,7 @@ class ImageFileCollection(object):
     @property
     def summary_info(self):
         """
-        Table of values of FITS keywords for files in the collection.
+        astropy.table.Table of values of FITS keywords for files in the collection.
 
         Each keyword is a column heading. In addition, there is a column
         called 'file' that contains the name of the FITS file. The directory
@@ -83,19 +82,17 @@ class ImageFileCollection(object):
     @property
     def location(self):
         """
-        Location of the collection.
-
-        Path name to directory if it is a directory.
+        str, Path name to directory containing FITS files
         """
         return self._location
 
     @property
     def keywords(self):
         """
-        List of keywords currently in the summary table.
+        list of str, Keywords currently in the summary table.
 
-        Setting this property causes the summary to be regenerated unless the
-        new keywords are a subset of the old.
+        Setting the keywords causes the summary table to be regenerated unless
+        the new keywords are a subset of the old.
         """
         if self.summary_info:
             return self.summary_info.keys()
@@ -136,16 +133,27 @@ class ImageFileCollection(object):
 
     @property
     def files(self):
-        """Unfiltered list of FITS files in location.
+        """
+        list of str, Unfiltered list of FITS files in location.
         """
         return self._files
 
     def values(self, keyword, unique=False):
-        """Return list of values for a particular keyword.
+        """
+        List of values for a keyword.
 
-        Values for `keyword` are returned.
+        Parameters
+        ----------
+        keyword : str
+            Keyword (i.e. table column) for which values are desired.
 
-        If `unique` is `True` then only the unique values are returned.
+        unique : bool, optional
+            If True, return only the unique values for the keyword.
+
+        Returns
+        -------
+        list
+            Values as a list.
         """
         if keyword not in self.keywords:
             raise ValueError(
@@ -321,13 +329,20 @@ class ImageFileCollection(object):
         """
         Get names of FITS files in directory, based on filename extension.
 
-        `extension` is a list of filename extensions that are FITS files.
+        Parameters
+        ----------
+        extension : list of str, optional
+            List of filename extensions that are FITS files. Default is
+            ``['fit', 'fits']``
 
-        `compressed` should be true if compressed files should be included
-        in the list (e.g. `.fits.gz`)
+        compressed : bool, optional
+            If ``True``, compressed files should be included in the list
+            (e.g. `.fits.gz`)
 
-        Returns only the *names* of the files (with extension), not the full
-        pathname.
+        Returns
+        -------
+        list
+            *Names* of the files (with extension), not the full pathname.
         """
         full_extensions = extensions or ['fit', 'fits']
         if compressed:
@@ -347,7 +362,57 @@ class ImageFileCollection(object):
                    do_not_scale_image_data=True,
                    return_fname=False,
                    **kwd):
+        """
+        Generator that yields each {name} in the collection.
 
+        If any of the parameters ``save_with_name``, ``save_location`` or
+        ``clobber`` evaluates to ``True`` the generator will write a copy of
+        each FITS file it is iterating over. In other words, if
+        ``save_with_name`` and/or ``save_location`` is a string with non-zero
+        length, and/or ``clobber`` is ``True``, a copy of each FITS file will
+        be made.
+
+
+        Parameters
+        ----------
+        save_with_name : str
+            string added to end of file name (before extension) if
+            FITS file should be saved after iteration. Unless
+            `save_location` is set, files will be saved to location of
+            the source files `self.location`
+
+        save_location : str
+            Directory in which to save FITS files; implies that FITS
+            files will be saved. Note this provides an easy way to
+            copy a directory of files--loop over the {name} with
+            `save_location` set.
+
+        clobber : bool
+            If ``True``, overwrite input FITS files.
+
+        do_not_scale_image_data : bool
+            If ``True``, prevents fits from scaling images. Default is
+            ``{default_scaling}``.
+
+        return_fname : bool, default is False
+            If True, return the tuple (header, file_name) instead of just
+            header.
+
+        kwd : dict
+            Any additional keywords are used to filter the items returned; see
+            Examples for details.
+
+        Returns
+        -------
+        {return_type}
+            If ``return_fname`` is ``False``, yield the next {name} in the
+            collection
+
+        ({return_type}, str)
+            If ``return_fname`` is ``True``, yield a tuple of
+            ({name}, `file path`) for next the  item in the collection.
+
+        """
         # store mask so we can reset at end--must COPY, otherwise
         # current_mask just points to the mask of summary_info
         if self.summary_info is None:
@@ -411,44 +476,14 @@ class ImageFileCollection(object):
                 do_not_scale_image_data=True,
                 return_fname=False,
                 **kwd):
-        """
-        Generator for headers in the collection including writing of
-        FITS file before moving to next item.
-
-        Parameters
-        ----------
-        save_with_name : str
-            string added to end of file name (before extension) if
-            FITS file should be saved after iteration. Unless
-            `save_location` is set, files will be saved to location of
-            the source files `self.location`
-
-        save_location : str
-            Directory in which to save FITS files; implies that FITS
-            files will be saved. Note this provides an easy way to
-            copy a directory of files--loop over the headers with
-            `save_location` set.
-
-        clobber : bool
-            If True, overwrite input FITS files.
-
-        do_not_scale_image_data : bool
-            If true, prevents fits from scaling images (useful for
-            preserving unsigned int images unmodified)
-
-        return_fname : bool, default is False
-            If True, return the list (header, file_name) instead of just
-            header.
-
-        kwd : dict
-            Any additional keywords are passed to `fits.open`
-        """
-        #self.headers.__func__.__doc__ += self._generator.__doc__
         return self._generator('header', save_with_name=save_with_name,
                                save_location=save_location, clobber=clobber,
                                do_not_scale_image_data=do_not_scale_image_data,
                                return_fname=return_fname,
                                **kwd)
+    headers.__doc__ = _generator.__doc__.format(name='header',
+                            default_scaling='True',
+                            return_type='astropy.io.fits.Header')
 
     def hdus(self, save_with_name='',
              save_location='', clobber=False,
@@ -459,6 +494,9 @@ class ImageFileCollection(object):
                                save_location=save_location, clobber=clobber,
                                do_not_scale_image_data=do_not_scale_image_data,
                                **kwd)
+    hdus.__doc__ = _generator.__doc__.format(name='HDU',
+                                             default_scaling='False',
+                                             return_type='astropy.io.fits.HDU')
 
     def data(self, hdulist=None, save_with_name="", save_location='',
              do_not_scale_image_data=False,
@@ -467,3 +505,6 @@ class ImageFileCollection(object):
                                save_location=save_location, clobber=clobber,
                                do_not_scale_image_data=do_not_scale_image_data,
                                **kwd)
+    data.__doc__ = _generator.__doc__.format(name='image',
+                                             default_scaling='False',
+                                             return_type='numpy.ndarray')
