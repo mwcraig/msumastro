@@ -50,9 +50,7 @@ Required
 
 Nothing will work without these:
 
-+ `numpy`_ (*included with anaconda*): If you need to install it, do so with::
-
-    pip install numpy
++ `numpy`_ (*included with anaconda*): If you need to install it, please see the instructions at the `SciPy download site <http://www.scipy.org/scipylib/download.html>`_. Some functionality may require SciPy.
 
 + `astropy`_ (*included with anaconda*): If you need to install it, do so with:: 
 
