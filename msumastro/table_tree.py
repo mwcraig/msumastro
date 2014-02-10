@@ -53,7 +53,15 @@ class TableTree(RecursiveTree):
 
     Attributes
     ----------
+    table
+    tree_keys
+    index_key
 
+    Raises
+    ------
+    TypeError
+        Raised if the number of initialization arguments is incorrect or the
+        types of any of the arguments is incorrect.
     """
     def __init__(self, *args):
         super(TableTree, self).__init__()
@@ -122,25 +130,35 @@ class TableTree(RecursiveTree):
 
     @property
     def table(self):
+        """
+        astropy.table.Table of metadata used to group rows.
+        """
         return self._table
 
     @property
     def tree_keys(self):
+        """
+        list of str, Table columns to be used in grouping the rows.
+        """
         return self._tree_keys
 
     @property
     def index_key(self):
+        """
+        str, Name of column whose values uniquely identify each row.
+        """
         return self._index_key
 
     def walk(self, *args, **kwd):
         """
         Walk the grouped tree
 
-        The functionality provided is similar to that in os.walk
+        The functionality provided is similar to that in os.walk: starting at
+        the top of tree, yield a tuple of return values indicating parents,
+        children and rows at each level of the tree.
 
         Parameters
         ----------
-
         None
 
         Returns
