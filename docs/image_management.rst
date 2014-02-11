@@ -23,3 +23,13 @@ Turning an image collection into a tree
 .. autoclass:: TableTree
     :members:
     :undoc-members:
+
+*****************************************
+Image class that includes WCS information
+*****************************************
+
+.. module:: msumastro.image
+
+.. autoclass:: ImageWithWCS
+    :members:
+    :undoc-members:

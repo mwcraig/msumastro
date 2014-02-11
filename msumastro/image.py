@@ -10,22 +10,27 @@ logger = logging.getLogger(__name__)
 
 class ImageWithWCS(object):
 
-    """FITS image with WCS"""
+    """
+    FITS image with WCS
+        
+    A FITS images with a few convenience methods defined, including easy
+    access to WCS transforms.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the FITS file.
+    kwd : dict, optional
+        All keywords are passed through to astropy.io.fits.open
+
+    Attributes
+    ----------
+    data
+    header
+    wcs
+    """
 
     def __init__(self, filepath, **kwd):
-        """
-        A FITS images with a few convenience methods defined, including easy
-        access to WCS transforms.
-
-        Parameters
-        ----------
-
-        filepath : str
-            Path to the FITS file.
-
-        kwd : dict, optional
-            All keywords are passed through to astropy.io.fits.open
-        """
         self.fitsfile = fits.open(filepath, **kwd)
         self._wcs = wcs.WCS(self.header)
 
@@ -54,11 +59,20 @@ class ImageWithWCS(object):
         Shift image by an integer number of pixels without
         interpolation.
 
-        `int_shift` is a tuple, numpy array or list of integers
-        (floats will be rounded).
+        Parameters
+        ----------
+        int_shift : list-like of two integers
+            Amount by which image should be shifted; floats will be rounded.
 
-        If `in_place` is True the image is shifted in place, and the
-        wcs reference pixel is updated appropriately.
+        in_place : bool, optional 
+            If ``True`` the image is shifted in place, and the wcs reference
+            pixel is updated appropriately. Otherwise an array is returned
+            that is shifted with no WCS information.
+
+        Raises
+        ------
+        ValueError
+            If the shift is not by an integer amount.
         """
         if (np.int32(np.array(int_shift)) !=
                 np.array(int_shift)).any():
@@ -79,35 +93,37 @@ class ImageWithWCS(object):
 
     def wcs_pix2sky(self, pix, **kwargs):
         """
-         Wrapper around astropy.wcs function that handles a single tuple
+        Wrapper around astropy.wcs function that handles a single tuple
         gracefully.
 
-        `pix` must be a numpy array either of dimension 2
-        (e.g. [xpix, ypix]) or an Nx2 array if you want sky
-        coordinates at several points.
+        Parameters
+        ----------
+        pix : numpy array either of dimension 2 (e.g. [xpix, ypix]) or Nx2
+            Pixel positions at which sky coordinates should be calculated.
 
-        Returns a numpy array of the same format as `pix`,
-
-        TO DO: always  in the order (ra, dec). astropy.wcs ra_dec_order is
-        broken?
+        Returns
+        -------
+        numpy.ndarray with same shape as pix.
+            Sky coordinates for each input pixel.
         """
 
         return self._wcs_wrapper(pix, self.wcs.wcs_pix2sky, **kwargs)
 
     def wcs_sky2pix(self, sky, **kwargs):
-        """Wrapper around pyWCS function that handles a single tuple
+        """
+        Wrapper around astropy.wcs function that handles a single tuple
         gracefully.
 
-        `pix` must be a numpy array either of dimension 2
-        (e.g. [xpix, ypix]) or an Nx2 array if you want sky
-        coordinates at several points.
+        Parameters
+        ----------
+        sky : numpy array either of dimension 2 (e.g. [xpix, ypix]) or Nx2
+            Pixel positions at which sky coordinates should be calculated.
 
-        Returns a numpy array of the same format as `pix`,
-
-        TO DO: always  in the order (ra, dec). astropy.wcs ra_dec_order is
-        broken?
+        Returns
+        -------
+        numpy.ndarray with same shape as sky.
+            Pixel positions for each input sky coordinate.
         """
-
         return self._wcs_wrapper(sky, self.wcs.wcs_sky2pix, **kwargs)
 
     def _wcs_wrapper(self, inp, transform, **kwargs):
@@ -132,13 +148,16 @@ class ImageWithWCS(object):
         """
         Save FITS file.
 
-        `fname` is the name of the file to save to.
+        Parameters
+        ----------
+        fname : str
+            Name of the file to save to
 
-        `clobber` should be `True` to overwrite an existing file.
+        clobber : bool, optional
+            Set to ``True`` to overwrite an existing file.
         """
         self.fitsfile.writeto(fname, clobber=clobber)
 
     def close(self):
         """Close the file associated with this FITS image."""
-
         self.fitsfile.close()
