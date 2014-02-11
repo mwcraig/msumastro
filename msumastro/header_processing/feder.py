@@ -11,25 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 class FederSite(obstools.Site):
-
     """
     The Feder Observatory site.
 
-    An astropysics site with the observatory location and name pre-set.
+    An astropysics site with the observatory location and name pre-set to:
+
+        + `lat` = 46.86678 degrees North
+        + `long` = -96.453278 degrees East
+        + `alt` = 311.8 meters
+        + `name` = Feder Observatory
     """
 
     def __init__(self):
-        """
-        Location/name information are set for Feder Observatory.
-
-        `lat` = 46.86678 degrees
-
-        `long` = -96.453278 degrees Eaast
-
-        `alt` = 311.8 meters
-
-        `name` = Feder Observatory
-        """
         obstools.Site.__init__(self,
                                lat=46.86678,
                                long=-96.453278,
@@ -65,6 +58,37 @@ class Instrument(object):
 
     """
     Telescope instrument with simple properties.
+
+    Parameters
+    ----------
+    name : str
+        Name of the instrument.
+    fits_names : list of str
+        List of names by which the instrument is known in FITS headers
+    rows : int
+        Number of rows in an image produced by this instrument, including
+        overscan.
+    columns : int
+        Number of columns in an image produced by this instrument, including
+        overscan.
+    overscan_start : int
+        Position at which the overscan starts. The overscan region is assumed
+        to extend from this starting position to the edge of the image.
+    overscan_axis : one of (1, 2)
+        Axis along which the overscan varies. Numbers correspond to ``NAXIS1``
+        and ``NAXIS2`` in the FITS header.
+
+    Examples
+    --------
+
+    Consider an image whose dimensions as given in its FITS header are
+    ``NAXIS1 = 3085`` and ``NAXIS2 = 2048`` with an overscan region that
+    begins at position 3073 along axis 1. The correct overscan settings for
+    this instrument are::
+
+        overscan_start = 3073
+        overscan_axis = 1
+
     """
 
     def __init__(self, name, fits_names=None,
@@ -84,9 +108,13 @@ class Instrument(object):
 
         Parameters
         ----------
-
         image_dimensions : list-like with two elements
             Shape of the image; can be any type as long as it has two elements.
+
+        Returns
+        -------
+        bool
+            Indicates whether or not image has overscan present.
         """
         if (image_dimensions[self.overscan_axis - 1] >
                 self.overscan_start):
@@ -113,34 +141,25 @@ class ImageSoftware(object):
     """
     Represents software that takes images at telescope.
 
-    Properties
+    Parameters
     ----------
-
     name : str
-
         Name of the software. Can be the same is the name in the FITS file,
         or not.
-
     fits_keyword : str
-
         Name of the FITS keyword that contains the name of the software.
-
     fits_name : list of str
-
         Name of the software as written in the FITS file
-
     major_version : int
-
         Major version number of the software.
-
     minor_version : int
-
         Minor version number of the software.
-
     bad_keywords : list of strings
-
         Names of any keywords that should be removed from the FITS before
         further processing.
+    purged_flag_keyword : str, optional
+        Name of the keyword which indicates whether bad keywords have already
+        been purged. Default value is 'PURGED'
     """
 
     def __init__(self, name, fits_name=None,
@@ -148,18 +167,28 @@ class ImageSoftware(object):
                  minor_version=None,
                  bad_keywords=None,
                  fits_keyword=None,
-                 purged_flag_keyword='PURGED'):
+                 purged_flag_keyword=None):
         self.name = name
         self.fits_name = fits_name
         self.major_version = major_version
         self.minor_version = minor_version
         self.bad_keywords = bad_keywords
         self.fits_keyword = fits_keyword
-        self.purged_flag_keyword = purged_flag_keyword
+        self.purged_flag_keyword = purged_flag_keyword or "PURGED"
 
     def created_this(self, version_string):
         """
         Indicate whether version string matches this software
+
+        Parameters
+        ----------
+        version_string : str
+            String from FITS header that indicates software version.
+
+        Returns
+        -------
+        bool
+            ``True`` if the version string matches the software instance.
         """
         return version_string in self.fits_name
 
@@ -183,7 +212,10 @@ class MaximDL4(ImageSoftware):
 class MaximDL5(ImageSoftware):
 
     """
-    Represents MaximDL version 5, all sub-versions
+    Represents MaximDL version 5, all sub-versions.
+
+    Subversions are included by listing the FITS names of all versions that
+    have been used at Feder Observatory.
     """
 
     def __init__(self):
@@ -202,7 +234,23 @@ class MaximDL5(ImageSoftware):
 
 
 class Feder(object):
+    """
+    Class encapsulating site, instrument, and software information for Feder
+    Observatory.
 
+    Attributes
+    ----------
+    site : feder.FederSite instance
+    instrument : dict
+        Instruments available; key is name, value is an :py:class:`Instrument`
+    software : dict
+        Software available; key is name, value is an :class:`ImageSoftware`
+    software_FITS_keywords : list of str
+        FITS names of all software available.
+    keywords_for_all_files
+    keywords_for_light_files
+    keywords_for_overscan
+    """
     def __init__(self):
         self.site = FederSite()
         self._apogee_alta_u9 = ApogeeAltaU9()
@@ -237,14 +285,26 @@ class Feder(object):
 
     @property
     def keywords_for_all_files(self):
+        """
+        List of :class:`~msumastro.header_processing.fitskeyword.FITSKeyword` s
+        whose values need to be set for all image types.
+        """
         return self._keywords_for_all_files
 
     @property
     def keywords_for_light_files(self):
+        """
+        List of :class:`~msumastro.header_processing.fitskeyword.FITSKeyword` s
+        whose values need to be set only for light image types.
+        """
         return self._keywords_for_light_files
 
     @property
     def keywords_for_overscan(self):
+        """
+        List of :class:`~msumastro.header_processing.fitskeyword.FITSKeyword` s
+        related to overscan.
+        """
         return self._overscan_keywords
 
     def _define_keywords_for_light_files(self):
