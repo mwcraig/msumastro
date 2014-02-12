@@ -16,10 +16,12 @@ Contents
 
    overview
    installation
-   image_management 
+   image_management
+   scripts/automated_scripts
    Header patching and other Feder-specific code <feder_processing>
    A tool for managing a set of images <image_processing>
    header_processing/index
+   reduction/index
 
 
 ******************
