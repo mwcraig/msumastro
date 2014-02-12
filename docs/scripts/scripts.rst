@@ -1,7 +1,7 @@
 .. _script-documentation:
 
 ###############################################
-Command-line scripts for processing Feder files
+Command-line scripts
 ###############################################
 
 Each of the command-line scripts described below is also callable from python. The details of how you call it from python are described below. 
@@ -10,11 +10,29 @@ Both these ways of invoking the script (from the command line or from python) is
 
 -------------
 
+.. _script_wrapper:
+
+**************************************************************************
+Running the complete standard workflow: ``run_standard_header_process.py``
+**************************************************************************
+
+Usage summary
+=============
+
+.. argparse::
+    :module: msumastro.scripts.run_standard_header_process
+    :func: construct_parser
+    :prog: run_standard_header_process.py
+
+.. automodule:: msumastro.scripts.run_standard_header_process
+
+-------------
+
 .. _header-patching:
 
-*****************
-Header processing
-*****************
+*********************************
+Header patching: ``run_patch.py``
+*********************************
 
 For a detailed description of which header keywords are modified see :ref:`header-patch-detail`.
 
@@ -38,9 +56,9 @@ Usage summary
 
 .. _apply-astrometry:
 
-**********
-Astrometry
-**********
+****************************************
+Adding astrometry: ``run_astromtery.py``
+****************************************
 
 .. WARNING::
     This script OVERWRITES the image files in the directories
@@ -61,9 +79,9 @@ Usage summary
 
 .. _summary-table:
 
-*************
-Summary table
-*************
+***************************************************
+Find problems and create summary: ``run_triage.py``
+***************************************************
 
 Usage summary
 =============
@@ -79,13 +97,13 @@ Usage summary
 
 .. _header-quick-fix:
 
-***************************
-Quickly modify FITS headers
-***************************
+**************************************************
+Manual intervention: ``quick_add_keys_to_file.py``
+**************************************************
 
 .. WARNING::
         This script OVERWRITES the image files in the directories
-        specified on the command line. There is NO WAY to DISABLE
+        specified on the command line. There is NO WAY TO DISABLE
         this behavior.
 
 Usage summary
@@ -99,18 +117,3 @@ Usage summary
 .. automodule:: msumastro.scripts.quick_add_keys_to_file
 
 
-.. _script_wrapper:
-
-*****************************************************
-Convenience script for processing tree of directories
-*****************************************************
-
-Usage summary
-=============
-
-.. argparse::
-    :module: msumastro.scripts.run_standard_header_process
-    :func: construct_parser
-    :prog: run_standard_header_process.py
-
-.. automodule:: msumastro.scripts.run_standard_header_process
