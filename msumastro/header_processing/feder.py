@@ -55,7 +55,6 @@ class FederSite(obstools.Site):
 
 
 class Instrument(object):
-
     """
     Telescope instrument with simple properties.
 
@@ -88,7 +87,6 @@ class Instrument(object):
 
         overscan_start = 3073
         overscan_axis = 1
-
     """
 
     def __init__(self, name, fits_names=None,
