@@ -35,9 +35,19 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinxarg.ext',
               'numpydoc',
-              ]
+              'astropy.sphinx.ext.astropyautosummary',
+              'astropy.sphinx.ext.automodsumm',
+              'astropy.sphinx.ext.automodapi',
+              'astropy.sphinx.ext.tocdepthfix',
+             ]
 
 numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
+
+autosummary_generate = True
+
+automodapi_toctreedirnm = 'api'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -75,7 +85,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
