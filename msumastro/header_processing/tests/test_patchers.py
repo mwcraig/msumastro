@@ -26,6 +26,7 @@ _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
 simbad_down = False
 
+
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
     objects, RA, Dec = ph.read_object_list(dir=_test_dir)
@@ -92,7 +93,7 @@ def test_writing_patched_files_to_directory():
     files = glob(path.join(_test_dir, '*.fit*'))
     n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
     dest_dir = mkdtemp()
-    ph.patch_headers(_test_dir, new_file_ext=None, save_location=dest_dir)
+    ph.patch_headers(_test_dir, new_file_ext='', save_location=dest_dir)
     print files
     n_files_after = len(glob(path.join(_test_dir, '*.fit*')))
     print n_files_after
@@ -226,11 +227,15 @@ def test_adding_object_name(use_list=None,
     assert (with_name[0].header['object'] == 'm101')
     return with_name
 
+
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_adding_object_from_name_only():
     if simbad_down:
         pytest.xfail("Simbad is down")
-    test_adding_object_name()
+    try:
+        test_adding_object_name()
+    except (name_resolve.NameResolveError, timeout):
+        pytest.xfail("Simbad is down")
 
 
 def test_add_object_name_warns_if_no_match(caplog):
@@ -327,7 +332,7 @@ def test_no_object_match_for_image_warning_includes_file_name(caplog):
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
-    ph.patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
     ph.add_object_info(_test_dir)
     patch_header_warnings = get_patch_header_warnings(caplog)
     assert 'No object found' in patch_header_warnings
@@ -348,12 +353,17 @@ def test_add_ra_dec_from_object_name():
         warnings.filterwarnings('ignore', module=ignore_from)
         f.writeto(full_path, clobber=True)
     f.close()
-    ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=None)
+
+    try:
+        ph.add_ra_dec_from_object_name(_test_dir, new_file_ext='')
+    except (name_resolve.NameResolveError, timeout):
+        pytest.xfail("Simbad is down")
+
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
     m101_ra_dec_correct = FK5('14h03m12.58s +54d20m55.50s')
     header_m101 = FK5(ra=h['ra'], dec=h['dec'],
-                                 unit=(u.hour, u.degree))
+                      unit=(u.hour, u.degree))
 
     assert_almost_equal(m101_ra_dec_correct.ra.hour,
                         header_m101.ra.hour)
@@ -390,7 +400,7 @@ def test_times_apparent_pos_added():
 
     HA_correct = LST_astropysics - RA_correct
 
-    ph.patch_headers(_test_dir, new_file_ext=None, overwrite=True)
+    ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
     header = fits.getheader(path.join(_test_dir, _test_image_name))
 
     # check Julian Date

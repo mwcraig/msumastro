@@ -172,7 +172,7 @@ def get_software_name(header, file_name=None, use_observatory=None):
     return software
 
 
-def purge_bad_keywords(header, history=False, force=False, file_name=''):
+def purge_bad_keywords(header, history=False, force=False, file_name=None):
     """
     Remove keywords from FITS header that may be incorrect
 
@@ -246,7 +246,7 @@ def change_imagetype_to_IRAF(header, history=True):
             header.add_history(comment)
 
 
-def read_object_list(dir='.', input_list=None):
+def read_object_list(dir=None, input_list=None):
     """
     Read a list of objects from a text file.
 
@@ -327,6 +327,7 @@ def read_object_list(dir='.', input_list=None):
                 table.rename_column(column, key)
                 break
 
+    dir = dir or '.'
     list = (input_list if input_list is not None else 'obsinfo.txt')
     objects = Table.read(path.join(dir, list),
                          format='ascii',
@@ -352,7 +353,7 @@ def read_object_list(dir='.', input_list=None):
     return objects['object'], RA, Dec
 
 
-def history(function, mode='begin', time=None):
+def history(function, mode=None, time=None):
     """
     Construct nicely formatted start/end markers in FITS history.
 
@@ -361,10 +362,12 @@ def history(function, mode='begin', time=None):
     function : func
         Function calling `history`
     mode : str, 'begin' or 'end'
-        A different string is produced for the beginning and the end
+        A different string is produced for the beginning and the end. Default
+        is 'begin'.
     time : datetime
         If not set, defaults to current date/time.
     """
+    mode = mode or 'begin'
     if mode == 'begin':
         marker = '+'
     elif mode == 'end':
@@ -381,8 +384,8 @@ def history(function, mode='begin', time=None):
                                           marker)
 
 
-def patch_headers(dir='.',
-                  new_file_ext='new',
+def patch_headers(dir=None,
+                  new_file_ext=None,
                   save_location=None,
                   overwrite=False,
                   purge_bad=True,
@@ -402,7 +405,7 @@ def patch_headers(dir='.',
     new_file_ext : str, optional
         Name added to the FITS files with updated header information. It is
         added to the base name of the input file, between the old file name
-        and the `.fit` or `.fits` extension.
+        and the `.fit` or `.fits` extension. Default is 'new'.
 
     save_location : str, optional
         Directory to which the patched files should be written, if not `dir`.
@@ -430,6 +433,10 @@ def patch_headers(dir='.',
         If ``True``, change image types to IRAF-style. See
         :func:`change_imagetype_to_IRAF` for details.
     """
+    dir = dir or '.'
+    if new_file_ext is None:
+        new_file_ext = 'new'
+
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
     for header, fname in images.headers(save_with_name=new_file_ext,
@@ -516,10 +523,10 @@ def add_overscan_header(header, history=True):
     return modified_keywords
 
 
-def add_object_info(directory='.',
+def add_object_info(directory=None,
                     object_list=None,
                     object_list_dir=None,
-                    match_radius=20.0, new_file_ext='new',
+                    match_radius=20.0, new_file_ext=None,
                     save_location=None,
                     overwrite=False, detailed_history=True):
     """
@@ -548,7 +555,7 @@ def add_object_info(directory='.',
     new_file_ext : str, optional
         Name added to the FITS files with updated header information. It is
         added to the base name of the input file, between the old file name
-        and the `.fit` or `.fits` extension.
+        and the `.fit` or `.fits` extension. Default is 'new'.
 
     save_location : str, optional
         Directory to which the patched files should be written, if not `dir`.
@@ -556,6 +563,10 @@ def add_object_info(directory='.',
     overwrite : bool, optional
         Set to `True` to replace the original files.
     """
+    directory = directory or '.'
+    if new_file_ext is None:
+        new_file_ext = 'new'
+
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
@@ -664,7 +675,7 @@ def add_object_info(directory='.',
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
 
 
-def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
+def add_ra_dec_from_object_name(directory=None, new_file_ext=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
 
@@ -677,9 +688,12 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     new_file_ext : str, optional
         Name added to the FITS files with updated header information. It is
         added to the base name of the input file, between the old file name
-        and the `.fit` or `.fits` extension.
+        and the `.fit` or `.fits` extension. Default is 'new'.
 
     """
+    directory = directory or '.'
+    if new_file_ext is None:
+        new_file_ext = 'new'
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
                                            'Dec', 'object'])
@@ -717,7 +731,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             header = hdulist[0].header
             feder.RA.add_to_header(header, history=True)
             feder.DEC.add_to_header(header, history=True)
-            if new_file_ext is not None:
+            if new_file_ext:
                 base, ext = path.splitext(full_name)
                 new_file_name = base + new_file_ext + ext
                 overwrite = False
@@ -728,7 +742,7 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
             hdulist.close()
 
 
-def fix_int16_images(directory='.', new_file_ext=None):
+def fix_int16_images(directory=None, new_file_ext=None):
     """
     Repair unsigned int16 images saved as signed int16.
 
@@ -745,6 +759,7 @@ def fix_int16_images(directory='.', new_file_ext=None):
         added to the base name of the input file, between the old file name
         and the `.fit` or `.fits` extension.
     """
+    directory = directory or '.'
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'bitpix', 'bzero'])
     summary = images.summary_info
