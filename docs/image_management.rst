@@ -8,11 +8,9 @@ Image Management
 Working with a directory of images
 **********************************
 
-.. module:: msumastro.image_collection
-
-.. autoclass:: ImageFileCollection
-    :members:
-    :undoc-members:
+.. automodapi:: msumastro.image_collection
+    :no-inheritance-diagram:
+    :skip: Table
 
 ***************************************
 Turning an image collection into a tree

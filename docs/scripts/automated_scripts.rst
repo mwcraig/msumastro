@@ -77,15 +77,15 @@ not *required*, necessarily) to run:
 
 * If desired, ``run_triage`` again to regenerate the table of image information.
 
-**********************************************
-When the intended workflow will not work...
-**********************************************
+*******************************************
+The intended workflow will not work when...
+*******************************************
 
 The workflow above works great when the images that come off the telescope contain pointing information (i.e. RA/Dec), filter information and the image type in the header matches the actual image type.
 
 Manual intervention will be required in any of these circumstances:
 
-+ There is no pointing information in the files. In files that are produced at
++ **There is no pointing information in the files.** In files that are produced at
   Feder Observatory the pointing information is contained in the FITS keywords
   ``OBJCTRA`` and ``OBJCTDEC``. If there is no pointing information, astrometry
   will not be added to the image headers. `astrometry.net
@@ -99,7 +99,7 @@ Manual intervention will be required in any of these circumstances:
     In addition, one file with suffix `.blind` will be created for each light
     file which contains no pointing information.
 
-+ Filter information is missing for light or flat images. All of the data
++ **Filter information is missing for light or flat images.** All of the data
   preparation will occur if the ``FILTER`` keyword is missing   from the headers
   for light or flat images, but the filter needs to be added to   make the images
   *useful*.
@@ -109,8 +109,8 @@ Manual intervention will be required in any of these circumstances:
     filter information.
 
 
-+ Incorrect image type set for image. If the incorrect image type is set it can
-  prevent some data preparation steps   to be omitted that should actually occur
++ **Incorrect image type set for image.** If the incorrect image type is set it
+  can prevent some data preparation steps to be omitted that should actually occur
   or cause steps to be attempted that   shouldn't be. For example, if an image is
   really a ``LIGHT`` image but is   labeled in the header as a ``FLAT``, then no
   attempt will be made to calculate   an apparent position (Alt/Az) for the frame
@@ -124,7 +124,8 @@ Manual intervention will be required in any of these circumstances:
     different type than its ``IMAGETYP`` in the FITS header (e.g. a file with
     ``IMAGETYP = LIGHT`` whose name is ``flat-001R.fit``)
 
-+ The standard workflow has run but object names have not been add to all of the
++ **The object being observed is not in the master object list.** The standard 
+  workflow has run but object names have not been add to all of the
   light files. This occurs when the object of the image was not in the list of
   objects used by ``run_patch.py`` or the object's RA/Dec was too far from the
   center of the image to be matched.
@@ -133,9 +134,14 @@ Manual intervention will be required in any of these circumstances:
     standard workflow, will produce a file called "NEEDS_OBJECT.txt" with a
     list of light files for which there is no object.
 
+.. _how_to_fix:
+
 *****************************************
 Fixes for cases that require intervention
 *****************************************
+
+The discussion below is deliberately broad. For some concrete examples see
+:ref:`manual_processing`
 
 + **Adding pointing information**: There are a few options here:
 
@@ -182,6 +188,60 @@ Fixes for cases that require intervention
   of the keyword-patching work). Another way to approach is to use
   :mod:`~msumastro.scripts.quick_add_keys_to_file` to set the ``OBJECT`` keyword
   directly. **Either way you are encouraged to upadte the master object list.**
+
+*********************************
+Detailed list of keywords changed
+*********************************
+
+.. _header-patch-detail:
+
+Keywords purged before further processing
+-----------------------------------------
+
+Some **keywords are purged** from the original headers because I don't trust
+the values that MaxImDL v5 puts in::
+
+  OBJECT
+  JD
+  JD-HELIO
+  OBJCTALT
+  OBJCTAZ
+  OBJCTHA
+  AIRMASS
+
+
+Keywords modified for all files
+-------------------------------
+
+The keywords that are currently added/modified by ``patch_headers`` for
+**all files** are::
+
+  IMAGETYP: Type of image
+  LATITUDE: [degrees] Observatory latitude
+  LONGITUD: [degrees east] Observatory longitude
+  ALTITUDE: [meters] Observatory altitude
+  LST: Local Sidereal Time at start of observation
+  JD-OBS: Julian Date at start of observation
+  MJD-OBS: Modified Julian date at start of observation
+  OSCAN: True if image has overscan region
+  OSCANAX: Overscan axis, 1 is NAXIS1, 2 is NAXIS 2
+  OSCANST: Starting pixel of overscan region
+
+Keywords modified only for light files
+--------------------------------------
+
+The keywords that are currently added/modified by ``patch_header`` for
+**light files only** are::
+
+  RA: Approximate RA at EQUINOX
+  DEC: Approximate DEC at EQUINOX
+  OBJECT: Target of the observations
+  HA: Hour angle
+  AIRMASS: Airmass (Sec(Z)) at start of observation
+  ALT-OBJ: [degrees] Altitude of object, no refraction
+  AZ-OBJ: [degrees] Azimuth of object, no refraction
+
+
 
 *************
 Reference/API

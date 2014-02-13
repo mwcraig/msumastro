@@ -16,18 +16,9 @@ Contents
 
    overview
    installation
-   image_management
    scripts/automated_scripts
-   Header patching and other Feder-specific code <feder_processing>
-   A tool for managing a set of images <image_processing>
+   scripts/manual_processing
+   image_management
    header_processing/index
    reduction/index
-
-
-******************
-Indices and tables
-******************
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   xref
