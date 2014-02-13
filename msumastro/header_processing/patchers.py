@@ -415,7 +415,7 @@ def patch_headers(dir='.',
         :func:`purge_bad_keywords` for details.
 
     add_time : bool, optional
-        If ``True``, add time information (e.g. JD, LST); see 
+        If ``True``, add time information (e.g. JD, LST); see
         :func:`add_time_info` for details.
 
     add_apparent_pos : bool, optional
