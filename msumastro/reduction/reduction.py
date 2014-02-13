@@ -1,3 +1,6 @@
+"""
+This module contains functions useful for reducing CCD images.
+"""
 import logging
 
 logger = logging.getLogger(__name__)
@@ -8,8 +11,19 @@ def trim(hdu):
     Trim the overscan region from an image.
 
     Parameters
+    ----------
+    hdu : astropy.io.fits.HDU
+        FITS HDU for the image from which overscan is to be trimmed.
 
-    hdu: FITS hdu
+    Returns
+    -------
+    astropy.io.fits.HDU
+        The modified HDU
+
+    Notes
+    -----
+    This function does **NOT** do any overscan correction to the image. It
+    trims the image and nothing else.
     """
     header = hdu.header
 

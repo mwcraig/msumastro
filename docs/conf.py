@@ -35,9 +35,19 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinxarg.ext',
               'numpydoc',
-              ]
+              'astropy.sphinx.ext.astropyautosummary',
+              'astropy.sphinx.ext.automodsumm',
+              'astropy.sphinx.ext.automodapi',
+              'astropy.sphinx.ext.tocdepthfix',
+             ]
 
 numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
+
+autosummary_generate = True
+
+automodapi_toctreedirnm = 'api'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -75,7 +85,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -103,10 +113,10 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if on_rtd:
-    html_theme = 'default'
-else:
-    html_theme = 'sphinxdoc'
+if not on_rtd:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

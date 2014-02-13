@@ -17,15 +17,27 @@ logger = logging.getLogger(__name__)
 
 feder = Feder()
 
-__all__ = ['patch_headers', 'add_object_info', 'add_ra_dec_from_object_name']
+#__all__ = ['patch_headers', 'add_object_info', 'add_ra_dec_from_object_name']
 
 
 def IRAF_image_type(image_type):
-    """Convert MaximDL default image type names to IRAF
+    """
+    Convert MaximDL default image type names to IRAF
 
-    `image_type` is the value of the FITS header keyword IMAGETYP.
+    Parameters
+    ----------
+    image_type : str
+        Value of the FITS header keyword IMAGETYP; acceptable values are
+        below in Notes.
 
-    MaximDL default is, e.g. 'Bias Frame', which IRAF calls
+    Returns
+    -------
+    str
+        IRAF image type (one of 'BIAS', 'DARK', 'FLAT' or 'LIGHT')
+
+    Notes
+    -----
+    The MaximDL default is, e.g. 'Bias Frame', which IRAF calls
     'BIAS'. Can safely be called with an IRAF-style image_type.
     """
     return image_type.split()[0].upper()
@@ -33,9 +45,12 @@ def IRAF_image_type(image_type):
 
 def add_time_info(header, history=False):
     """
-    Add JD, MJD, LST to FITS header; `header` should be a fits
-    header object.
+    Add JD, MJD, LST to FITS header
 
+    Parameters
+    ----------
+    header : astropy..io.fits.Header
+        FITS header to be modified.
     history : bool
         If `True`, write history for each keyword changed.
     """
@@ -57,13 +72,21 @@ def add_time_info(header, history=False):
 
 
 def add_object_pos_airmass(header, history=False):
-    """Add object information, such as RA/Dec and airmass.
+    """
+    Add object information, such as RA/Dec and airmass.
 
+    Parameters
+    ----------
+    header : astropy..io.fits.Header
+        FITS header to be modified.
     history : bool
         If `True`, write history for each keyword changed.
 
+    Notes
+    -----
     Has side effect of setting feder site JD to JD-OBS, which means it
     also assume JD.value has been set.
+
     """
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd = feder.JD_OBS.value
@@ -153,12 +176,22 @@ def purge_bad_keywords(header, history=False, force=False, file_name=''):
     """
     Remove keywords from FITS header that may be incorrect
 
+    Parameters
+    ----------
+    header : astropy.io.fits.Header
+        Header from which the bad keywords (as defined by the software that
+        recorded the image) should be purged.
+
     history : bool
         If `True` write detailed history for each keyword removed.
 
     force : bool
         If `True`, force keywords to be purged even if the FITS header
         indicates it has already been purged.
+
+    file_name : str, optional
+        Name of file containing the header; if provided it is used to generate
+        more informative log messages.
     """
     software = get_software_name(header, file_name=file_name)
 
@@ -193,13 +226,12 @@ def change_imagetype_to_IRAF(header, history=True):
     Change IMAGETYP to default used by IRAF
 
     Parameters
-
-    header : astropy.io.fits ``Header``
-        Header object in which `IMAGETYP` is to be changed.
+    ----------
+    header : astropy.io.fits.Header
+        Header object in which image type is to be changed.
 
     history : bool, optional
-        If `True`, add history of keyword modification to `header`. Default
-        is `True`.
+        If `True`, add history of keyword modification to `header`.
     """
     imagetype = 'imagetyp'  # FITS keyword name is truncated at 8 chars
     current_type = header[imagetype]
@@ -218,9 +250,16 @@ def read_object_list(dir='.', input_list=None):
     """
     Read a list of objects from a text file.
 
-    `dir` is the directory containing the file.
+    Parameters
+    ----------
+    dir : str
+        Directory containing the file. Default is the current directory, ``.``
 
-    `input_list` is the name of the file.
+    input_list : str, optional
+        Name of the file. Default value is ``obsinfo.txt``
+
+    Notes
+    -----
 
     There are two file formats; one contains just a list of objects, the
     other has an RA and Dec for each object.
@@ -318,7 +357,7 @@ def history(function, mode='begin', time=None):
     Construct nicely formatted start/end markers in FITS history.
 
     Parameters
-
+    ----------
     function : func
         Function calling `history`
     mode : str, 'begin' or 'end'
@@ -354,20 +393,42 @@ def patch_headers(dir='.',
     """
     Add minimal information to Feder FITS headers.
 
-    `dir` is the directory containing the files to be patched.
+    Parameters
+    ----------
+    dir : str, optional
+        Directory containing the files to be patched. Default is the current
+        directory, ``.``
 
-    `new_file_ext` is the name added to the FITS files with updated
-    header information. It is added to the base name of the input
-    file, between the old file name and the `.fit` or `.fits` extension.
+    new_file_ext : str, optional
+        Name added to the FITS files with updated header information. It is
+        added to the base name of the input file, between the old file name
+        and the `.fit` or `.fits` extension.
 
-    `save_location` is the directory to which the patched files
-        should be written, if not `dir`
+    save_location : str, optional
+        Directory to which the patched files should be written, if not `dir`.
 
-    `overwrite` should be set to `True` to replace the original files.
+    overwrite : bool, optional
+        Set to `True` to replace the original files.
 
-    `purge_bad`, `add_time`, `add_apparent_pos`, `add_overscan` and
-    `fix_imagetype` are flags that control which aspect of the headers is
-    modified.
+    purge_bad : bool, optional
+        Remove "bad" keywords form header before any other processing. See
+        :func:`purge_bad_keywords` for details.
+
+    add_time : bool, optional
+        If ``True``, add time information (e.g. JD, LST); see
+        :func:`add_time_info` for details.
+
+    add_apparent_pos : bool, optional
+        If ``True``, add apparent position (e.g. alt/az) to headers. See
+        :func:`add_object_pos_airmass` for details.
+
+    add_overscan : bool, optional
+        If ``True``, add overscan keywords to the headers. See
+        :func:`add_overscan_header` for details.
+
+    fix_imagetype : bool, optional
+        If ``True``, change image types to IRAF-style. See
+        :func:`change_imagetype_to_IRAF` for details.
     """
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
 
@@ -420,6 +481,19 @@ def patch_headers(dir='.',
 def add_overscan_header(header, history=True):
     """
     Add overscan information to a FITS header.
+
+    Parameters
+    ----------
+    header : astropy.io.fits.Header
+        Header object to which overscan is to be added.
+
+    history : bool, optional
+        If `True`, add history of keyword modification to `header`.
+
+    Returns
+    -------
+    list of str
+        List of the keywords added to the header by this function.
     """
     image_dim = [header['naxis1'], header['naxis2']]
     instrument = feder.instruments[header['instrume']]
@@ -449,19 +523,38 @@ def add_object_info(directory='.',
                     save_location=None,
                     overwrite=False, detailed_history=True):
     """
-    Automagically add object information to FITS files.
+    Add object information to FITS files that contain pointing information
+    given a list of objects.
 
-    `directory` is the directory containing the FITS files to be fixed
-    up and an `object_list`. Set `object_list` to `None` to use
-    default object list name.
+    Parameters
+    ----------
+    directory : str
+        Directory containing the FITS files to be fixed. Default is the
+        current directory, ``.``.
 
-    `object_list_dir` is the directory in which the `object_list` is contained.
-    If not specified it defaults to `directory`. See :func:`read_object_list`
-    for a description of the format of this object file.
+    object_list : str, optional
+        Name of file containing list of objects. Default is set by
+        :func:`read_object_list` which also explains the format of this file.
 
-    `match_radius` is the maximum distance, in arcmin, between the
-    RA/Dec of the image and a particular object for the image to be
-    considered an image of that object.
+    object_list_dir : str, optional
+        Directory in which the `object_list` is contained. Default is
+        `directory`.
+
+    match_radius : float, optional
+        Maximum distance, in arcmin, between the RA/Dec of the image and a
+        particular object for the image to be considered an image of that
+        object.
+
+    new_file_ext : str, optional
+        Name added to the FITS files with updated header information. It is
+        added to the base name of the input file, between the old file name
+        and the `.fit` or `.fits` extension.
+
+    save_location : str, optional
+        Directory to which the patched files should be written, if not `dir`.
+
+    overwrite : bool, optional
+        Set to `True` to replace the original files.
     """
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -574,6 +667,18 @@ def add_object_info(directory='.',
 def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
+
+    Parameters
+    ----------
+    dir : str, optional
+        Directory containing the files to be patched. Default is the current
+        directory, ``.``
+
+    new_file_ext : str, optional
+        Name added to the FITS files with updated header information. It is
+        added to the base name of the input file, between the old file name
+        and the `.fit` or `.fits` extension.
+
     """
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'RA',
@@ -624,9 +729,21 @@ def add_ra_dec_from_object_name(directory='.', new_file_ext=None):
 
 
 def fix_int16_images(directory='.', new_file_ext=None):
-    """Repair unsigned int16 images saved as signed.
+    """
+    Repair unsigned int16 images saved as signed int16.
 
     Use with care; if your data really is signed int16 this will corrupt it.
+
+    Parameters
+    ----------
+    dir : str, optional
+        Directory containing the files to be patched. Default is the current
+        directory, ``.``
+
+    new_file_ext : str, optional
+        Name added to the FITS files with updated header information. It is
+        added to the base name of the input file, between the old file name
+        and the `.fit` or `.fits` extension.
     """
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'bitpix', 'bzero'])
@@ -665,6 +782,18 @@ def fix_int16_images(directory='.', new_file_ext=None):
 def compare_data_in_fits(file1, file2):
     """
     Compare the image data in two FITS files.
+
+    Parameters
+    ----------
+    file1 : str
+        Name of first FITS file
+    file2 : str
+        Name of second FITS file
+
+    Returns
+    -------
+    bool
+        ``True`` if the data in the files is identical, ``False`` otherwise.
     """
     hdu1 = fits.open(file1)
     hdu2 = fits.open(file2)

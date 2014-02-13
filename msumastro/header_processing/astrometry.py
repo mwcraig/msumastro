@@ -12,36 +12,38 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
                     save_wcs=False, verify=None,
                     ra_dec=None, overwrite=False,
                     wcs_reference_image_center=True):
-    """Wrapper around astrometry.net solve-field.
+    """
+    Wrapper around astrometry.net solve-field.
 
-    :param sextractor:
-        True to use `sextractor`, or a string with the
+    Parameters
+    ----------
+    sextractor : bool or str, optional
+        ``True`` to use `sextractor`, or a ``str`` with the
         path to sextractor.
-    :param feder_settings:
+    feder_settings : bool, optional
         Set True if you want to use plate scale appropriate for Feder
         Observatory Apogee Alta U9 camera.
-    :param no_plots:
-        True to suppress astrometry.net generation of
+    no_plots : bool, optional
+        ``True`` to suppress astrometry.net generation of
         plots (pngs showing object location and more)
-    :param minimal_output:
-        Suppress, as separate files, output of: WCS
+    minimal_output : bool, optional
+        If ``True``, suppress, as separate files, output of: WCS
         header, RA/Dec object list, matching objects list, but see
         also `save_wcs`
-    :param save_wcs:
-        True to save WCS header even if other output is suppressed
+    save_wcs : bool, optional
+        If ``True``, save WCS header even if other output is suppressed
         with `minimial_output`
-    :param verify:
-        Set to the name of a WCS header to be used as a first guess
+    verify : str, optional
+        Name of a WCS header to be used as a first guess
         for the astrometry fit; if this plate solution does not work
         the solution is found as though `verify` had not been specified.
-    :param ra_dec:
-        List or tuple of RA and Dec; also limits search
-        radius to 1 degree.
-    :param overwrite:
-        If True, perform astrometry even if astrometry.net files from a
+    ra_dec : list or tuple of float
+        (RA, Dec); also limits search radius to 1 degree.
+    overwrite : bool, optional
+        If ``True``, perform astrometry even if astrometry.net files from a
         previous run are present.
-    :param wcs_reference_image_center:
-        If True, force the WCS reference point in the image to be the
+    wcs_reference_image_center :
+        If ``True``, force the WCS reference point in the image to be the
         image center.
     """
     solve_field = ["solve-field"]
@@ -107,28 +109,43 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    verify=None, try_builtin_source_finder=False):
     """Add WCS headers to FITS file using astrometry.net
 
-    `overwrite` should be `True` to overwrite the original file. If `False`,
-    the file astrometry.net generates is kept.
+    Parameters
+    ----------
+    overwrite : bool, optional
+        Set ``True`` to overwrite the original file. If `False`,
+        the file astrometry.net generates is kept.
 
-    `ra_dec` is a list or tuple (RA, Dec) in either decimal or
-    sexagesimal form.
+    ra_dec : list or tuple of float or str
+        (RA, Dec) of field center as either decimal or sexagesimal; also
+        limits search radius to 1 degree.
 
-    Set `note_failure` to True if you want a file created with
-    extension "failed" if astrometry.net fails.
+    note_failure : bool, optional
+        If ``True``, create a file with extension "failed" if astrometry.net
+        fails. The "failed" file contains the error messages genreated by
+        astrometry.net.
 
-    For explanations of `save_wcs` and `verify` see
-    :func:`call_astrometry`
+    try_biultin_source_finder : bool
+        If true, try using astrometry.net's built-in source extractor if
+        sextractor fails.
 
-    If `try_biultin_source_finder` is true, try using astrometry.net's
-    built-in source id routines instead of sextractor.
+    save_wcs :
+    verify :
+        See :func:`call_astrometry`
 
-    Returns `True` on success.
+    Returns
+    -------
+    bool
+        ``True`` on success.
+
+    Notes
+    -----
 
     Tries a couple strategies before giving up: first sextractor,
-    then, if that fails, astrometry.net's built-in soure extractor.
+    then, if that fails, astrometry.net's built-in source extractor.
 
     It also cleans up after astrometry.net, keeping only the new FITS
-    file it generates and the .solved file.
+    file it generates, the .solved file, and, if desired, a ".failed" file
+    for fields which it fails to solve.
 
     For more flexible invocation of astrometry.net, see :func:`call_astrometry`
     """

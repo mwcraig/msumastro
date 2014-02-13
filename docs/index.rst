@@ -3,42 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-MSUBTATROTMSM python toolbox
-=======================================================
+###################
+MSUM python toolbox
+###################
 
-This set of tools is currently a mix of routines to fix up the headers
-of the FITS files generated at Feder Observatory and some more broadly
-useful code.
-
-
-
-
-
-Contents:
+********
+Contents
+********
 
 .. toctree::
    :maxdepth: 2
 
-   Installation <installation>   
-   Header patching and other Feder-specific code <feder_processing>
-   A tool for managing a set of images <image_processing>
+   overview
+   installation
+   scripts/automated_scripts
+   scripts/manual_processing
+   image_management
    header_processing/index
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-..   CCD characterization <ccd_characterization>
-..   Add FITS Keyword to file <quick_add_keys_to_file>
-..   Image reduction <reduction>
-..
-   Astrometry <astrometry>
-   Feder-specific items <feder> 
-   FITS Keyword class <fitskeyword>
-   Patch Feder FITS headers <patch_headers>
-   Manage directory of images <image_collection>
-   Image with WCS <image>
+   reduction/index
+   xref
