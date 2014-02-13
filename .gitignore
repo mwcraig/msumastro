@@ -13,3 +13,4 @@ msumastro.egg-info
 .coverage
 *.egg
 htmlcov
+docs/api
