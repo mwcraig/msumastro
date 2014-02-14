@@ -9,6 +9,9 @@ from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
+__all__ = ['FederSite', 'ImageSoftware', 'Instrument', 'ApogeeAltaU9',
+           'MaximDL4', 'MaximDL5']
+
 
 class FederSite(obstools.Site):
     """

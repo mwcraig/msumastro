@@ -5,6 +5,8 @@ from astropy.io.fits import PrimaryHDU
 
 logger = logging.getLogger(__name__)
 
+__all__ = ['FITSKeyword']
+
 
 class FITSKeyword(object):
 
