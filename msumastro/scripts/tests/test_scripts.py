@@ -242,7 +242,18 @@ class TestScript(object):
             print blind_path.strpath
             assert (blind_path.check())
 
-    def test_quick_add_keys_records_history(self):
+    @pytest.mark.parametrize('file_column',
+                             ['file',
+                              'FiLe',
+                              'badd'])
+    @pytest.mark.parametrize('file_arg',
+                             ['--file-list',
+                              ''])
+    @pytest.mark.parametrize('keyword_arg',
+                             ['--key-file',
+                              '--key-value'])
+    def test_quick_add_keys_records_history(self, keyword_arg,
+                                            file_arg, file_column):
         ic = ImageFileCollection(self.test_dir.strpath,
                                  keywords=['imagetyp'])
         ic.summary_info.keep_columns('file')
@@ -255,8 +266,10 @@ class TestScript(object):
         print 'fill paths: %s' % ' '.join(full_paths)
         ic.summary_info['file'][:] = full_paths
         ic.summary_info.remove_column('file')
-        ic.summary_info.add_column(Column(data=full_paths, name='file'))
+        ic.summary_info.add_column(Column(data=full_paths, name=file_column))
         ic.summary_info.write(file_list, format='ascii')
+        if file_column != 'file':
+            ic.summary_info.rename_column(file_column, 'file')
         dumb_keyword = 'munkeez'.upper()
         dumb_value = 'bananaz'
         keywords = Column(data=[dumb_keyword], name='Keyword')
@@ -264,16 +277,33 @@ class TestScript(object):
         keyword_table = Table()
         keyword_table.add_columns([keywords, vals])
         keyword_table.write(keyword_list, format='ascii')
-        argslist = ['--key-file', keyword_list,
-                    '--file-list', file_list
-                    ]
-        quick_add_keys_to_file.main(argslist)
+        args_for = {}
+        args_for['--key-file'] = [keyword_list]
+        args_for['--key-value'] = [dumb_keyword, dumb_value]
+        args_for['--file-list'] = [file_list]
+        args_for[''] = full_paths
+        argslist = [keyword_arg]
+        argslist.extend(args_for[keyword_arg])
+        if file_arg:
+            argslist.append(file_arg)
+        argslist.extend(args_for[file_arg])
+        if file_column.lower() != 'file' and file_arg:
+            with pytest.raises(ValueError):
+                quick_add_keys_to_file.main(argslist)
+            return
+        else:
+            quick_add_keys_to_file.main(argslist)
+
 #        add_keys(file_list=file_list, key_file=keyword_list)
         for header in ic.headers():
             assert (header[dumb_keyword] == dumb_value)
             history_string = ' '.join(header['history'])
             assert (dumb_keyword in history_string)
             assert (dumb_value in history_string)
+
+    def test_quick_add_keys_raises_error_if_no_files(self):
+        with pytest.raises(SystemExit):
+            quick_add_keys_to_file.main(['--key-value', 'key', 'value'])
 
 
 @pytest.fixture(params=['run_patch', 'run_triage', 'run_astrometry'])
