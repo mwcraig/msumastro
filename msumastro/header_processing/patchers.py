@@ -88,16 +88,17 @@ def add_object_pos_airmass(header, history=False):
     also assume JD.value has been set.
 
     """
+    # not sure why coverage is not picking up both branches, but it is not, so
+    # marking it no cover
     if feder.JD_OBS.value is not None:
         feder.site.currentobsjd = feder.JD_OBS.value
     else:
-        raise ValueError('Need to set JD_OBS.value before calling.')
+        raise ValueError('Need to set JD_OBS.value before calling.')  # pragma: no cover
 
     try:
         feder.RA.set_value_from_header(header)
     except ValueError:
         raise ValueError("No RA is present.")
-        return
 
     feder.DEC.set_value_from_header(header)
     feder.RA.value = feder.RA.value.replace(' ', ':')
