@@ -5,28 +5,27 @@ from shutil import rmtree
 import astropy.io.fits as fits
 import pytest
 
-from utilities import make_overscan_test_files
 from ...header_processing.feder import ApogeeAltaU9
 from ..reduction import trim
 from ...header_processing.patchers import patch_headers
 
-test_dir = ''
+_test_dir = ''
 original_dir = ''
 
 
 def setup():
-    global test_dir
+    global _test_dir
     global original_dir
 
     original_dir = getcwd()
-    test_dir = mkdtemp()
+    _test_dir = mkdtemp()
 
 
-def test_trim():
-    global test_dir
+def test_trim(make_overscan_test_files):
+    global _test_dir
 
-    oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(test_dir)
-    chdir(path.join(test_dir, oscan_dir))
+    oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files
+    chdir(path.join(_test_dir, oscan_dir))
     patch_headers('.', new_file_ext='', overwrite=True,
                   add_time=False, purge_bad=False, add_apparent_pos=False,
                   add_overscan=True, fix_imagetype=False)
@@ -59,4 +58,4 @@ def test_trim():
 
 def teardown():
     chdir(original_dir)
-    rmtree(test_dir)
+    rmtree(_test_dir)

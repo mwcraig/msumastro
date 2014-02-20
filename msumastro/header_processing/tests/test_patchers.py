@@ -15,10 +15,8 @@ from astropy.coordinates import Angle, FK5, name_resolve
 from astropy import units as u
 from astropy.table import Table
 
-#from ..patch_headers import *
 from .. import patchers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
-from ...reduction.tests.utilities import make_overscan_test_files
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
 
@@ -140,12 +138,12 @@ def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
     assert(badname in patch_warnings)
 
 
-def test_adding_overscan_apogee_u9():
+def test_adding_overscan_apogee_u9(make_overscan_test_files):
     original_dir = getcwd()
 
     apogee = ApogeeAltaU9()
     print getcwd()
-    oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files(_test_dir)
+    oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files
     print getcwd()
 
     chdir(path.join(_test_dir, oscan_dir))
