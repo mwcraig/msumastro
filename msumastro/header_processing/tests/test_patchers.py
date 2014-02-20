@@ -13,6 +13,7 @@ from numpy.testing import assert_almost_equal
 from astropy.io import fits
 from astropy.coordinates import Angle, FK5, name_resolve
 from astropy import units as u
+from astropy.table import Table
 
 #from ..patch_headers import *
 from .. import patchers as ph
@@ -134,7 +135,7 @@ def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
     hdr[badkey] = badname
     a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), clobber=True)
     ph.patch_headers(_test_dir)
-    patch_warnings = get_patch_header_warnings(caplog)
+    patch_warnings = get_patch_header_logs(caplog)
     assert('KeyError' in patch_warnings)
     assert(badname in patch_warnings)
 
@@ -148,6 +149,13 @@ def test_adding_overscan_apogee_u9():
     print getcwd()
 
     chdir(path.join(_test_dir, oscan_dir))
+    # first, does requesting *not* adding overscan actually leave it alone?
+    ph.patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
+                     add_time=False, add_apparent_pos=False,
+                     add_overscan=False, fix_imagetype=False)
+    header_no_oscan = fits.getheader(has_no_oscan)
+    assert 'oscan' not in header_no_oscan
+
     ph.patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
                      add_time=False, add_apparent_pos=False,
                      add_overscan=True, fix_imagetype=False)
@@ -161,7 +169,6 @@ def test_adding_overscan_apogee_u9():
     print getcwd()
     chdir(original_dir)
     print getcwd()
-    assert (True)
 
 
 def test_fix_imagetype():
@@ -240,7 +247,7 @@ def test_adding_object_from_name_only():
 
 def test_add_object_name_warns_if_no_match(caplog):
     test_adding_object_name()
-    patch_header_warnings = get_patch_header_warnings(caplog)
+    patch_header_warnings = get_patch_header_logs(caplog)
     assert('No object found for image ' in patch_header_warnings)
 
 
@@ -322,24 +329,58 @@ def test_ambiguous_object_file_raises_error():
 def test_missing_object_file_issues_warning(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     ph.add_object_info(_test_dir)
-    patch_header_warnings = get_patch_header_warnings(caplog)
+    patch_header_warnings = get_patch_header_logs(caplog)
     assert 'No object list in directory' in patch_header_warnings
 
 
 def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
-    to_write = '# comment 1\n# comment 2\nobject,RA,Dec\nsz lyn,8:09:35.75,+44:28:17.59'
+    to_write = ('# comment 1\n# comment 2\nobject,RA,Dec\n'
+                'sz lyn,8:09:35.75,+44:28:17.59')
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
     ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
     ph.add_object_info(_test_dir)
-    patch_header_warnings = get_patch_header_warnings(caplog)
+    patch_header_warnings = get_patch_header_logs(caplog)
     assert 'No object found' in patch_header_warnings
     assert _test_image_name in patch_header_warnings
 
 
-def test_add_ra_dec_from_object_name():
+def test_missing_object_column_raises_error():
+    object_path = path.join(_test_dir, _default_object_file_name)
+    object_table = Table.read(object_path, format='ascii')
+    object_table.rename_column('object', 'BADBADBAD')
+    object_table.write(object_path, format='ascii')
+    with pytest.raises(RuntimeError):
+        ph.read_object_list(dir=_test_dir,
+                            input_list=_default_object_file_name)
+
+
+@pytest.mark.usefixtures('object_file_no_ra')
+def test_add_object_name_logs_error_if_object_on_list_not_found(caplog):
+    object_path = path.join(_test_dir, _default_object_file_name)
+    object_table = Table.read(object_path, format='ascii',
+                              comment='#', delimiter=',')
+    object_table.add_row(['not_a_simbad_object'])
+    object_table.write(object_path, format='ascii')
+    ph.add_object_info(_test_dir)
+    errs = get_patch_header_logs(caplog, level=logging.ERROR)
+    assert 'Unable to do lookup' in errs
+
+
+def test_add_object_name_logic_when_all_images_have_matching_object(caplog):
+    ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
+    for h in ic.headers(imagetyp='light', clobber=True):
+        h['imagetyp'] = 'FLAT'
+    ph.add_object_info(_test_dir)
+    infos = get_patch_header_logs(caplog, level=logging.INFO)
+    assert 'NO OBJECTS MATCHED' in infos
+
+
+@pytest.mark.parametrize('new_file_ext',
+                         ['', None])
+def test_add_ra_dec_from_object_name(new_file_ext):
     if simbad_down:
         pytest.xfail("Simbad is down")
     full_path = path.join(_test_dir, _test_image_name)
@@ -355,11 +396,17 @@ def test_add_ra_dec_from_object_name():
     f.close()
 
     try:
-        ph.add_ra_dec_from_object_name(_test_dir, new_file_ext='')
+        ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=new_file_ext)
     except (name_resolve.NameResolveError, timeout):
         pytest.xfail("Simbad is down")
 
-    f = fits.open(full_path, do_not_scale_image_data=True)
+    base, ext = path.splitext(full_path)
+    if new_file_ext is None:
+        new_ext = 'new'  # this is the default value...
+    else:
+        new_ext = new_file_ext
+    new_path = base + new_ext + ext
+    f = fits.open(new_path, do_not_scale_image_data=True)
     h = f[0].header
     m101_ra_dec_correct = FK5('14h03m12.58s +54d20m55.50s')
     header_m101 = FK5(ra=h['ra'], dec=h['dec'],
@@ -371,11 +418,34 @@ def test_add_ra_dec_from_object_name():
                         header_m101.dec.degree)
 
 
-def get_patch_header_warnings(log):
+def test_add_ra_dec_from_object_name_edge_cases(caplog):
+    # add a 'dec' keyword to every light file so that none need RA/Dec
+    ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
+    for h in ic.headers(imagetyp='light', clobber=True):
+        h['dec'] = '+17:42:00'
+        h['ra'] = '03:45:06'
+        h['object'] = 'm101'
+    # does this succeed without errors?
+    ph.add_ra_dec_from_object_name(_test_dir)
+
+    # add name that will fail as object of one image
+    image_path = path.join(_test_dir, _test_image_name)
+    f = fits.open(image_path)
+    h = f[0].header
+    del h['RA']
+    del h['dec']
+    h['object'] = 'i am a fake object'
+    f.writeto(image_path, clobber=True)
+    ph.add_ra_dec_from_object_name(_test_dir)
+    warns = get_patch_header_logs(caplog, level=logging.WARN)
+    assert 'Unable to lookup' in warns
+
+
+def get_patch_header_logs(log, level=logging.WARN):
     patch_header_warnings = []
     for record in log.records():
         if (('patchers' in record.name) and (record.levelno ==
-                                             logging.WARN)):
+                                             level)):
 
             patch_header_warnings.append(record.message)
 
@@ -437,7 +507,8 @@ def test_times_apparent_pos_added():
 
 @pytest.fixture(params=['object', 'OBJECT', 'Object'])
 def object_file_no_ra(request):
-    to_write = '# comment 1\n# comment 2\n' + request.param + '\ney uma\nm101'
+    to_write = ('# comment 1\n# comment 2\n' + request.param +
+                '\ney uma\nm101\n')
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
@@ -446,11 +517,60 @@ def object_file_no_ra(request):
 def object_file_with_ra_dec(dir):
     objs = ["ey uma, 09:02:20.76, +49:49:09.3",
             "m101,14:03:12.58,+54:20:55.50"
-    ]
+            ]
     to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
     object_file = open(path.join(dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
+
+
+def test_add_object_pos_airmass_raises_error_when_it_should():
+    feder = Feder()
+    header = fits.Header()
+    # make sure the JD_OBS really has the desired value for this test...
+    assert feder.JD_OBS.value is None
+    # have not set JD_OBS, do we raise the appropriate error?
+    with pytest.raises(ValueError):
+        ph.add_object_pos_airmass(header)
+    # No significance to the value below, but need to set it to something...
+    feder.JD_OBS.value = 2456490
+    with pytest.raises(ValueError):
+        ph.add_object_pos_airmass(header)
+
+
+def test_purge_bad_keywords_logic_for_conditionals(caplog):
+    ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
+    headers = [h for h in ic.headers()]
+    a_header = headers[0]
+    # should be no warnings the first time...
+    ph.purge_bad_keywords(a_header)
+    purge_warnings = get_patch_header_logs(caplog)
+    assert not purge_warnings
+    # re-purging should generate warnings...
+    ph.purge_bad_keywords(a_header)
+    purge_warnings = get_patch_header_logs(caplog)
+    assert 'force' in purge_warnings
+    assert 'removing' in purge_warnings
+    # grab a clean header
+    # want to get to a header with more than one bad keyword so that a
+    # history is generated...
+    for a_header in headers[1:]:
+        software = ph.get_software_name(a_header)
+        if len(software.bad_keywords) == 1:
+            continue
+        else:
+            break
+    # delete one of the purge keywords for this software, which should ensure
+    # that their is no history added to the header that contains the name of
+    # this keyword
+    key_to_delete = software.bad_keywords[0]
+    print software.bad_keywords
+    del a_header[key_to_delete]
+    print a_header
+    ph.purge_bad_keywords(a_header, history=True)
+    print a_header
+    assert all(key_to_delete.lower() not in h.lower()
+               for h in a_header['HISTORY'])
 
 
 def setup_module(module):
