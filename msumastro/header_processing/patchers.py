@@ -1,6 +1,7 @@
 from os import path
 from datetime import datetime
 import logging
+from socket import timeout
 
 import numpy as np
 import astropy.io.fits as fits
@@ -593,7 +594,7 @@ def add_object_info(directory=None,
     else:
         try:
             ra_dec = [FK5.from_name(obj) for obj in object_names]
-        except name_resolve.NameResolveError as e:
+        except (name_resolve.NameResolveError, timeout) as e:
             logger.error('Unable to do lookup of object positions')
             logger.error(e)
             return
