@@ -18,7 +18,7 @@ INSTALL_REQUIRES = ['astropysics>=0.0.dev0', 'astropy>=0.3', 'numpy']
 
 setup(
     name='msumastro',
-    version='0.3.0',
+    version='0.3.1',
     description='Process FITS files',
     url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
