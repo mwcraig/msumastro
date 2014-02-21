@@ -37,6 +37,7 @@ def test_trim(make_overscan_test_files):
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
     trim(hdu)
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
+
     # files with overscan should have overscan region removed
     hdus = fits.open(has_oscan)
     hdu = hdus[0]
@@ -44,6 +45,8 @@ def test_trim(make_overscan_test_files):
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.columns)
     trim(hdu)
     assert(hdr['NAXIS' + str(apogee.overscan_axis)] == apogee.overscan_start)
+
+    # file missing overscan information should raise an error
     with pytest.raises(RuntimeError):
         hdus = fits.open(has_oscan)
         hdu = hdus[0]
