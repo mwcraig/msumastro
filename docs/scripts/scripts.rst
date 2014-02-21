@@ -116,4 +116,28 @@ Usage summary
 
 .. automodule:: msumastro.scripts.quick_add_keys_to_file
 
+-------------
 
+.. _sort_files:
+
+***************************************
+Sorting files based on image properties
+***************************************
+
+.. note::
+    By default this script makes a copy of the images being sorted. There is
+    an option for moving the files instead.
+
+    This type of sorting is handy for working with images in GUI software like
+    AstroImageJ or MaxImDL, but will make it harder to process the data
+    programmatically in python.
+
+Usage summary
+=============
+
+.. argparse::
+    :module: msumastro.scripts.sort_files
+    :func: construct_parser
+    :prog: sort_files.py
+
+.. automodule:: msumastro.scripts.sort_files

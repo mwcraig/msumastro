@@ -8,20 +8,20 @@ DESCRIPTION
             |
             |
             |
-            |---'bias'
+            |---'BIAS'
             |
-            |---'dark'
+            |---'DARK'
             |     |---exposure_time_1
             |     |---exposure_time_2, etc.
             |
-            |---'flat'
+            |---'FLAT'
             |      |---filter_1
             |      |    |---exposure_time_1
             |      |    |---exposure_time_2, etc.
             |      |
             |      |---filter_2, etc.
             |
-            |---'light'
+            |---'LIGHT'
                     |---object_1
                     |       |---filter_1
                     |       |    |---exposure_time_1
@@ -39,7 +39,7 @@ DESCRIPTION
                             |---filter_1
                             |---filter_2, etc.
 
-    The names in single quites, like `'bias'`, appear exactly as written in the
+    The names in single quotes, like `'bias'`, appear exactly as written in the
     directory tree created. Names like `exposure_time_1` are replaced with a
     value, for example 30.0 if the first dark exposure time is 30.0 seconds.
 
@@ -52,9 +52,10 @@ DESCRIPTION
 
     .. Warning::
         Unless you explicitly supply a destination using the --destination-dir
-        option the files will be moved in the directory in which they currently
-        exist. While this *should not* lead to information loss, since files
-        are moved rather than deleted, you have been warned.
+        option the files will be copied/moved in the directory in which they
+        currently exist. While this *should not* lead to information loss,
+        since files are moved or copied but never deleted, you have been
+        warned.
 
 EXAMPLES
 --------

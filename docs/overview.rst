@@ -32,8 +32,12 @@ Command lines scripts that easily automate a small number of tasks that occur
 frequently enough that it is convenient to have them available at the command
 line instead of requiring that new code to be written each time they are used.
 
-The only example of this currently is
-:mod:`~msumastro.scripts.quick_add_keys_to_file`.
+There are currently two examples of this:
+
++ :mod:`~msumastro.scripts.quick_add_keys_to_file`, for modifying the values of
+  FITS header keywords with minimal effort.
++ :mod:`~msumastro.scripts.sort_files` for :ref:`sort_files`
+
 
 All of these scripts can also be run from your python code if desired.
 
