@@ -536,6 +536,13 @@ def test_add_object_pos_airmass_raises_error_when_it_should():
         ph.add_object_pos_airmass(header)
 
 
+def test_purge_handles_all_software():
+    ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
+    for h in ic.headers():
+        ph.purge_bad_keywords(h)
+        assert 'purged' in h
+
+
 def test_purge_bad_keywords_logic_for_conditionals(caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
     headers = [h for h in ic.headers()]
@@ -553,11 +560,8 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     # want to get to a header with more than one bad keyword so that a
     # history is generated...
     for a_header in headers[1:]:
-        try:
-            software = ph.get_software_name(a_header)
-        except KeyError:
-            continue
-        if len(software.bad_keywords) == 1:
+        software = ph.get_software_name(a_header)
+        if len(software.bad_keywords) <= 1:
             continue
         else:
             break

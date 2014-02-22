@@ -234,6 +234,21 @@ class MaximDL5(ImageSoftware):
                                        )
 
 
+class SBIGCCDOps(ImageSoftware):
+    """
+    Represents software used to create images from the SBIG spectrometer.
+    """
+    def __init__(self):
+        bad_keys = []
+        fits_name = ['SBIG Win CCDOPS Version 5.47 Build 6-NT']
+        super(SBIGCCDOps, self).__init__("SBIG CCDOps",
+                                         fits_name=fits_name,
+                                         major_version=5,
+                                         minor_version=47,
+                                         bad_keywords=[],
+                                         fits_keyword='SWCREATE')
+
+
 class Feder(object):
     """
     Class encapsulating site, instrument, and software information for Feder
@@ -262,7 +277,8 @@ class Feder(object):
                 self.instruments[name] = instrument
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
-        self._software_objects = [self._maximdl4, self._maximdl5]
+        self._sbig_ccdops = SBIGCCDOps()
+        self._software_objects = [self._maximdl4, self._maximdl5, self._sbig_ccdops]
         self.software = {}
         self.software_FITS_keywords = []
         for software in self._software_objects:
