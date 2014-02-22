@@ -553,7 +553,10 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     # want to get to a header with more than one bad keyword so that a
     # history is generated...
     for a_header in headers[1:]:
-        software = ph.get_software_name(a_header)
+        try:
+            software = ph.get_software_name(a_header)
+        except KeyError:
+            continue
         if len(software.bad_keywords) == 1:
             continue
         else:
