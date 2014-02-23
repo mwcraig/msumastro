@@ -471,38 +471,24 @@ class ImageFileCollection(object):
         unmasked_files = self.summary_info['file'].compressed()
         return [path.join(self.location, file_) for file_ in unmasked_files]
 
-    def headers(self, save_with_name='',
-                save_location='', clobber=False,
-                do_not_scale_image_data=True,
-                return_fname=False,
-                **kwd):
-        return self._generator('header', save_with_name=save_with_name,
-                               save_location=save_location, clobber=clobber,
+    def headers(self, do_not_scale_image_data=True, **kwd):
+        return self._generator('header',
                                do_not_scale_image_data=do_not_scale_image_data,
-                               return_fname=return_fname,
                                **kwd)
     headers.__doc__ = _generator.__doc__.format(name='header',
-                            default_scaling='True',
-                            return_type='astropy.io.fits.Header')
+                                                default_scaling='True',
+                                                return_type='astropy.io.fits.Header')
 
-    def hdus(self, save_with_name='',
-             save_location='', clobber=False,
-             do_not_scale_image_data=False,
-             **kwd):
-
-        return self._generator('hdu', save_with_name=save_with_name,
-                               save_location=save_location, clobber=clobber,
+    def hdus(self, do_not_scale_image_data=False, **kwd):
+        return self._generator('hdu',
                                do_not_scale_image_data=do_not_scale_image_data,
                                **kwd)
     hdus.__doc__ = _generator.__doc__.format(name='HDU',
                                              default_scaling='False',
                                              return_type='astropy.io.fits.HDU')
 
-    def data(self, hdulist=None, save_with_name="", save_location='',
-             do_not_scale_image_data=False,
-             clobber=False, **kwd):
-        return self._generator('data', save_with_name=save_with_name,
-                               save_location=save_location, clobber=clobber,
+    def data(self, do_not_scale_image_data=False, **kwd):
+        return self._generator('data',
                                do_not_scale_image_data=do_not_scale_image_data,
                                **kwd)
     data.__doc__ = _generator.__doc__.format(name='image',
