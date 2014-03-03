@@ -420,3 +420,12 @@ class TestImageFileCollection(object):
         with pytest.raises(OSError):
             ic = tff.ImageFileCollection(location='dasifjoaurun',
                                          info_file='iufadsdhfasdifre')
+
+    def test_initialization_with_no_keywords(self, triage_setup):
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir)
+        # iteration below failed before bugfix...
+        execs = 0
+        for h in ic.headers():
+            execs += 1
+            print h
+        assert not execs
