@@ -415,7 +415,7 @@ class ImageFileCollection(object):
         """
         # store mask so we can reset at end--must COPY, otherwise
         # current_mask just points to the mask of summary_info
-        if self.summary_info is None:
+        if not self.summary_info:
             return
 
         current_mask = {}
