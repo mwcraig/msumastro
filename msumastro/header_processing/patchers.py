@@ -255,11 +255,12 @@ def read_object_list(directory=None, input_list=None):
 
     Parameters
     ----------
-    dir : str
+    directory : str
         Directory containing the file. Default is the current directory, ``.``
 
     input_list : str, optional
-        Name of the file. Default value is ``obsinfo.txt``
+        Name of the file or URL of file. Default value is ``obsinfo.txt``. If
+        the name is a URL the directory argument is ignored.
 
     Notes
     -----
