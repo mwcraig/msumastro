@@ -2,6 +2,7 @@ from os import path
 from datetime import datetime
 import logging
 from socket import timeout
+import urlparse
 
 import numpy as np
 import astropy.io.fits as fits
@@ -329,9 +330,17 @@ def read_object_list(dir=None, input_list=None):
                 table.rename_column(column, key)
                 break
 
-    dir = dir or '.'
-    list = (input_list if input_list is not None else 'obsinfo.txt')
-    objects = Table.read(path.join(dir, list),
+    if dir is None:
+        dir = '.'
+    list_name = (input_list if input_list is not None else 'obsinfo.txt')
+
+    may_be_url = urlparse.urlparse(list_name)
+
+    if not (may_be_url.scheme and may_be_url.netloc):
+        full_name = path.join(dir, list_name)
+    else:
+        full_name = list_name
+    objects = Table.read(full_name,
                          format='ascii',
                          comment='#',
                          delimiter=',')
@@ -341,7 +350,7 @@ def read_object_list(dir=None, input_list=None):
     except KeyError as e:
         logger.debug('%s', e)
         raise(RuntimeError,
-              'No column named object found in file {}'.format(list))
+              'No column named object found in file {}'.format(list_name))
 
     try:
         normalize_column_name('RA', objects)
