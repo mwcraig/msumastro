@@ -249,7 +249,7 @@ def change_imagetype_to_IRAF(header, history=True):
             header.add_history(comment)
 
 
-def read_object_list(dir=None, input_list=None):
+def read_object_list(directory=None, input_list=None):
     """
     Read a list of objects from a text file.
 
@@ -330,16 +330,17 @@ def read_object_list(dir=None, input_list=None):
                 table.rename_column(column, key)
                 break
 
-    if dir is None:
-        dir = '.'
+    if directory is None:
+        directory = '.'
     list_name = (input_list if input_list is not None else 'obsinfo.txt')
 
     may_be_url = urlparse.urlparse(list_name)
 
     if not (may_be_url.scheme and may_be_url.netloc):
-        full_name = path.join(dir, list_name)
+        full_name = path.join(directory, list_name)
     else:
         full_name = list_name
+
     objects = Table.read(full_name,
                          format='ascii',
                          comment='#',

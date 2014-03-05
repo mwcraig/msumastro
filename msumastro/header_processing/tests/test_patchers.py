@@ -29,7 +29,7 @@ OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder
 
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
-    objects, RA, Dec = ph.read_object_list(dir=_test_dir)
+    objects, RA, Dec = ph.read_object_list(directory=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
@@ -54,7 +54,7 @@ def test_read_object_list_ra_dec():
 
 
 def test_read_object_list_from_internet():
-    obj, RA, Dec = ph.read_object_list(dir='', input_list=OBJECT_LIST_URL)
+    obj, RA, Dec = ph.read_object_list(directory='', input_list=OBJECT_LIST_URL)
     assert 'ey uma' in obj
 
 
@@ -357,7 +357,7 @@ def test_missing_object_column_raises_error():
     object_table.rename_column('object', 'BADBADBAD')
     object_table.write(object_path, format='ascii')
     with pytest.raises(RuntimeError):
-        ph.read_object_list(dir=_test_dir,
+        ph.read_object_list(directory=_test_dir,
                             input_list=_default_object_file_name)
 
 
