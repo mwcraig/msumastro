@@ -45,10 +45,11 @@ def construct_parser():
                               'and [t]riage.'),
                         choices='atp')
 
-    object_list_help = ('Path to file containing list (and optionally '
-                        'coordinates of) objects that might be in these files.'
-                        ' If not provided it defaults to looking for a file '
-                        'called obsinfo.txt in the directory being processed')
+    object_list_help = ('Path to or URL of file containing list (and '
+                        'optionally coordinates of) objects that might be in '
+                        'these files. If not provided it defaults to looking '
+                        'for a file called obsinfo.txt in the directory '
+                        'being processed')
     parser.add_argument('-o', '--object-list',
                         help=object_list_help,
                         default=None)

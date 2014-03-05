@@ -19,6 +19,7 @@ from .. import quick_add_keys_to_file
 from ...tests.data import get_data_dir
 
 _default_object_file_name = 'obsinfo.txt'
+OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
 
 
 def set_mtimes(files, offset=10):
@@ -115,6 +116,15 @@ class TestScript(object):
         for wrn in recwarn.list:
             assert('No object list' not in wrn.message)
         destination.remove()
+
+    def test_run_patch_with_object_list_url(self):
+        arglist = ['-o', OBJECT_LIST_URL, self.test_dir.strpath]
+        # Remove default object file just to make sure object information can
+        # come only from the remote list.
+        self.test_dir.join(_default_object_file_name).remove()
+        run_patch.main(arglist)
+        h = fits.getheader(self.test_dir.join('uint16.fit').strpath)
+        assert h['object'] == 'm101'
 
     def test_run_triage_no_output_generated(self, default_keywords):
         list_before = self.test_dir.listdir(sort=True)
