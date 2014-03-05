@@ -24,6 +24,7 @@ _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
 simbad_down = False
+OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
@@ -50,6 +51,11 @@ def test_read_object_list_ra_dec():
     assert(obj[0] == object_in)
     assert(RA[0] == RA_in)
     assert(Dec[0] == Dec_in)
+
+
+def test_read_object_list_from_internet():
+    obj, RA, Dec = ph.read_object_list(dir='', input_list=OBJECT_LIST_URL)
+    assert 'ey uma' in obj
 
 
 def test_history_bad_mode():
