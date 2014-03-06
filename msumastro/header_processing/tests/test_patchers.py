@@ -132,7 +132,11 @@ def test_purging_maximdl5_keywords(data_source):
 def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
                                                                  caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
-    a_fits_file = ic.files[0]
+    # need a header that contains IMAGETYP so that it will be processed
+    a_fits_file = ''
+    for h, f in ic.headers(imagetyp='*', return_fname=True):
+        a_fits_file = f
+        break
     a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
     hdr = a_fits_hdu[0].header
     badname = 'Nonsense'
