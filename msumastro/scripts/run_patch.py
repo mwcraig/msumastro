@@ -83,7 +83,7 @@ from os import path
 import warnings
 import logging
 
-from ..header_processing import patch_headers, add_object_info
+from ..header_processing import patch_headers, add_object_info, list_name_is_url
 from ..customlogger import console_handler, add_file_handlers
 from .script_helpers import (setup_logging, construct_default_parser,
                              handle_destination_dir_logging_check,
@@ -113,7 +113,7 @@ def patch_directories(directories, verbose=False, object_list=None,
         Control amount of logging output.
 
     object_list : str, optional
-        Path to the name of a file containing a list of objects that
+        Path to or URL of a file containing a list of objects that
         might be in the files in `directory`. If not provided it defaults
         to looking for a file called `obsinfo.txt` in the directory being
         processed.
@@ -123,8 +123,14 @@ def patch_directories(directories, verbose=False, object_list=None,
         value is None, which means that **files will be overwritten** in
         the directory being processed.
     """
-    if object_list is not None:
-        full_path = path.abspath(object_list)
+    no_explicit_object_list = (object_list is None)
+    if not no_explicit_object_list:
+        if list_name_is_url(object_list):
+            obj_dir = None
+            obj_name = object_list
+        else:
+            full_path = path.abspath(object_list)
+            obj_dir, obj_name = path.split(full_path)
 
     for currentDir in directories:
         if destination is not None:
@@ -136,10 +142,7 @@ def patch_directories(directories, verbose=False, object_list=None,
             add_file_handlers(logger, working_dir, 'run_patch')
 
         logger.info("Working on directory: %s", currentDir)
-        obj_dir = None
-        obj_name = None
-        if object_list is not None:
-            obj_dir, obj_name = path.split(full_path)
+
         with warnings.catch_warnings():
             # suppress warning from overwriting FITS files
             ignore_from = 'astropy.io.fits.hdu.hdulist'
@@ -149,7 +152,6 @@ def patch_directories(directories, verbose=False, object_list=None,
 
             default_object_list_present = path.exists(path.join(currentDir,
                                                       DEFAULT_OBJ_LIST))
-            no_explicit_object_list = (object_list is None)
             if (default_object_list_present and no_explicit_object_list):
                 obj_dir = currentDir
                 obj_name = DEFAULT_OBJ_LIST
@@ -161,10 +163,11 @@ def patch_directories(directories, verbose=False, object_list=None,
 def construct_parser():
     parser = construct_default_parser(__doc__)
 
-    object_list_help = 'Path to file containing list (and optionally '
-    object_list_help += 'coordinates of) objects that might be in these files.'
-    object_list_help += ' If not provided it defaults to looking for a file '
-    object_list_help += 'called obsinfo.txt in the directory being processed'
+    object_list_help = ('Path to or URL of file containing list (and '
+                        'optionally coordinates of) objects that might be in '
+                        'these files. If not provided it defaults to looking '
+                        'for a file called obsinfo.txt in the directory '
+                        'being processed')
     parser.add_argument('-o', '--object-list',
                         help=object_list_help,
                         default=None)

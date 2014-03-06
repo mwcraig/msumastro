@@ -2,6 +2,7 @@ from os import path
 from datetime import datetime
 import logging
 from socket import timeout
+import urlparse
 
 import numpy as np
 import astropy.io.fits as fits
@@ -248,17 +249,23 @@ def change_imagetype_to_IRAF(header, history=True):
             header.add_history(comment)
 
 
-def read_object_list(dir=None, input_list=None):
+def list_name_is_url(name):
+    may_be_url = urlparse.urlparse(name)
+    return (may_be_url.scheme and may_be_url.netloc)
+
+
+def read_object_list(directory=None, input_list=None):
     """
     Read a list of objects from a text file.
 
     Parameters
     ----------
-    dir : str
+    directory : str
         Directory containing the file. Default is the current directory, ``.``
 
     input_list : str, optional
-        Name of the file. Default value is ``obsinfo.txt``
+        Name of the file or URL of file. Default value is ``obsinfo.txt``. If
+        the name is a URL the directory argument is ignored.
 
     Notes
     -----
@@ -329,9 +336,16 @@ def read_object_list(dir=None, input_list=None):
                 table.rename_column(column, key)
                 break
 
-    dir = dir or '.'
-    list = (input_list if input_list is not None else 'obsinfo.txt')
-    objects = Table.read(path.join(dir, list),
+    if directory is None:
+        directory = '.'
+    list_name = (input_list if input_list is not None else 'obsinfo.txt')
+
+    if not list_name_is_url(list_name):
+        full_name = path.join(directory, list_name)
+    else:
+        full_name = list_name
+
+    objects = Table.read(full_name,
                          format='ascii',
                          comment='#',
                          delimiter=',')
@@ -341,7 +355,7 @@ def read_object_list(dir=None, input_list=None):
     except KeyError as e:
         logger.debug('%s', e)
         raise(RuntimeError,
-              'No column named object found in file {}'.format(list))
+              'No column named object found in file {}'.format(list_name))
 
     try:
         normalize_column_name('RA', objects)

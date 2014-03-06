@@ -24,11 +24,12 @@ _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
 simbad_down = False
+OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
-    objects, RA, Dec = ph.read_object_list(dir=_test_dir)
+    objects, RA, Dec = ph.read_object_list(directory=_test_dir)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
@@ -50,6 +51,11 @@ def test_read_object_list_ra_dec():
     assert(obj[0] == object_in)
     assert(RA[0] == RA_in)
     assert(Dec[0] == Dec_in)
+
+
+def test_read_object_list_from_internet():
+    obj, RA, Dec = ph.read_object_list(directory='', input_list=OBJECT_LIST_URL)
+    assert 'ey uma' in obj
 
 
 def test_history_bad_mode():
@@ -126,7 +132,11 @@ def test_purging_maximdl5_keywords(data_source):
 def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
                                                                  caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
-    a_fits_file = ic.files[0]
+    # need a header that contains IMAGETYP so that it will be processed
+    a_fits_file = ''
+    for h, f in ic.headers(imagetyp='*', return_fname=True):
+        a_fits_file = f
+        break
     a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
     hdr = a_fits_hdu[0].header
     badname = 'Nonsense'
@@ -351,7 +361,7 @@ def test_missing_object_column_raises_error():
     object_table.rename_column('object', 'BADBADBAD')
     object_table.write(object_path, format='ascii')
     with pytest.raises(RuntimeError):
-        ph.read_object_list(dir=_test_dir,
+        ph.read_object_list(directory=_test_dir,
                             input_list=_default_object_file_name)
 
 
