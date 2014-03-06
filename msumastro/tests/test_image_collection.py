@@ -429,3 +429,8 @@ class TestImageFileCollection(object):
             execs += 1
             print h
         assert not execs
+
+    def test_tabulate_all_keywords(self, triage_setup):
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords='*')
+        assert 'imagetyp' in ic.summary_info.colnames
