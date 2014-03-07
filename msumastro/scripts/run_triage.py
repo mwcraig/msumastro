@@ -134,7 +134,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
         has_no_ra = np.array([True] * len(lights))
         for ra_name in RA.names:
             try:
-                has_no_ra &= (lights[ra_name].mask)
+                has_no_ra &= (lights[ra_name.lower()].mask)
             except KeyError:
                 pass
 
@@ -258,7 +258,7 @@ def construct_parser():
 
 DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                 'object', 'observer', 'airmass', 'instrume',
-                'RA', 'Dec', 'DATE-OBS', 'JD']
+                'ra', 'dec', 'date-obs', 'jd']
 
 
 def main(arglist=None):
