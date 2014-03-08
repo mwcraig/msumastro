@@ -433,7 +433,10 @@ class TestImageFileCollection(object):
     def test_tabulate_all_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords='*')
-        assert 'imagetyp' in ic.summary_info.colnames
+        lower_case_columns = [c.lower() for c in ic.summary_info.colnames]
+        for h in ic.headers():
+            for k in h:
+                assert k.lower() in lower_case_columns
 
     def test_summary_table_is_always_masked(self, triage_setup):
         # First, try grabbing all of the keywords
