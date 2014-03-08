@@ -258,7 +258,7 @@ def construct_parser():
 
 DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                 'object', 'observer', 'airmass', 'instrume',
-                'RA', 'Dec', 'DATE-OBS', 'JD']
+                'ra', 'dec', 'date-obs', 'jd']
 
 
 def main(arglist=None):

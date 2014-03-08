@@ -429,3 +429,30 @@ class TestImageFileCollection(object):
             execs += 1
             print h
         assert not execs
+
+    def test_tabulate_all_keywords(self, triage_setup):
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords='*')
+        lower_case_columns = [c.lower() for c in ic.summary_info.colnames]
+        for h in ic.headers():
+            for k in h:
+                assert k.lower() in lower_case_columns
+
+    def test_summary_table_is_always_masked(self, triage_setup):
+        # First, try grabbing all of the keywords
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords='*')
+        assert ic.summary_info.masked
+        # Now, try keywords that every file will have
+        ic.keywords = ['bitpix']
+        assert ic.summary_info.masked
+        # What about keywords that include some that will surely be missing?
+        ic.keywords = ['bitpix', 'dsafui']
+        assert ic.summary_info.masked
+
+    def test_case_of_keywords_respected(self, triage_setup):
+        keywords_in = ['BitPix', 'instrume', 'NAXIS']
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords=keywords_in)
+        for key in keywords_in:
+            assert key in ic.summary_info.colnames

@@ -584,8 +584,8 @@ def add_object_info(directory=None,
         new_file_ext = 'new'
 
     images = ImageFileCollection(directory,
-                                 keywords=['imagetyp', 'RA',
-                                           'Dec', 'object'])
+                                 keywords=['imagetyp', 'ra',
+                                           'dec', 'object'])
     im_table = images.summary_info
 
     object_dir = directory if object_list_dir is None else object_list_dir
@@ -641,14 +641,17 @@ def add_object_info(directory=None,
                                                     match_radius)
         logger.error(err_msg)
         raise RuntimeError(err_msg)
+    logger.debug('Passed: object list is self-consistent')
 
     # I want rows which...
     #
     # ...have no OBJECT...
     needs_object = im_table['object'].mask
     # ...and have coordinates.
-    needs_object &= ~ (im_table['RA'].mask | im_table['Dec'].mask)
+    needs_object &= ~ (im_table['ra'].mask | im_table['dec'].mask)
 
+    logger.debug('Looking for objects for %s images', needs_object.sum())
+    print im_table
     # Qualifying rows need a search for a match.
     # the search returns a match for every row provided, but some matches
     # may be farther away than desired, so...
@@ -656,7 +659,7 @@ def add_object_info(directory=None,
     # ...`and` the previous index mask with those that matched, and
     # ...construct list of object names for those images.
 
-    img_pos = FK5(im_table['RA'][needs_object], im_table['Dec'][needs_object],
+    img_pos = FK5(im_table['ra'][needs_object], im_table['dec'][needs_object],
                   unit=default_angle_units)
     match_idx, d2d, d3d = img_pos.match_to_catalog_sky(ra_dec)
     good_match = (d2d.arcmin <= match_radius)
@@ -711,12 +714,12 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None):
     if new_file_ext is None:
         new_file_ext = 'new'
     images = ImageFileCollection(directory,
-                                 keywords=['imagetyp', 'RA',
-                                           'Dec', 'object'])
+                                 keywords=['imagetyp', 'ra',
+                                           'dec', 'object'])
     summary = images.summary_info
     missing_dec = summary[(np.logical_not(summary['object'].mask)) &
-                          (summary['RA'].mask) &
-                          (summary['Dec'].mask) &
+                          (summary['ra'].mask) &
+                          (summary['dec'].mask) &
                           (summary['object'] != '') &
                           (summary['imagetyp'] == 'LIGHT')]
 

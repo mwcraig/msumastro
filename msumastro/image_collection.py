@@ -5,7 +5,7 @@ import logging
 import numpy as np
 import numpy.ma as ma
 
-from astropy.table import Table
+from astropy.table import Table, vstack
 import astropy.io.fits as fits
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,10 @@ class ImageFileCollection(object):
     ----------
     location : str, optional
         path to directory containing FITS files
-    keywords : list of str, optional
+    keywords : list of str or '*', optional
         Keywords that should be used as column headings in the summary table.
+        If the value is '*' then all keywords that appear in any of the FITS
+        headers of the files in the collection become table columns.
     info_file : str, optional
         Path to file that contains a table of information about FITS files.
 
@@ -187,72 +189,99 @@ class ImageFileCollection(object):
         self.summary_info['file'].mask = current_file_mask
         return filtered_files
 
+    def _table_from_fits_header(self, file_name):
+        """
+        Construct a table whose columns are the header keywords
+
+        Parameters
+        ----------
+
+        file_name : str
+            Name of FITS file.
+
+        Returns
+        -------
+
+        file_table : astropy.table.Table
+        """
+        from collections import OrderedDict
+
+        summary = OrderedDict()
+        summary['file'] = path.basename(file_name)
+        h = fits.getheader(file_name)
+        assert 'file' not in h
+        for k, v in h.iteritems():
+            if k in ['comment', 'history', '']:
+                val = str(v)
+            else:
+                val = v
+            summary[k.lower()] = val
+        file_table = Table([summary])
+        return file_table
+
+    def _set_column_name_case_to_match_keywords(self, header_keys,
+                                                summary_table):
+        key_name_dict = {k.lower(): k for k in header_keys
+                         if k != k.lower()}
+        print 'foofoo'
+        print key_name_dict
+        for lcase, user_case in key_name_dict.iteritems():
+            try:
+                summary_table.rename_column(lcase, user_case)
+            except KeyError:
+                pass
+
     def _fits_summary(self, header_keywords=None):
         """
 
         """
-        from collections import OrderedDict
         from astropy.table import MaskedColumn
 
         if not self.files:
             return None
 
-        dummy_value = -123  # Used as fill value before masked array is created
-        summary = OrderedDict()
-        missing_values = OrderedDict()
-        data_type = {}
-        header_keys = list(set(header_keywords))
-        keywords = list(set(header_keys))
-        if 'file' not in keywords:
-            keywords.insert(0, 'file')
-        else:
-            # the file column should be populated from file name, not header
-            header_keys.remove('file')
-        for keyword in keywords:
-            summary[keyword] = []
-            missing_values[keyword] = []
+        # We only do lower case, sorry...
+        #header_keys = [key.lower() for key in header_keywords]
+        # Get rid of any duplicate keywords, also forces a copy.
+        header_keys = set(header_keywords)
+        header_keys.add('file')
 
-        for afile in self.files:
-            file_path = path.join(self.location, afile)
-            summary['file'].append(afile)
-            missing_values['file'].append(False)
-            data_type['file'] = type('string')
-            if not header_keys:
-                continue
+        file_name_column = MaskedColumn(name='file', data=self.files)
+
+        if not header_keys or (header_keys == set(['file'])):
+            summary_table = Table(masked=True)
+            summary_table.add_column(file_name_column)
+            return summary_table
+
+        for file_name in file_name_column:
+            file_path = path.join(self.location, file_name)
             try:
-                header = fits.getheader(file_path)
+                table_file = self._table_from_fits_header(file_path)
             except IOError as e:
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
-                # remove this bad file from list
-                summary['file'].pop()
-                missing_values['file'].pop()
                 continue
-            for keyword in header_keys:
-                if keyword in header:
-                    summary[keyword].append(header[keyword])
-                    missing_values[keyword].append(False)
-                    if (keyword in data_type):
-                        if (type(header[keyword]) != data_type[keyword]):
-                            raise ValueError(
-                                'Different data types found for keyword %s' %
-                                keyword)
-                    else:
-                        data_type[keyword] = type(header[keyword])
-                else:
-                    summary[keyword].append(dummy_value)
-                    missing_values[keyword].append(True)
+            try:
+                summary_table = vstack([summary_table, table_file])
+            except NameError:
+                summary_table = table_file
 
-        summary_table = Table(masked=True)
+        self._set_column_name_case_to_match_keywords(header_keys,
+                                                     summary_table)
+        missing_columns = header_keys - set(summary_table.colnames)
+        missing_columns -= set(['*'])
 
-        for key in summary.keys():
-            if key not in data_type:
-                data_type[key] = type('str')
-                summary[key] = [str(val) for val in summary[key]]
+        length = len(summary_table)
+        for column in missing_columns:
+            all_masked = MaskedColumn(name=column, data=np.zeros(length),
+                                      mask=np.ones(length))
+            summary_table.add_column(all_masked)
 
-            new_column = MaskedColumn(name=key, data=summary[key],
-                                      mask=missing_values[key])
-            summary_table.add_column(new_column)
+        if '*' not in header_keys:
+            summary_table.keep_columns(header_keys)
+
+        if not summary_table.masked:
+            summary_table = Table(summary_table, masked=True)
 
         return summary_table
 
