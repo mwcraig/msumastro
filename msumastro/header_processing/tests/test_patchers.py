@@ -253,6 +253,11 @@ def test_adding_object_from_name_only():
         pytest.xfail("Simbad is down")
 
 
+@pytest.mark.usefixtures('object_file_ra_change_col_case')
+def test_adding_object_name_does_not_depend_on_column_name_case():
+    test_adding_object_name()
+
+
 def test_add_object_name_warns_if_no_match(caplog):
     test_adding_object_name()
     patch_header_warnings = get_patch_header_logs(caplog)
@@ -514,19 +519,29 @@ def test_times_apparent_pos_added():
 
 
 @pytest.fixture(params=['object', 'OBJECT', 'Object'])
+def object_file_ra_change_col_case(request):
+    object_file_with_ra_dec(_test_dir, object_col_name=request.param)
+
+
+@pytest.fixture
 def object_file_no_ra(request):
-    to_write = ('# comment 1\n# comment 2\n' + request.param +
+    try:
+        object_col_name = request.param
+    except AttributeError:
+        object_col_name = 'object'
+    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
                 '\ney uma\nm101\n')
     object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
 
 
-def object_file_with_ra_dec(dir):
+def object_file_with_ra_dec(dir, object_col_name='object'):
     objs = ["ey uma, 09:02:20.76, +49:49:09.3",
             "m101,14:03:12.58,+54:20:55.50"
             ]
-    to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
+    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
+                ', RA, Dec\n' + '\n'.join(objs))
     object_file = open(path.join(dir, _default_object_file_name), 'wb')
     object_file.write(to_write)
     object_file.close()
