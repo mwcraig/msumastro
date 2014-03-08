@@ -134,7 +134,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
         has_no_ra = np.array([True] * len(lights))
         for ra_name in RA.names:
             try:
-                has_no_ra &= (lights[ra_name.lower()].mask)
+                has_no_ra &= (lights[ra_name].mask)
             except KeyError:
                 pass
 

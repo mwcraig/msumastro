@@ -449,3 +449,10 @@ class TestImageFileCollection(object):
         # What about keywords that include some that will surely be missing?
         ic.keywords = ['bitpix', 'dsafui']
         assert ic.summary_info.masked
+
+    def test_case_of_keywords_respected(self, triage_setup):
+        keywords_in = ['BitPix', 'instrume', 'NAXIS']
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords=keywords_in)
+        for key in keywords_in:
+            assert key in ic.summary_info.colnames

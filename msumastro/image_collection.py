@@ -219,6 +219,18 @@ class ImageFileCollection(object):
         file_table = Table([summary])
         return file_table
 
+    def _set_column_name_case_to_match_keywords(self, header_keys,
+                                                summary_table):
+        key_name_dict = {k.lower(): k for k in header_keys
+                         if k != k.lower()}
+        print 'foofoo'
+        print key_name_dict
+        for lcase, user_case in key_name_dict.iteritems():
+            try:
+                summary_table.rename_column(lcase, user_case)
+            except KeyError:
+                pass
+
     def _fits_summary(self, header_keywords=None):
         """
 
@@ -229,9 +241,9 @@ class ImageFileCollection(object):
             return None
 
         # We only do lower case, sorry...
-        header_keys = [key.lower() for key in header_keywords]
+        #header_keys = [key.lower() for key in header_keywords]
         # Get rid of any duplicate keywords, also forces a copy.
-        header_keys = set(header_keys)
+        header_keys = set(header_keywords)
         header_keys.add('file')
 
         file_name_column = MaskedColumn(name='file', data=self.files)
@@ -254,6 +266,8 @@ class ImageFileCollection(object):
             except NameError:
                 summary_table = table_file
 
+        self._set_column_name_case_to_match_keywords(header_keys,
+                                                     summary_table)
         missing_columns = header_keys - set(summary_table.colnames)
         missing_columns -= set(['*'])
 
