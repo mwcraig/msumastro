@@ -434,3 +434,15 @@ class TestImageFileCollection(object):
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords='*')
         assert 'imagetyp' in ic.summary_info.colnames
+
+    def test_summary_table_is_always_masked(self, triage_setup):
+        # First, try grabbing all of the keywords
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords='*')
+        assert ic.summary_info.masked
+        # Now, try keywords that every file will have
+        ic.keywords = ['bitpix']
+        assert ic.summary_info.masked
+        # What about keywords that include some that will surely be missing?
+        ic.keywords = ['bitpix', 'dsafui']
+        assert ic.summary_info.masked
