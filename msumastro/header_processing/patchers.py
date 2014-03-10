@@ -732,7 +732,7 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None):
     for object_name in objects:  # pragma: nobranch
         try:
             object_coords = FK5.from_name(object_name)
-        except name_resolve.NameResolveError as e:
+        except (name_resolve.NameResolveError, timeout) as e:
             logger.warning('Unable to lookup position for %s', object_name)
             logger.warning(e)
             return
