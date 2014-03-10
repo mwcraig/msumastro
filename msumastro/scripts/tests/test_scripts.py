@@ -216,8 +216,9 @@ class TestScript(object):
 
     def test_run_triage_with_only_list_default_keys(self):
         assert run_triage.main(arglist=['-l']) == run_triage.DEFAULT_KEYS
-        assert (run_triage.main(arglist=['-l', '-k should_not_be_added']) ==
-                run_triage.DEFAULT_KEYS)
+        # It should be an error to use the options -l and -k together. Is it?
+        with pytest.raises(SystemExit):
+            run_triage.main(arglist=['-l', '-k should_not_be_added'])
 
     def test_run_triage_raises_error_if_no_dir_supplied(self):
         with pytest.raises(SystemExit):
@@ -229,6 +230,19 @@ class TestScript(object):
         expected_keys = ['imagetyp', 'object', 'filter']
         for key in expected_keys:
             assert key in result['files'].colnames
+
+    def test_triage_grabbing_all_keywords_gets_them_all(self):
+        tbl_name = 'tbl.txt'
+        run_triage.main(arglist=['-a', '-t', tbl_name, self.test_dir.strpath])
+        rt_table = Table.read(self.test_dir.join(tbl_name).strpath,
+                              format='ascii')
+        lcase_columns = [c.lower() for c in rt_table.colnames]
+        ic = ImageFileCollection(self.test_dir.strpath,
+                                 keywords='*')
+        for h in ic.headers():
+            for k in h:
+                if k:
+                    assert k.lower() in lcase_columns
 
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 

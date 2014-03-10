@@ -106,7 +106,8 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     all_file_info = file_info_to_keep or ['imagetyp', 'object', 'filter']
     feder = Feder()
     RA = feder.RA
-    if 'ra' not in [key.lower() for key in all_file_info]:
+    if (('ra' not in [key.lower() for key in all_file_info]) and
+       (all_file_info != '*')):
         all_file_info.extend(RA.names)
 
     images = ImageFileCollection(dir, keywords=all_file_info)
@@ -157,6 +158,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
 
 def triage_directories(directories,
                        keywords=None,
+                       all_keywords=False,
                        object_file_name=None,
                        pointing_file_name=None,
                        filter_file_name=None,
@@ -172,7 +174,12 @@ def triage_directories(directories,
         if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, destination, 'run_triage')
         logger.info('Examining directory %s', currentDir)
-        result = triage_fits_files(currentDir, file_info_to_keep=keywords)
+        if all_keywords:
+            use_keys = '*'
+        else:
+            use_keys = keywords
+
+        result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         outfiles = [pointing_file_name, filter_file_name,
                     object_file_name, output_table]
         for fil in [outfile for outfile in outfiles if outfile is not None]:
@@ -211,10 +218,11 @@ def construct_parser():
     script_helpers.add_no_log_destination(parser)
     script_helpers.add_console_output_args(parser)
 
+    keys_group = parser.add_mutually_exclusive_group()
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'
-    parser.add_argument('-k', '--key', action='append',
-                        help=key_help, default=[])
+    keys_group.add_argument('-k', '--key', action='append',
+                            help=key_help, default=[])
 
 #    no_default_help = ('Do not include default list of keywords in table'
 #                       '**EXCEPT** for `file` and `imagetyp`, which are'
@@ -223,8 +231,13 @@ def construct_parser():
 #                        help=no_default_help)
 
     list_help = 'Print default list keywords put into table and exit'
-    parser.add_argument('-l', '--list-default', action='store_true',
-                        help=list_help)
+    keys_group.add_argument('-l', '--list-default', action='store_true',
+                            help=list_help)
+
+    all_keys_help = ('Construct table from all FITS keywords present in '
+                     'headers.')
+    keys_group.add_argument('-a', '--all', action='store_true',
+                            help=all_keys_help)
 
     default_names = DefaultFileNames()
     output_file_help = 'Name of file in which table is saved; default is '
@@ -289,6 +302,7 @@ def main(arglist=None):
     do_not_log_in_destination = \
         script_helpers.handle_destination_dir_logging_check(args)
     triage_directories(args.dir, keywords=use_keys,
+                       all_keywords=args.all,
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,
                        filter_file_name=args.filter_needed_list,
