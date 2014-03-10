@@ -244,6 +244,18 @@ class TestScript(object):
                 if k:
                     assert k.lower() in lcase_columns
 
+    def test_run_triage_writer_makes_correct_column_names(self, tmpdir):
+        dump_file = 'dumb.txt'
+        run_triage.write_list(tmpdir.strpath, dump_file, range(10))
+        tab = Table.read(tmpdir.join(dump_file).strpath, format='ascii')
+        assert 'File' in tab.colnames
+
+        custom_name = 'Bob'
+        run_triage.write_list(tmpdir.strpath, dump_file, range(10),
+                              column_name=custom_name)
+        tab = Table.read(tmpdir.join(dump_file).strpath, format='ascii')
+        assert custom_name in tab.colnames
+
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 
         destination = self.test_dir.make_numbered_dir()

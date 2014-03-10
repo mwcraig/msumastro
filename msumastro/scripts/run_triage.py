@@ -70,7 +70,7 @@ class DefaultFileNames(object):
 def write_list(dir, file, info, column_name=None):
     col_name = column_name or 'File'
     temp_table = Table(data=[info],
-                       names=[column_name])
+                       names=[col_name])
     temp_table.write(os.path.join(dir, file),
                      format='ascii')
 
