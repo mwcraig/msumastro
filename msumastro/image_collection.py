@@ -223,7 +223,9 @@ class ImageFileCollection(object):
         h = fits.getheader(file_name)
         assert 'file' not in h
         for k, v in h.iteritems():
-            if k in ['comment', 'history', '']:
+            if k == '':
+                continue
+            if k in ['comment', 'history']:
                 val = str(v)
             else:
                 val = v
