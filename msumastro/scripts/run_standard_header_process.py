@@ -155,7 +155,8 @@ def main(arglist=None):
             run_astrometry = ''
 
         run_triage = construct_command('run_triage.py', source_for_rest,
-                                       destination, common_args)
+                                       destination, common_args,
+                                       additional_args=['--all'])
 
         if not triage:
             run_triage = ''
