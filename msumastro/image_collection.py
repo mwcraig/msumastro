@@ -29,7 +29,8 @@ class ImageFileCollection(object):
     keywords : list of str or '*', optional
         Keywords that should be used as column headings in the summary table.
         If the value is '*' then all keywords that appear in any of the FITS
-        headers of the files in the collection become table columns.
+        headers of the files in the collection become table columns. Note that
+        '*' *cannot* be used with other keywords.
     info_file : str, optional
         Path to file that contains a table of information about FITS files.
 
@@ -39,6 +40,13 @@ class ImageFileCollection(object):
     keywords
     files
     summary_info
+
+    Raises
+    ------
+
+    ValueError
+        Raised if keywords are set to a combination of '*' and any other
+        value.
     """
 
     def __init__(self, location=None, keywords=None, info_file=None):
@@ -109,6 +117,10 @@ class ImageFileCollection(object):
             self._summary_info = []
             return
 
+        if ('*' in keywords) and ('*' != keywords):
+            raise ValueError("Cannot use option to get all keywords ('*') "
+                             "with other keywords. Give either '*' or a list "
+                             "of strings.")
         logging.debug('keywords in setter before pruning: %s', keywords)
 
         # remove duplicates and force a copy
@@ -223,8 +235,7 @@ class ImageFileCollection(object):
                                                 summary_table):
         key_name_dict = {k.lower(): k for k in header_keys
                          if k != k.lower()}
-        print 'foofoo'
-        print key_name_dict
+
         for lcase, user_case in key_name_dict.iteritems():
             try:
                 summary_table.rename_column(lcase, user_case)

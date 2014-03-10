@@ -456,3 +456,9 @@ class TestImageFileCollection(object):
                                      keywords=keywords_in)
         for key in keywords_in:
             assert key in ic.summary_info.colnames
+
+    def test_grabbing_all_keywords_and_specific_keywords_errors(self,
+                                                                triage_setup):
+        with pytest.raises(ValueError):
+            tff.ImageFileCollection(triage_setup.test_dir,
+                                    keywords=['*', 'bad'])
