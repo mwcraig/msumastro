@@ -430,13 +430,17 @@ class TestImageFileCollection(object):
             print h
         assert not execs
 
+    def check_all_keywords_in_collection(self, image_collection):
+        lower_case_columns = [c.lower() for c in
+                              image_collection.summary_info.colnames]
+        for h in image_collection.headers():
+            for k in h:
+                assert k.lower() in lower_case_columns
+
     def test_tabulate_all_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords='*')
-        lower_case_columns = [c.lower() for c in ic.summary_info.colnames]
-        for h in ic.headers():
-            for k in h:
-                assert k.lower() in lower_case_columns
+        self.check_all_keywords_in_collection(ic)
 
     def test_summary_table_is_always_masked(self, triage_setup):
         # First, try grabbing all of the keywords
@@ -457,8 +461,9 @@ class TestImageFileCollection(object):
         for key in keywords_in:
             assert key in ic.summary_info.colnames
 
-    def test_grabbing_all_keywords_and_specific_keywords_errors(self,
-                                                                triage_setup):
-        with pytest.raises(ValueError):
-            tff.ImageFileCollection(triage_setup.test_dir,
-                                    keywords=['*', 'bad'])
+    def test_grabbing_all_keywords_and_specific_keywords(self, triage_setup):
+        keyword_not_in_headers = 'OIdn89!@'
+        ic = tff.ImageFileCollection(triage_setup.test_dir,
+                                     keywords=['*', keyword_not_in_headers])
+        assert keyword_not_in_headers in ic.summary_info.colnames
+        self.check_all_keywords_in_collection(ic)

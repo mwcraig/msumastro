@@ -174,10 +174,17 @@ def triage_directories(directories,
         if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, destination, 'run_triage')
         logger.info('Examining directory %s', currentDir)
-        if all_keywords:
-            use_keys = '*'
+        if keywords:
+            # force a copy...
+            use_keys = list(keywords)
         else:
-            use_keys = keywords
+            use_keys = []
+
+        if all_keywords:
+            try:
+                use_keys += ['*']
+            except TypeError:
+                use_keys = '*'
 
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         outfiles = [pointing_file_name, filter_file_name,
@@ -218,11 +225,10 @@ def construct_parser():
     script_helpers.add_no_log_destination(parser)
     script_helpers.add_console_output_args(parser)
 
-    keys_group = parser.add_mutually_exclusive_group()
     key_help = 'FITS keyword to add to table in addition to the defaults; '
     key_help += 'for multiple keywords use this option multiple times.'
-    keys_group.add_argument('-k', '--key', action='append',
-                            help=key_help, default=[])
+    parser.add_argument('-k', '--key', action='append',
+                        help=key_help, default=[])
 
 #    no_default_help = ('Do not include default list of keywords in table'
 #                       '**EXCEPT** for `file` and `imagetyp`, which are'
@@ -231,13 +237,13 @@ def construct_parser():
 #                        help=no_default_help)
 
     list_help = 'Print default list keywords put into table and exit'
-    keys_group.add_argument('-l', '--list-default', action='store_true',
-                            help=list_help)
+    parser.add_argument('-l', '--list-default', action='store_true',
+                        help=list_help)
 
     all_keys_help = ('Construct table from all FITS keywords present in '
-                     'headers.')
-    keys_group.add_argument('-a', '--all', action='store_true',
-                            help=all_keys_help)
+                     'headers and the list of default keywords.')
+    parser.add_argument('-a', '--all', action='store_true',
+                        help=all_keys_help)
 
     default_names = DefaultFileNames()
     output_file_help = 'Name of file in which table is saved; default is '

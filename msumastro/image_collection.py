@@ -28,9 +28,9 @@ class ImageFileCollection(object):
         path to directory containing FITS files
     keywords : list of str or '*', optional
         Keywords that should be used as column headings in the summary table.
-        If the value is '*' then all keywords that appear in any of the FITS
-        headers of the files in the collection become table columns. Note that
-        '*' *cannot* be used with other keywords.
+        If the value is or includes '*' then all keywords that appear in any
+        of the FITS headers of the files in the collection become table
+        columns.
     info_file : str, optional
         Path to file that contains a table of information about FITS files.
 
@@ -117,7 +117,7 @@ class ImageFileCollection(object):
             self._summary_info = []
             return
 
-        if ('*' in keywords) and ('*' != keywords):
+        if ('*' in keywords) and ('*' != keywords) and False:
             raise ValueError("Cannot use option to get all keywords ('*') "
                              "with other keywords. Give either '*' or a list "
                              "of strings.")

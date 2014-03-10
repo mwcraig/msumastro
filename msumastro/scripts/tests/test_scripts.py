@@ -216,9 +216,8 @@ class TestScript(object):
 
     def test_run_triage_with_only_list_default_keys(self):
         assert run_triage.main(arglist=['-l']) == run_triage.DEFAULT_KEYS
-        # It should be an error to use the options -l and -k together. Is it?
-        with pytest.raises(SystemExit):
-            run_triage.main(arglist=['-l', '-k should_not_be_added'])
+        assert (run_triage.main(arglist=['-l', '-k should_not_be_added']) ==
+                run_triage.DEFAULT_KEYS)
 
     def test_run_triage_raises_error_if_no_dir_supplied(self):
         with pytest.raises(SystemExit):
@@ -237,6 +236,7 @@ class TestScript(object):
         rt_table = Table.read(self.test_dir.join(tbl_name).strpath,
                               format='ascii')
         lcase_columns = [c.lower() for c in rt_table.colnames]
+        print lcase_columns
         ic = ImageFileCollection(self.test_dir.strpath,
                                  keywords='*')
         for h in ic.headers():
