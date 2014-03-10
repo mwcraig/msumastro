@@ -117,10 +117,6 @@ class ImageFileCollection(object):
             self._summary_info = []
             return
 
-        if ('*' in keywords) and ('*' != keywords) and False:
-            raise ValueError("Cannot use option to get all keywords ('*') "
-                             "with other keywords. Give either '*' or a list "
-                             "of strings.")
         logging.debug('keywords in setter before pruning: %s', keywords)
 
         # remove duplicates and force a copy
