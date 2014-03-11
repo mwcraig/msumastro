@@ -73,6 +73,13 @@ def triage_setup(request):
     n_test['light'] += 1
     n_test['need_object'] += 1
 
+    filter_object.header['RA'] = filter_object.header['OBJCTRA']
+    filter_object.header['Dec'] = filter_object.header['OBJCTDEC']
+    filter_object.writeto('filter_object_RA_keyword_light.fit')
+    n_test['files'] += 1
+    n_test['light'] += 1
+    n_test['need_object'] += 1
+
     def teardown():
         for key in n_test.keys():
             n_test[key] = 0

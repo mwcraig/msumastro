@@ -572,7 +572,7 @@ class TestSortFiles(object):
         assert len(os.listdir(unsorted_path)) == n_light
 
 
-def test_triage(triage_setup):
+def test_triage_via_triage_fits_files(triage_setup):
     file_info = run_triage.triage_fits_files(triage_setup.test_dir)
     print "number of files should be %i" % triage_setup.n_test['files']
     print file_info['files']['file']
@@ -585,3 +585,15 @@ def test_triage(triage_setup):
     bias_check = np.where(file_info['files']['imagetyp'] ==
                           IRAF_image_type('bias'))
     assert (len(bias_check[0]) == 2)
+
+
+def test_triage_via_run_triage(triage_setup, triage_dict):
+    run_triage.main(['-a', triage_setup.test_dir])
+    n_test_names = ['need_pointing', 'need_object', 'need_filter']
+    file_name_keys = ['pointing_file_name', 'object_file_name',
+                      'filter_file_name']
+    for n_name, fname in zip(n_test_names, file_name_keys):
+        file_path = os.path.join(triage_setup.test_dir,
+                                 triage_dict[fname])
+        dump = Table.read(file_path, format='ascii')
+        assert len(dump) == triage_setup.n_test[n_name]
