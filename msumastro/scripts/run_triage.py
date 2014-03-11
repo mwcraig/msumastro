@@ -106,7 +106,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     all_file_info = file_info_to_keep or ['imagetyp', 'object', 'filter']
     feder = Feder()
     RA = feder.RA
-    if (('ra' not in [key.lower() for key in all_file_info]) and
+    if ((not (set(RA.names) <= set(all_file_info))) and
        (all_file_info != '*')):
         all_file_info.extend(RA.names)
 
@@ -277,7 +277,7 @@ def construct_parser():
 
 DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                 'object', 'observer', 'airmass', 'instrume',
-                'ra', 'dec', 'date-obs', 'jd']
+                'RA', 'Dec', 'date-obs', 'jd']
 
 
 def main(arglist=None):
