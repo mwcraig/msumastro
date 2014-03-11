@@ -137,10 +137,10 @@ class TestScript(object):
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
 
-    def _verify_triage_files_created(self, dir, triage_dict):
+    def _verify_triage_files_created(self, directory, triage_dict):
         for option_name, file_name in triage_dict.iteritems():
-            print option_name, file_name, dir.join(file_name).check()
-            assert(dir.join(file_name).check())
+            print option_name, file_name, directory.join(file_name).check()
+            assert(directory.join(file_name).check())
 
     def test_triage_output_file_by_keyword(self, triage_dict,
                                            default_keywords):
