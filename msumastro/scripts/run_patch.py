@@ -94,6 +94,8 @@ screen_handler = console_handler()
 logger.addHandler(screen_handler)
 
 DEFAULT_OBJ_LIST = 'obsinfo.txt'
+DEFAULT_OBJECT_URL = ('https://raw.github.com/mwcraig/feder-object-list'
+                      '/master/feder_object_list.csv')
 
 
 def patch_directories(directories, verbose=False, object_list=None,
@@ -170,7 +172,7 @@ def construct_parser():
                         'being processed')
     parser.add_argument('-o', '--object-list',
                         help=object_list_help,
-                        default=None)
+                        default=DEFAULT_OBJECT_URL)
     return parser
 
 
