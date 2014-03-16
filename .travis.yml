@@ -10,8 +10,8 @@ before_install:
     - sudo apt-get update
     - sudo apt-get install python-scipy python-numpy
 install:
-    - pip install Cython
-    - pip install git+git://github.com/astropy/astropy
+    - pip install --upgrade http://physics.mnstate.edu/craig/numpy-1.8.0-cp27-none-linux_x86_64.whl
+    - pip install --upgrade http://physics.mnstate.edu/craig/astropy-0.3.1-cp27-none-linux_x86_64.whl
     - pip install coverage
     - pip install coveralls
     # need to install scripts because one test ends up invoking a subprocess
