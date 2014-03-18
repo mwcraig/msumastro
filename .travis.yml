@@ -8,7 +8,6 @@ virtualenv:
 before_install:
     # grabbed this from astropy--to get scipy working, I think...
     - sudo apt-get update
-    - sudo apt-get install python-scipy python-numpy
 install:
     - pip install --upgrade http://physics.mnstate.edu/craig/numpy-1.8.0-cp27-none-linux_x86_64.whl
     - pip install --upgrade http://physics.mnstate.edu/craig/astropy-0.3.1-cp27-none-linux_x86_64.whl
