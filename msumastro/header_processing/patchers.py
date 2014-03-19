@@ -254,7 +254,9 @@ def list_name_is_url(name):
     return (may_be_url.scheme and may_be_url.netloc)
 
 
-def read_object_list(directory=None, input_list=None):
+def read_object_list(directory=None, input_list=None,
+                     skip_consistency_check=False, check_radius=20.0,
+                     skip_lookup_from_object_name=False):
     """
     Read a list of objects from a text file.
 
@@ -266,6 +268,19 @@ def read_object_list(directory=None, input_list=None):
     input_list : str, optional
         Name of the file or URL of file. Default value is ``obsinfo.txt``. If
         the name is a URL the directory argument is ignored.
+
+    skip_consistency_check : bool optional
+        If ``True``, skip checking whether objects on the list have unique
+        coordinates given `check_radius`.
+
+    check_radius : float, optional
+        Match radius, in arcminutes. Objects on the list must be separated by
+        an angular distance greater than this for the list to be
+        self-consistent.
+
+    skip_lookup_from_object_name : bool, optional
+        Set to ``True`` to skip lookup of coordinates from Simbad if RA/Dec
+        are not in the object file.
 
     Notes
     -----
@@ -338,7 +353,7 @@ def read_object_list(directory=None, input_list=None):
 
     if directory is None:
         directory = '.'
-    list_name = (input_list if input_list is not None else 'obsinfo.txt')
+    list_name = input_list if input_list is not None else 'obsinfo.txt'
 
     if not list_name_is_url(list_name):
         full_name = path.join(directory, list_name)
@@ -366,7 +381,60 @@ def read_object_list(directory=None, input_list=None):
         RA = None
         Dec = None
 
-    return objects['object'], RA, Dec
+    object_names = objects['object']
+
+    if skip_consistency_check & skip_lookup_from_object_name:
+        return object_names, RA, Dec
+
+    if (RA is not None) and (Dec is not None):
+        default_angle_units = (u.hour, u.degree)
+        ra_dec = FK5(RA, Dec, unit=default_angle_units)
+    else:
+        if skip_lookup_from_object_name:
+            ra_dec = None
+        else:
+            try:
+                ra_dec = [FK5.from_name(obj) for obj in object_names]
+            except (name_resolve.NameResolveError, timeout) as e:
+                logger.error('Unable to do lookup of object positions')
+                logger.error(e)
+                raise name_resolve.NameResolveError('Unable to do lookup of object positions')
+            ra = []
+            dec = []
+            for a_coord in ra_dec:
+                ra.append(a_coord.ra.radian)
+                dec.append(a_coord.dec.radian)
+            ra_dec = FK5(ra, dec, unit=(u.radian, u.radian))
+
+    if skip_consistency_check or not ra_dec:
+        return object_names, ra_dec
+
+    # sanity check object list--the objects should not be so close together
+    # that any pair is within match radius of each other.
+    logger.debug('Testing object list for self-consistency')
+
+    # need 2nd neighbor below or objects will match themselves
+    try:
+        matches, d2d, d3d = ra_dec.match_to_catalog_sky(ra_dec,
+                                                        nthneighbor=2)
+        bad_object_list = (d2d.arcmin < check_radius).any()
+    except IndexError:
+        # There was only one item in the table...so no object can
+        # be duplicated, so make a fake distance that doesn't match
+        bad_object_list = False
+
+    if bad_object_list:
+        err_msg = ('Object list {} in directory {} contains at least one '
+                   'pair of objects that '
+                   'are closer together than '
+                   'match radius {} arcmin').format(input_list,
+                                                    directory,
+                                                    check_radius)
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
+    logger.debug('Passed: object list is self-consistent')
+
+    return object_names, ra_dec
 
 
 def history(function, mode=None, time=None):
@@ -539,6 +607,10 @@ def add_overscan_header(header, history=True):
     return modified_keywords
 
 
+def _look_up_objects(object_list, object_list_dir=None):
+    pass
+
+
 def add_object_info(directory=None,
                     object_list=None,
                     object_list_dir=None,
@@ -592,56 +664,16 @@ def add_object_info(directory=None,
 
     logger.debug('About to read object list')
     try:
-        object_names, RAs, Decs = read_object_list(object_dir,
-                                                   input_list=object_list)
+        object_names, ra_dec = read_object_list(object_dir,
+                                                input_list=object_list)
     except IOError:
         warn_msg = 'No object list in directory {0}, skipping.'
         logger.warn(warn_msg.format(directory))
         return
+    except name_resolve.NameResolveError:
+        return
 
     object_names = np.array(object_names)
-    ra_dec = []
-    default_angle_units = (u.hour, u.degree)
-
-    if (RAs is not None) and (Decs is not None):
-        ra_dec = FK5(RAs, Decs, unit=default_angle_units)
-    else:
-        try:
-            ra_dec = [FK5.from_name(obj) for obj in object_names]
-        except (name_resolve.NameResolveError, timeout) as e:
-            logger.error('Unable to do lookup of object positions')
-            logger.error(e)
-            return
-        ra = []
-        dec = []
-        for a_coord in ra_dec:
-            ra.append(a_coord.ra.radian)
-            dec.append(a_coord.dec.radian)
-        ra_dec = FK5(ra, dec, unit=(u.radian, u.radian))
-    # sanity check object list--the objects should not be so close together
-    # that any pair is within match radius of each other.
-    logger.debug('Testing object list for self-consistency')
-
-    # need 2nd neighbor below or objects will match themselves
-    try:
-        matches, d2d, d3d = ra_dec.match_to_catalog_sky(ra_dec,
-                                                        nthneighbor=2)
-        bad_object_list = (d2d.arcmin < match_radius).any()
-    except IndexError:
-        # There was only one item in the table...so no object can
-        # be duplicated, so make a fake distance that doesn't match
-        bad_object_list = False
-
-    if bad_object_list:
-        err_msg = ('Object list {} in directory {} contains at least one '
-                   'pair of objects that '
-                   'are closer together than '
-                   'match radius {} arcmin').format(object_list,
-                                                    object_list_dir,
-                                                    match_radius)
-        logger.error(err_msg)
-        raise RuntimeError(err_msg)
-    logger.debug('Passed: object list is self-consistent')
 
     # I want rows which...
     #
@@ -651,13 +683,13 @@ def add_object_info(directory=None,
     needs_object &= ~ (im_table['ra'].mask | im_table['dec'].mask)
 
     logger.debug('Looking for objects for %s images', needs_object.sum())
-    print im_table
     # Qualifying rows need a search for a match.
     # the search returns a match for every row provided, but some matches
     # may be farther away than desired, so...
     #
     # ...`and` the previous index mask with those that matched, and
     # ...construct list of object names for those images.
+    default_angle_units = (u.hour, u.degree)
 
     img_pos = FK5(im_table['ra'][needs_object], im_table['dec'][needs_object],
                   unit=default_angle_units)
@@ -694,7 +726,8 @@ def add_object_info(directory=None,
         logger.info('END ATTEMPTING TO ADD OBJECT to: {0}'.format(fname))
 
 
-def add_ra_dec_from_object_name(directory=None, new_file_ext=None):
+def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
+                                object_list=None, object_list_dir=None):
     """
     Add RA/Dec to FITS file that has object name but no pointing.
 
@@ -708,6 +741,14 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None):
         Name added to the FITS files with updated header information. It is
         added to the base name of the input file, between the old file name
         and the `.fit` or `.fits` extension. Default is 'new'.
+
+    object_list : str, optional
+        Name of file containing list of objects. Default is set by
+        :func:`read_object_list` which also explains the format of this file.
+
+    object_list_dir : str, optional
+        Directory in which the `object_list` is contained. Default is
+        `directory`.
 
     """
     directory = directory or '.'

@@ -29,11 +29,12 @@ OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder
 
 @pytest.mark.usefixtures('object_file_no_ra')
 def test_read_object_list():
-    objects, RA, Dec = ph.read_object_list(directory=_test_dir)
+    objects, ra_dec = ph.read_object_list(directory=_test_dir,
+                                          skip_lookup_from_object_name=True)
     assert len(objects) == 2
     assert objects[0] == 'ey uma'
     assert objects[1] == 'm101'
-    assert not (RA or Dec)
+    assert not ra_dec
 
 
 def test_read_object_list_ra_dec():
@@ -47,14 +48,14 @@ def test_read_object_list_ra_dec():
     object_file = open(object_path, 'wb')
     object_file.write(to_write)
     object_file.close()
-    obj, RA, Dec = ph.read_object_list(temp_dir, obj_name)
+    obj, ra_dec = ph.read_object_list(temp_dir, obj_name)
     assert(obj[0] == object_in)
-    assert(RA[0] == RA_in)
-    assert(Dec[0] == Dec_in)
+    ra_dec_in = FK5(RA_in, Dec_in, unit=(u.hour, u.degree))
+    assert ra_dec_in.separation(ra_dec[0]).arcsec < 1e-4
 
 
 def test_read_object_list_from_internet():
-    obj, RA, Dec = ph.read_object_list(directory='', input_list=OBJECT_LIST_URL)
+    obj, ra_dec = ph.read_object_list(directory='', input_list=OBJECT_LIST_URL)
     assert 'ey uma' in obj
 
 
