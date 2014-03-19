@@ -2,15 +2,16 @@ language: python
 python:
   - "2.7"
 
-virtualenv:
-    system_site_packages: true
+env:
+    global:
+        - NUMPY_VERSION=1.8.0
+        - WHEELHOUSE=http://physics.mnstate.edu/craig/wheelhouse/numpy-$NUMPY_VERSION
 
 before_install:
     # grabbed this from astropy--to get scipy working, I think...
     - sudo apt-get update
 install:
-    - pip install --upgrade http://physics.mnstate.edu/craig/numpy-1.8.0-cp27-none-linux_x86_64.whl
-    - pip install --upgrade http://physics.mnstate.edu/craig/astropy-0.3.1-cp27-none-linux_x86_64.whl
+    - pip install --use-wheel --find-links=$WHEELHOUSE numpy scipy astropy
     - pip install coverage
     - pip install coveralls
     # need to install scripts because one test ends up invoking a subprocess
