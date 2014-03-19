@@ -11,7 +11,7 @@ before_install:
     # grabbed this from astropy--to get scipy working, I think...
     - sudo apt-get update
 install:
-    - pip install --use-wheel --find-links=$WHEELHOUSE numpy scipy astropy
+    - pip install --use-wheel --find-links=$WHEELHOUSE --upgrade --force-reinstall numpy==$NUMPY_VERSION scipy astropy
     - pip install coverage
     - pip install coveralls
     # need to install scripts because one test ends up invoking a subprocess
