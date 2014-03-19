@@ -7,9 +7,6 @@ env:
         - NUMPY_VERSION=1.8.0
         - WHEELHOUSE=http://physics.mnstate.edu/craig/wheelhouse/numpy-$NUMPY_VERSION
 
-before_install:
-    # grabbed this from astropy--to get scipy working, I think...
-    - sudo apt-get update
 install:
     - pip install --use-wheel --find-links=$WHEELHOUSE --upgrade --force-reinstall numpy==$NUMPY_VERSION scipy astropy
     - pip install coverage
