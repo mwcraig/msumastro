@@ -380,11 +380,9 @@ def read_object_list(directory=None, input_list=None,
     except KeyError:
         RA = None
         Dec = None
+        ra_dec = None
 
     object_names = objects['object']
-
-    if skip_consistency_check & skip_lookup_from_object_name:
-        return object_names, RA, Dec
 
     if (RA is not None) and (Dec is not None):
         default_angle_units = (u.hour, u.degree)
@@ -398,13 +396,17 @@ def read_object_list(directory=None, input_list=None,
             except (name_resolve.NameResolveError, timeout) as e:
                 logger.error('Unable to do lookup of object positions')
                 logger.error(e)
-                raise name_resolve.NameResolveError('Unable to do lookup of object positions')
+                raise name_resolve.NameResolveError('Unable to do lookup of '
+                                                    'object positions')
             ra = []
             dec = []
             for a_coord in ra_dec:
                 ra.append(a_coord.ra.radian)
                 dec.append(a_coord.dec.radian)
             ra_dec = FK5(ra, dec, unit=(u.radian, u.radian))
+
+    if skip_consistency_check and skip_lookup_from_object_name:
+        return object_names, ra_dec
 
     if skip_consistency_check or not ra_dec:
         return object_names, ra_dec
@@ -607,10 +609,6 @@ def add_overscan_header(header, history=True):
     return modified_keywords
 
 
-def _look_up_objects(object_list, object_list_dir=None):
-    pass
-
-
 def add_object_info(directory=None,
                     object_list=None,
                     object_list_dir=None,
@@ -671,6 +669,7 @@ def add_object_info(directory=None,
         logger.warn(warn_msg.format(directory))
         return
     except name_resolve.NameResolveError:
+        logger.error('Unable to add objects--name resolve error')
         return
 
     object_names = np.array(object_names)
@@ -768,15 +767,31 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
         return
 
     objects = np.unique(missing_dec['object'])
+
+    try:
+        object_list, ra_dec_list = read_object_list(object_list_dir,
+                                                    input_list=object_list)
+    except IOError:
+        object_list = []
+        ra_dec_list = []
+        object_dict = {}
+
+    if len(object_list) and len(ra_dec_list):
+        object_dict = {obj: ra_dec for obj, ra_dec in zip(object_list,
+                                                          ra_dec_list)}
+
     # checks prior to this mean this loop always happens at least once,
     # which confuses coverage
     for object_name in objects:  # pragma: nobranch
         try:
-            object_coords = FK5.from_name(object_name)
-        except (name_resolve.NameResolveError, timeout) as e:
-            logger.warning('Unable to lookup position for %s', object_name)
-            logger.warning(e)
-            return
+            object_coords = object_dict[object_name]
+        except KeyError:
+            try:
+                object_coords = FK5.from_name(object_name)
+            except (name_resolve.NameResolveError, timeout) as e:
+                logger.warning('Unable to lookup position for %s', object_name)
+                logger.warning(e)
+                return
 
         common_format_keywords = {'sep': ':',
                                   'precision': 2,

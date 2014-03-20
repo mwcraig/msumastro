@@ -59,6 +59,21 @@ def test_read_object_list_from_internet():
     assert 'ey uma' in obj
 
 
+def test_read_object_list_with_skip_consistency_skip_lookup():
+    # this is bad because there is an identical entry
+    bad_objects = [
+        "ey uma, 09:02:20.76, +49:49:09.3",
+        "ey uma, 09:02:20.76, +49:49:09.3"
+    ]
+    object_file_with_ra_dec(_test_dir, input_objects=bad_objects)
+    objects, ra_dec = ph.read_object_list(_test_dir,
+                                          skip_lookup_from_object_name=True,
+                                          skip_consistency_check=True)
+    for obj in objects:
+        assert obj == "ey uma"
+    assert len(ra_dec) == 2
+
+
 def test_history_bad_mode():
     with pytest.raises(ValueError):
         ph.history(test_history_bad_mode, mode='not a mode')
@@ -372,15 +387,21 @@ def test_missing_object_column_raises_error():
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
-def test_add_object_name_logs_error_if_object_on_list_not_found(caplog):
+def test_read_object_list_logs_error_if_object_on_list_not_found(caplog):
+    if simbad_down:
+        pytest.xfail('Simbad is down')
     object_path = path.join(_test_dir, _default_object_file_name)
     object_table = Table.read(object_path, format='ascii',
                               comment='#', delimiter=',')
     object_table.add_row(['not_a_simbad_object'])
     object_table.write(object_path, format='ascii')
-    ph.add_object_info(_test_dir)
+    with pytest.raises(name_resolve.NameResolveError):
+        ph.read_object_list(_test_dir)
     errs = get_patch_header_logs(caplog, level=logging.ERROR)
     assert 'Unable to do lookup' in errs
+    ph.add_object_info(_test_dir)
+    errs = get_patch_header_logs(caplog, level=logging.ERROR)
+    assert 'Unable to add objects--name resolve error' in errs
 
 
 def test_add_object_name_logic_when_all_images_have_matching_object(caplog):
@@ -410,7 +431,8 @@ def test_add_ra_dec_from_object_name(new_file_ext):
     f.close()
 
     try:
-        ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=new_file_ext)
+        ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=new_file_ext,
+                                       object_list_dir=_test_dir)
     except (name_resolve.NameResolveError, timeout):
         pytest.xfail("Simbad is down")
 
@@ -519,35 +541,6 @@ def test_times_apparent_pos_added():
     assert_almost_equal(airmass_correct, header['airmass'], decimal=3)
 
 
-@pytest.fixture(params=['object', 'OBJECT', 'Object'])
-def object_file_ra_change_col_case(request):
-    object_file_with_ra_dec(_test_dir, object_col_name=request.param)
-
-
-@pytest.fixture
-def object_file_no_ra(request):
-    try:
-        object_col_name = request.param
-    except AttributeError:
-        object_col_name = 'object'
-    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
-                '\ney uma\nm101\n')
-    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
-    object_file.write(to_write)
-    object_file.close()
-
-
-def object_file_with_ra_dec(dir, object_col_name='object'):
-    objs = ["ey uma, 09:02:20.76, +49:49:09.3",
-            "m101,14:03:12.58,+54:20:55.50"
-            ]
-    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
-                ', RA, Dec\n' + '\n'.join(objs))
-    object_file = open(path.join(dir, _default_object_file_name), 'wb')
-    object_file.write(to_write)
-    object_file.close()
-
-
 def test_add_object_pos_airmass_raises_error_when_it_should():
     feder = Feder()
     header = fits.Header()
@@ -602,6 +595,40 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     print a_header
     assert all(key_to_delete.lower() not in h.lower()
                for h in a_header['HISTORY'])
+
+
+@pytest.fixture(params=['object', 'OBJECT', 'Object'])
+def object_file_ra_change_col_case(request):
+    object_file_with_ra_dec(_test_dir, object_col_name=request.param)
+
+
+@pytest.fixture
+def object_file_no_ra(request):
+    try:
+        object_col_name = request.param
+    except AttributeError:
+        object_col_name = 'object'
+    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
+                '\ney uma\nm101\n')
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
+    object_file.write(to_write)
+    object_file.close()
+
+
+def object_file_with_ra_dec(dir, object_col_name='object',
+                            input_objects=None):
+    if input_objects is None:
+        objs = ["ey uma, 09:02:20.76, +49:49:09.3",
+                "m101,14:03:12.58,+54:20:55.50"
+                ]
+    else:
+        objs = list(input_objects)
+
+    to_write = ('# comment 1\n# comment 2\n' + object_col_name +
+                ', RA, Dec\n' + '\n'.join(objs))
+    object_file = open(path.join(dir, _default_object_file_name), 'wb')
+    object_file.write(to_write)
+    object_file.close()
 
 
 def setup_module(module):
