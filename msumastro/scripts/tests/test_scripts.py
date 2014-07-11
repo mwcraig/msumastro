@@ -117,7 +117,9 @@ class TestScript(object):
             assert('No object list' not in wrn.message)
         destination.remove()
 
-    def test_run_patch_with_object_list_url(self):
+    def test_run_patch_with_object_list_url(self, simbad_down):
+        if simbad_down:
+            pytest.xfail("simbad is down")
         arglist = ['-o', OBJECT_LIST_URL, self.test_dir.strpath]
         # Remove default object file just to make sure object information can
         # come only from the remote list.
