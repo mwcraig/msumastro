@@ -14,6 +14,7 @@ from astropy.io import fits
 from astropy.coordinates import Angle, FK5, name_resolve
 from astropy import units as u
 from astropy.table import Table
+from astropy.extern import six
 
 from .. import patchers as ph
 from ..feder import Feder, FederSite, ApogeeAltaU9
@@ -55,7 +56,11 @@ def test_read_object_list_ra_dec():
 
 
 def test_read_object_list_from_internet():
-    obj, ra_dec = ph.read_object_list(directory='', input_list=OBJECT_LIST_URL)
+    try:
+        obj, ra_dec = ph.read_object_list(directory='',
+                                          input_list=OBJECT_LIST_URL)
+    except six.moves.urllib.error.URLError:
+        pytest.xfail("Unable to open URL")
     assert 'ey uma' in obj
 
 
