@@ -11,7 +11,7 @@ pytest_plugins = "capturelog"
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
-from astropy.coordinates import Angle, FK5, name_resolve
+from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 from astropy.extern import six
@@ -640,7 +640,7 @@ def setup_module(module):
     global simbad_down
 
     try:
-        foo = FK5.from_name("m101")
+        foo = SkyCoord.from_name("m101")
     except (name_resolve.NameResolveError, timeout):
         simbad_down = True
 

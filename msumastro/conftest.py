@@ -7,7 +7,7 @@ from socket import timeout
 import numpy as np
 import pytest
 from astropy.io import fits
-from astropy.coordinates import FK5, name_resolve
+from astropy.coordinates import SkyCoord, name_resolve
 
 from .header_processing.patchers import IRAF_image_type
 
@@ -154,7 +154,7 @@ def make_overscan_test_files(request, tmpdir):
 def simbad_down():
     simbad_down = False
     try:
-        FK5.from_name("m101")
+        SkyCoord.from_name("m101")
     except (name_resolve.NameResolveError, timeout):
         simbad_down = True
     return simbad_down

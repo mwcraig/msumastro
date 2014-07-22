@@ -7,7 +7,7 @@ import urlparse
 import numpy as np
 import astropy.io.fits as fits
 from astropy.time import Time
-from astropy.coordinates import Angle, FK5, name_resolve
+from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 
@@ -392,7 +392,7 @@ def read_object_list(directory=None, input_list=None,
             ra_dec = None
         else:
             try:
-                ra_dec = [FK5.from_name(obj) for obj in object_names]
+                ra_dec = [SkyCoord.from_name(obj) for obj in object_names]
             except (name_resolve.NameResolveError, timeout) as e:
                 logger.error('Unable to do lookup of object positions')
                 logger.error(e)
@@ -787,7 +787,7 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
             object_coords = object_dict[object_name]
         except KeyError:
             try:
-                object_coords = FK5.from_name(object_name)
+                object_coords = SkyCoord.from_name(object_name)
             except (name_resolve.NameResolveError, timeout) as e:
                 logger.warning('Unable to lookup position for %s', object_name)
                 logger.warning(e)
