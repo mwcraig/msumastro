@@ -66,10 +66,9 @@ def triage_setup(request):
     n_test['files'] += 1
     n_test['light'] += 1
     n_test['need_object'] += 1
-    filter_file = open('filter_object_light.fit', 'rb')
-    fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
-    fzipped.writelines(filter_file)
-    fzipped.close()
+    with open('filter_object_light.fit', 'rb') as f_in:
+        with gzip.open('filter_object_light.fit.gz', 'wb') as f_out:
+            f_out.write(f_in.read())
     n_test['files'] += 1
     n_test['compressed'] += 1
     n_test['light'] += 1
