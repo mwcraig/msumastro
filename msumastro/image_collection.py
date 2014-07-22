@@ -10,6 +10,8 @@ import astropy.io.fits as fits
 
 logger = logging.getLogger(__name__)
 
+__all__ = ['ImageFileCollection']
+
 
 class ImageFileCollection(object):
 

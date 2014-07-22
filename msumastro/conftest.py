@@ -2,10 +2,12 @@ from tempfile import mkdtemp
 import os
 from shutil import rmtree
 import gzip
+from socket import timeout
 
 import numpy as np
 import pytest
 from astropy.io import fits
+from astropy.coordinates import SkyCoord, name_resolve
 
 from .header_processing.patchers import IRAF_image_type
 
@@ -64,10 +66,9 @@ def triage_setup(request):
     n_test['files'] += 1
     n_test['light'] += 1
     n_test['need_object'] += 1
-    filter_file = open('filter_object_light.fit', 'rb')
-    fzipped = gzip.open('filter_object_light.fit.gz', 'wb')
-    fzipped.writelines(filter_file)
-    fzipped.close()
+    with open('filter_object_light.fit', 'rb') as f_in:
+        with gzip.open('filter_object_light.fit.gz', 'wb') as f_out:
+            f_out.write(f_in.read())
     n_test['files'] += 1
     n_test['compressed'] += 1
     n_test['light'] += 1
@@ -146,3 +147,13 @@ def make_overscan_test_files(request, tmpdir):
         hdu.writeto(path.join(working_path.strpath, name_fits(name)))
 
     return (working_path.strpath, name_fits(has_oscan), name_fits(no_oscan))
+
+
+@pytest.fixture
+def simbad_down():
+    simbad_down = False
+    try:
+        SkyCoord.from_name("m101")
+    except (name_resolve.NameResolveError, timeout):
+        simbad_down = True
+    return simbad_down

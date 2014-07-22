@@ -7,7 +7,7 @@ import urlparse
 import numpy as np
 import astropy.io.fits as fits
 from astropy.time import Time
-from astropy.coordinates import Angle, FK5, name_resolve
+from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 
@@ -392,7 +392,7 @@ def read_object_list(directory=None, input_list=None,
             ra_dec = None
         else:
             try:
-                ra_dec = [FK5.from_name(obj) for obj in object_names]
+                ra_dec = [SkyCoord.from_name(obj) for obj in object_names]
             except (name_resolve.NameResolveError, timeout) as e:
                 logger.error('Unable to do lookup of object positions')
                 logger.error(e)
@@ -559,7 +559,7 @@ def patch_headers(dir=None,
             if add_overscan:
                 add_overscan_header(header, history=True)
         except (KeyError, ValueError) as e:
-            warning_msg = ('********* FILE NOT PATCHED *********\n'
+            warning_msg = ('********* FILE NOT PATCHED *********'
                            'Stopped patching header of {0} because of '
                            '{1}: {2}'.format(fname, type(e).__name__, e))
             logger.warn(warning_msg)
@@ -787,7 +787,7 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
             object_coords = object_dict[object_name]
         except KeyError:
             try:
-                object_coords = FK5.from_name(object_name)
+                object_coords = SkyCoord.from_name(object_name)
             except (name_resolve.NameResolveError, timeout) as e:
                 logger.warning('Unable to lookup position for %s', object_name)
                 logger.warning(e)
