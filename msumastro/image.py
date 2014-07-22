@@ -12,7 +12,7 @@ class ImageWithWCS(object):
 
     """
     FITS image with WCS
-        
+
     A FITS images with a few convenience methods defined, including easy
     access to WCS transforms.
 
@@ -91,7 +91,7 @@ class ImageWithWCS(object):
 
         return res
 
-    def wcs_pix2sky(self, pix, **kwargs):
+    def wcs_pix2world(self, pix, **kwargs):
         """
         Wrapper around astropy.wcs function that handles a single tuple
         gracefully.
@@ -107,9 +107,9 @@ class ImageWithWCS(object):
             Sky coordinates for each input pixel.
         """
 
-        return self._wcs_wrapper(pix, self.wcs.wcs_pix2sky, **kwargs)
+        return self._wcs_wrapper(pix, self.wcs.wcs_pix2world, **kwargs)
 
-    def wcs_sky2pix(self, sky, **kwargs):
+    def wcs_world2pix(self, sky, **kwargs):
         """
         Wrapper around astropy.wcs function that handles a single tuple
         gracefully.
@@ -124,7 +124,7 @@ class ImageWithWCS(object):
         numpy.ndarray with same shape as sky.
             Pixel positions for each input sky coordinate.
         """
-        return self._wcs_wrapper(sky, self.wcs.wcs_sky2pix, **kwargs)
+        return self._wcs_wrapper(sky, self.wcs.wcs_world2pix, **kwargs)
 
     def _wcs_wrapper(self, inp, transform, **kwargs):
         """"Actually handles the wrapping"""
