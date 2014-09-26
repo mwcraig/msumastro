@@ -244,15 +244,20 @@ class ImageFileCollection(object):
 
     def _fits_summary(self, header_keywords=None):
         """
+        Generate a summary table of keywords from FITS headers.
 
+        Parameters
+        ----------
+
+        header_keywords : list of str or '*', optional
+            Keywords whose value should be extracted from FITS headers.
+            Default value is ``None``.
         """
         from astropy.table import MaskedColumn
 
         if not self.files:
             return None
 
-        # We only do lower case, sorry...
-        #header_keys = [key.lower() for key in header_keywords]
         # Get rid of any duplicate keywords, also forces a copy.
         header_keys = set(header_keywords)
         header_keys.add('file')
