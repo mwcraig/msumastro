@@ -199,7 +199,7 @@ class ImageFileCollection(object):
         self.summary_info['file'].mask = current_file_mask
         return filtered_files
 
-    def _table_from_fits_header(self, file_name):
+    def _table_from_fits_header(self, file_name, input_summary=None):
         """
         Construct a table whose columns are the header keywords
 
@@ -209,6 +209,9 @@ class ImageFileCollection(object):
         file_name : str
             Name of FITS file.
 
+        input_summary : dict
+            Existing dictionary to which new values should be appended.
+
         Returns
         -------
 
@@ -216,20 +219,59 @@ class ImageFileCollection(object):
         """
         from collections import OrderedDict
 
-        summary = OrderedDict()
-        summary['file'] = path.basename(file_name)
+        def _add_val_to_table(key, value, table, n_prev):
+            try:
+                table[key.lower()].append(value)
+            except KeyError:
+                table[key.lower()] = [None] * n_previous
+                table[key.lower()].append(value)
+
+        if input_summary is None:
+            summary = OrderedDict()
+            n_previous = 0
+        else:
+            summary = input_summary
+            n_previous = len(summary['file'])
+
         h = fits.getheader(file_name)
         assert 'file' not in h
+
+        # Try opening header before this so that file name is only added if
+        # file is valid FITS
+        try:
+            summary['file'].append(path.basename(file_name))
+        except KeyError:
+            summary['file'] = [path.basename(file_name)]
+
+        missing_in_this_file = [k for k in summary if (k not in h and
+                                                       k != 'file')]
+
+        multi_entry_keys = {'comment': [],
+                            'history': []}
+
         for k, v in h.iteritems():
             if k == '':
                 continue
-            if k in ['comment', 'history']:
-                val = str(v)
+
+            if k.lower() in ['comment', 'history']:
+                multi_entry_keys[k.lower()].append(str(v))
+                # Accumulate these is a separate dictionary until the
+                # end to avoid adding multiple entries to summary.
+                continue
             else:
                 val = v
-            summary[k.lower()] = val
-        file_table = Table([summary])
-        return file_table
+
+            _add_val_to_table(k, val, summary, n_previous)
+
+        for k, v in multi_entry_keys.iteritems():
+            if v:
+                joined = ','.join(v)
+                _add_val_to_table(k, joined, summary, n_previous)
+
+        for missing in missing_in_this_file:
+            summary[missing].append(None)
+
+        return summary
 
     def _set_column_name_case_to_match_keywords(self, header_keys,
                                                 summary_table):
@@ -269,18 +311,22 @@ class ImageFileCollection(object):
             summary_table.add_column(file_name_column)
             return summary_table
 
+        summary_dict = None
         for file_name in file_name_column:
             file_path = path.join(self.location, file_name)
             try:
-                table_file = self._table_from_fits_header(file_path)
+                summary_dict = self._table_from_fits_header(
+                    file_path, input_summary=summary_dict)
             except IOError as e:
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
                 continue
-            try:
-                summary_table = vstack([summary_table, table_file])
-            except NameError:
-                summary_table = table_file
+
+        summary_table = Table()
+        for name, data in summary_dict.iteritems():
+            mask = [v is None for v in data]
+            c = MaskedColumn(name=name, data=data, mask=mask)
+            summary_table.add_column(c)
 
         self._set_column_name_case_to_match_keywords(header_keys,
                                                      summary_table)

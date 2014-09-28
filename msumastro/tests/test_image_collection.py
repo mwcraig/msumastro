@@ -342,8 +342,10 @@ class TestImageFileCollection(object):
         bad_filter.header['filter'] = 15.0
         path_bad = os.path.join(triage_setup.test_dir, 'bad_filter.fit')
         bad_filter.writeto(path_bad)
-        with pytest.raises(ValueError):
-            tff.ImageFileCollection(triage_setup.test_dir, keywords=['filter'])
+        ic = tff.ImageFileCollection(triage_setup.test_dir,
+                                     keywords=['filter'])
+        # dtype is object when there is a mix of types
+        assert ic.summary_info['filter'].dtype == np.dtype('O')
         os.remove(path_bad)
 
     def test_filter_by_numerical_value(self, triage_setup):
@@ -479,3 +481,23 @@ class TestImageFileCollection(object):
         ic = tff.ImageFileCollection(test_dir.strpath, keywords='*')
         print ic.summary_info.colnames
         assert 'col0' not in ic.summary_info.colnames
+
+    def test_header_with_long_history_roundtrips_to_disk(self, triage_setup):
+        # I tried combing several history comments into one table entry with
+        # '\n'.join(history), which resulted in a table that couldn't
+        # round trip to disk because on read the newline character was
+        # interpreted as...a new line! This test is a check against future
+        # foolishness.
+        from astropy.table import Table
+        img = np.uint16(np.arange(100))
+        long_history = fits.PrimaryHDU(img)
+        long_history.header['imagetyp'] = IRAF_image_type('bias')
+        long_history.header['history'] = 'Something happened'
+        long_history.header['history'] = 'Then something else happened'
+        long_history.header['history'] = 'And then something odd happened'
+        path_history = os.path.join(triage_setup.test_dir, 'long_history.fit')
+        long_history.writeto(path_history)
+        ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
+        ic.summary_info.write('test_table.txt', format='ascii.csv')
+        table_disk = Table.read('test_table.txt', format='ascii.csv')
+        assert len(table_disk) == len(ic.summary_info)
