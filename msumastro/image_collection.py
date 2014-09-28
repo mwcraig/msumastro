@@ -199,7 +199,8 @@ class ImageFileCollection(object):
         self.summary_info['file'].mask = current_file_mask
         return filtered_files
 
-    def _table_from_fits_header(self, file_name, input_summary=None):
+    def _table_from_fits_header(self, file_name, input_summary=None,
+                                missing_marker=None):
         """
         Construct a table whose columns are the header keywords
 
@@ -223,7 +224,7 @@ class ImageFileCollection(object):
             try:
                 table[key.lower()].append(value)
             except KeyError:
-                table[key.lower()] = [None] * n_previous
+                table[key.lower()] = [missing_marker] * n_previous
                 table[key.lower()].append(value)
 
         if input_summary is None:
@@ -269,7 +270,7 @@ class ImageFileCollection(object):
                 _add_val_to_table(k, joined, summary, n_previous)
 
         for missing in missing_in_this_file:
-            summary[missing].append(None)
+            summary[missing].append(missing_marker)
 
         return summary
 
@@ -312,21 +313,24 @@ class ImageFileCollection(object):
             return summary_table
 
         summary_dict = None
+        missing_marker = None
+
         for file_name in file_name_column:
             file_path = path.join(self.location, file_name)
             try:
                 summary_dict = self._table_from_fits_header(
-                    file_path, input_summary=summary_dict)
+                    file_path, input_summary=summary_dict,
+                    missing_marker=missing_marker)
             except IOError as e:
                 logger.warning('Unable to get FITS header for file %s: %s',
                                file_path, e)
                 continue
 
-        summary_table = Table()
-        for name, data in summary_dict.iteritems():
-            mask = [v is None for v in data]
-            c = MaskedColumn(name=name, data=data, mask=mask)
-            summary_table.add_column(c)
+        summary_table = Table(summary_dict, masked=True)
+
+        for column in summary_table.colnames:
+            summary_table[column].mask = [v is missing_marker
+                                          for v in summary_table[column]]
 
         self._set_column_name_case_to_match_keywords(header_keys,
                                                      summary_table)
