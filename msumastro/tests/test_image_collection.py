@@ -116,8 +116,7 @@ class TestImageFileCollection(object):
             [os.path.basename(file) for file in paths])
 
         assert (len(basenames(collection._paths()) -
-                    basenames(new_collection._paths())) ==
-                triage_setup.n_test['compressed'])
+                    basenames(new_collection._paths())) == 0)
         rmtree(destination)
 
     def test_headers_with_filter(self, triage_setup):
