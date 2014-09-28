@@ -236,7 +236,7 @@ class TestScript(object):
         tbl_name = 'tbl.txt'
         run_triage.main(arglist=['-a', '-t', tbl_name, self.test_dir.strpath])
         rt_table = Table.read(self.test_dir.join(tbl_name).strpath,
-                              format='ascii')
+                              format='ascii.csv')
         lcase_columns = [c.lower() for c in rt_table.colnames]
         print lcase_columns
         ic = ImageFileCollection(self.test_dir.strpath,
