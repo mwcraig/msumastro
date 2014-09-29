@@ -60,9 +60,9 @@ class ImageFileCollection(object):
         if keywords is None:
             keywords = []
         if info_file is not None:
-            try:
+            if location is not None:
                 info_path = path.join(self.location, info_file)
-            except AttributeError:
+            else:
                 info_path = info_file
             try:
                 self._summary_info = Table.read(info_path,
