@@ -1,6 +1,7 @@
 from tempfile import mkdtemp
 from os import path, chdir, getcwd
 from shutil import rmtree
+import sys
 
 import astropy.io.fits as fits
 import pytest
@@ -21,6 +22,8 @@ def setup():
     _test_dir = mkdtemp()
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_trim(make_overscan_test_files):
     global _test_dir
 
