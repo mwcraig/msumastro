@@ -5,6 +5,7 @@ from glob import glob
 import warnings
 import logging
 from socket import timeout
+import sys
 
 import pytest
 pytest_plugins = "capturelog"
@@ -149,6 +150,8 @@ def test_purging_maximdl5_keywords(data_source):
     assert not keyword_present
 
 
+@pytest.mark.skipif("win" in sys.platform,
+                    reason="Cannot clobber in windows")
 @pytest.mark.parametrize('badkey', ['swcreate', 'instrume'])
 def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
                                                                  caplog):
@@ -169,6 +172,8 @@ def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
     assert(badname in patch_warnings)
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_adding_overscan_apogee_u9(make_overscan_test_files):
     original_dir = getcwd()
 
@@ -367,6 +372,8 @@ def test_missing_object_file_issues_warning(caplog):
     assert 'No object list in directory' in patch_header_warnings
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     to_write = ('# comment 1\n# comment 2\nobject,RA,Dec\n'
@@ -409,6 +416,8 @@ def test_read_object_list_logs_error_if_object_on_list_not_found(caplog):
     assert 'Unable to add objects--name resolve error' in errs
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_add_object_name_logic_when_all_images_have_matching_object(caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
     for h in ic.headers(imagetyp='light', clobber=True):
@@ -418,22 +427,28 @@ def test_add_object_name_logic_when_all_images_have_matching_object(caplog):
     assert 'NO OBJECTS MATCHED' in infos
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 @pytest.mark.parametrize('new_file_ext',
                          ['', None])
 def test_add_ra_dec_from_object_name(new_file_ext):
     if simbad_down:
         pytest.xfail("Simbad is down")
     full_path = path.join(_test_dir, _test_image_name)
+    tmp_path = path.join(_test_dir, 'crapp.fit')
     f = fits.open(full_path, do_not_scale_image_data=True)
-    h = f[0].header
+    hdu = f[0]
+    h = hdu.header
     del h['OBJCTRA']
     del h['OBJCTDEC']
     h['OBJECT'] = 'M101'
     with warnings.catch_warnings():
         ignore_from = 'astropy.io.fits.hdu.hdulist'
         warnings.filterwarnings('ignore', module=ignore_from)
-        f.writeto(full_path, clobber=True)
+        hdu.writeto(tmp_path, clobber=True)
     f.close()
+    remove(full_path)
+    move(tmp_path, full_path)
 
     try:
         ph.add_ra_dec_from_object_name(_test_dir, new_file_ext=new_file_ext,
@@ -459,6 +474,8 @@ def test_add_ra_dec_from_object_name(new_file_ext):
                         header_m101.dec.degree)
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_add_ra_dec_from_object_name_edge_cases(caplog):
     # add a 'dec' keyword to every light file so that none need RA/Dec
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
@@ -494,6 +511,8 @@ def get_patch_header_logs(log, level=logging.WARN):
     return patch_headers_message_text
 
 
+@pytest.mark.skipif('win' in sys.platform,
+                    reason="Cannot overwrite in windows")
 def test_times_apparent_pos_added():
     # the correct value below is from the USNO JD calculator using the UT
     # of the start of the observation in the file uint16.fit, which is
@@ -658,4 +677,7 @@ def setup_function(function):
 
 def teardown_function(function):
     global _test_dir
-    rmtree(_test_dir)
+    try:
+        rmtree(_test_dir)
+    except:
+        pass
