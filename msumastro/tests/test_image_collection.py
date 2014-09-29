@@ -4,6 +4,7 @@ from tempfile import mkdtemp
 from glob import iglob, glob
 import logging
 import stat
+import sys
 
 import astropy.io.fits as fits
 import numpy as np
@@ -361,6 +362,8 @@ class TestImageFileCollection(object):
             for foo in ic._generator('not a real generator'):
                 pass
 
+    @pytest.mark.skipif('win' in sys.platform,
+                        reason="Cannot change permissions on windows")
     def test_setting_write_location_to_bad_dest_raises_error(self, tmpdir,
                                                              triage_setup):
         new_tmp = tmpdir.mkdtemp()
@@ -385,8 +388,10 @@ class TestImageFileCollection(object):
             assert key in ic.keywords
         # no location, so should be no files
         assert len(ic.files) == 0
-        # no location, so no way to iterate over files
-        with pytest.raises(AttributeError):
+        # No location, so no way to iterate over files.
+        # Windows reports a TypeError, not AttributeError, so be happy with
+        # either.
+        with pytest.raises((AttributeError, TypeError)):
             for h in ic.headers():
                 #print h
                 pass
