@@ -84,7 +84,12 @@ def triage_setup(request):
     def teardown():
         for key in n_test.keys():
             n_test[key] = 0
-        rmtree(test_dir)
+        try:
+        	rmtree(test_dir)
+        except:
+        	# I really do not care that much if removing the temp directory
+        	# fails.
+        	pass
         os.chdir(original_dir)
     request.addfinalizer(teardown)
 
