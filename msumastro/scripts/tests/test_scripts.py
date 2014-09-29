@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+import sys
 
 import astropy.io.fits as fits
 from astropy.table import Table, Column
@@ -20,6 +21,9 @@ from ...tests.data import get_data_dir
 
 _default_object_file_name = 'obsinfo.txt'
 OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
+
+pytestmark = pytest.mark.skipif('win' in sys.platform,
+                                reason="Scripts are Unix-specific")
 
 
 def set_mtimes(files, offset=10):
