@@ -11,13 +11,18 @@ from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 
-from feder import Feder
+try:
+    from feder import Feder
+    feder = Feder()
+except ImportError:
+    feder = None
+    pass
+
 from ..image_collection import ImageFileCollection
 from fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
-feder = Feder()
 
 #__all__ = ['patch_headers', 'add_object_info', 'add_ra_dec_from_object_name']
 

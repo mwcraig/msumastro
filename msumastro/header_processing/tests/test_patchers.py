@@ -17,7 +17,16 @@ from astropy.table import Table
 from astropy.extern import six
 
 from .. import patchers as ph
-from ..feder import Feder, FederSite, ApogeeAltaU9
+try:
+    from ..feder import Feder, FederSite, ApogeeAltaU9
+    have_astropysics = True
+except ImportError:
+    have_astropysics = False
+
+# Skip ALL tests in this file unless we have astropysics
+pytestmark = pytest.mark.skipif(not have_astropysics,
+                                reason='astropysics not installed')
+
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
 

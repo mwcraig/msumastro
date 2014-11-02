@@ -1,4 +1,7 @@
 from fitskeyword import FITSKeyword
-from feder import Feder
+try:
+    from feder import Feder
+except ImportError:
+    pass
 from patchers import *
 from astrometry import *

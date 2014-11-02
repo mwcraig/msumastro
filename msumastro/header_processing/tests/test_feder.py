@@ -1,4 +1,13 @@
-from ..feder import Feder, ApogeeAltaU9
+import pytest
+
+have_astropysics = True
+try:
+    from ..feder import Feder, ApogeeAltaU9
+except ImportError:
+    have_astropysics = False
+
+pytestmark = pytest.mark.skipif(not have_astropysics,
+                                reason="astropysics not installed")
 
 # def test_localSiderialTime():
 #    feder_site = FederSite()

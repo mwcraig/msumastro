@@ -9,7 +9,10 @@ import pytest
 from astropy.io import fits
 from astropy.coordinates import SkyCoord, name_resolve
 
-from .header_processing.patchers import IRAF_image_type
+try:
+    from .header_processing.patchers import IRAF_image_type
+except ImportError:
+    pass
 
 
 @pytest.fixture
