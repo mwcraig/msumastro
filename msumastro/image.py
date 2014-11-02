@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from scipy import ndimage
 from astropy import wcs
 from astropy.io import fits
 
@@ -53,43 +52,6 @@ class ImageWithWCS(object):
     def data(self, array):
         """Set image data to numpy array"""
         self.fitsfile[0].data = array
-
-    def shift(self, int_shift, in_place=False):
-        """
-        Shift image by an integer number of pixels without
-        interpolation.
-
-        Parameters
-        ----------
-        int_shift : list-like of two integers
-            Amount by which image should be shifted; floats will be rounded.
-
-        in_place : bool, optional 
-            If ``True`` the image is shifted in place, and the wcs reference
-            pixel is updated appropriately. Otherwise an array is returned
-            that is shifted with no WCS information.
-
-        Raises
-        ------
-        ValueError
-            If the shift is not by an integer amount.
-        """
-        if (np.int32(np.array(int_shift)) !=
-                np.array(int_shift)).any():
-            raise ValueError('Shift must be integer amount!')
-
-        res = ndimage.shift(self.data, int_shift, order=0)
-
-        if in_place:
-            self.fitsfile[0].data = res
-            # Indices for int_shift below ARE CORRECT because FITS axis
-            # order is opposite that of numpy.
-            self.header['crpix1'] += int_shift[1]
-            self.header['crpix2'] += int_shift[0]
-            self._wcs = wcs.WCS(self.header)
-            res = None
-
-        return res
 
     def wcs_pix2world(self, pix, **kwargs):
         """
