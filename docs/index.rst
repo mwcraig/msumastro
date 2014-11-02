@@ -20,5 +20,4 @@ Contents
    scripts/manual_processing
    image_management
    header_processing/index
-   reduction/index
    xref
