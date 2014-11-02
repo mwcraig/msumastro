@@ -35,10 +35,10 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinxarg.ext',
               'numpydoc',
-              'astropy.sphinx.ext.astropyautosummary',
-              'astropy.sphinx.ext.automodsumm',
-              'astropy.sphinx.ext.automodapi',
-              'astropy.sphinx.ext.tocdepthfix',
+              'astropy_helpers.sphinx.ext.astropyautosummary',
+              'astropy_helpers.sphinx.ext.automodsumm',
+              'astropy_helpers.sphinx.ext.automodapi',
+              'astropy_helpers.sphinx.ext.tocdepthfix',
              ]
 
 numpydoc_show_class_members = False
