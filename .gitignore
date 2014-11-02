@@ -14,3 +14,4 @@ msumastro.egg-info
 *.egg
 htmlcov
 docs/api
+.eggs
