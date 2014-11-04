@@ -81,9 +81,22 @@ class ImageFileCollection(object):
             self.keywords = keywords
 
     @property
+    def summary(self):
+        """
+        astropy.table.Table of values of FITS keywords for files in the
+        collection.
+
+        Each keyword is a column heading. In addition, there is a column
+        called 'file' that contains the name of the FITS file. The directory
+        is not included as part of that name.
+        """
+        return self._summary_info
+
+    @property
     def summary_info(self):
         """
-        astropy.table.Table of values of FITS keywords for files in the collection.
+        Deprecated -- use summary instead -- astropy.table.Table of values of
+        FITS keywords for files in the collection.
 
         Each keyword is a column heading. In addition, there is a column
         called 'file' that contains the name of the FITS file. The directory

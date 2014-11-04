@@ -53,6 +53,11 @@ class TestImageFileCollection(object):
         assert ('flying monkeys' not in img_collection.keywords)
         assert len(img_collection.values('imagetyp', unique=True)) == 2
 
+    def test_summary_is_summary_info(self, triage_setup):
+        img_collection = tff.ImageFileCollection(
+            location=triage_setup.test_dir, keywords=['imagetyp', 'filter'])
+        assert img_collection.summary is img_collection.summary_info
+
     def test_files_with_compressed(self, triage_setup):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir)
         assert len(collection._fits_files_in_directory(
