@@ -18,6 +18,13 @@ Install the way you install most python software::
 
     pip install msumastro
 
+followed (optionally) by::
+
+    pip install astropysics
+
+only if you need the Feder Observatory stuff. You do *not* need `astropysics`_
+for the image management features likely to be of broadest interest.
+
 Developers
 ==========
 
@@ -62,13 +69,18 @@ Nothing will work without these:
   <http://www.scipy.org/scipylib/download.html>`_. Some functionality may
   require SciPy.
 
-+ `astropy`_ (*included with anaconda*): If you need to install it, do so with:: 
++ `astropy`_ (*included with anaconda*): If you need to install it, do so with::
 
     pip install astropy
 
+Required for some features
+--------------------------
+
+Most of the header patching functionality requires `astropysics`_:
+
 + `astropysics`_: Install with::
 
-    pip install --pre astropysics
+    pip install astropysics
 
 Very strongly recommended if you want to test your install
 ----------------------------------------------------------
@@ -121,7 +133,7 @@ you have installed `homebrew`_ the rest is easy (unless it fails, of course...):
 .. _Anaconda python distribution: http://www.continuum.io/downloads
 .. _astropy: http://www.astropy.org/
 .. _astropysics: http://pythonhosted.org/Astropysics/
-.. _sphinx_argparse: https://github.com/ribozz/sphinx-argparse 
+.. _sphinx_argparse: https://github.com/ribozz/sphinx-argparse
 .. _homebrew: http://brew.sh/
 .. _numpy: http://www.numpy.org/
 .. _numpydoc: https://github.com/numpy/numpydoc
