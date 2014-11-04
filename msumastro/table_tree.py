@@ -3,6 +3,8 @@ from itertools import izip
 
 from astropy.table import Table
 
+__all__ = ['TableTree', 'RecursiveTree']
+
 
 class RecursiveTree(dict):
     """docstring for RecursiveTree"""
