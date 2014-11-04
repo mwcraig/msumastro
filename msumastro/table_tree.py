@@ -7,7 +7,7 @@ __all__ = ['TableTree', 'RecursiveTree']
 
 
 class RecursiveTree(dict):
-    """docstring for RecursiveTree"""
+    """A dict-base recursive tree."""
     def __init__(self):
         super(RecursiveTree, self).__init__()
 
@@ -35,10 +35,7 @@ class RecursiveTree(dict):
 
 class TableTree(RecursiveTree):
     """
-    Base class for grouping images hierarchically into a tree based on metadata
-
-    This class can be used directly, though subclasses for a few common cases
-    are provided in this package.
+    Base class for grouping images hierarchically into a tree based on metadata.
 
     Parameters
     ----------
