@@ -467,6 +467,7 @@ class ImageFileCollection(object):
     def _generator(self, return_type,
                    save_with_name="", save_location='',
                    clobber=False,
+                   overwrite=False,
                    do_not_scale_image_data=True,
                    return_fname=False,
                    **kwd):
@@ -474,10 +475,10 @@ class ImageFileCollection(object):
         Generator that yields each {name} in the collection.
 
         If any of the parameters ``save_with_name``, ``save_location`` or
-        ``clobber`` evaluates to ``True`` the generator will write a copy of
+        ``overwrite`` evaluates to ``True`` the generator will write a copy of
         each FITS file it is iterating over. In other words, if
         ``save_with_name`` and/or ``save_location`` is a string with non-zero
-        length, and/or ``clobber`` is ``True``, a copy of each FITS file will
+        length, and/or ``overwrite`` is ``True``, a copy of each FITS file will
         be made.
 
 
@@ -495,7 +496,7 @@ class ImageFileCollection(object):
             copy a directory of files--loop over the {name} with
             `save_location` set.
 
-        clobber : bool
+        overwrite : bool
             If ``True``, overwrite input FITS files.
 
         do_not_scale_image_data : bool
@@ -560,9 +561,13 @@ class ImageFileCollection(object):
 
             new_path = path.join(destination_dir, basename)
 
-            if (new_path != full_path) or clobber:
+            # I really should have called the option overwrite from
+            # the beginning. The hack below ensures old code works,
+            # at least...
+            nuke_existing = clobber or overwrite
+            if (new_path != full_path) or nuke_existing:
                 try:
-                    hdulist.writeto(new_path, clobber=clobber)
+                    hdulist.writeto(new_path, clobber=nuke_existing)
                 except IOError:
                     logger.error('Error writing file %s', new_path)
                     raise
