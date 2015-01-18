@@ -420,7 +420,7 @@ def test_read_object_list_logs_error_if_object_on_list_not_found(caplog):
 
 def test_add_object_name_logic_when_all_images_have_matching_object(caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
-    for h in ic.headers(imagetyp='light', clobber=True):
+    for h in ic.headers(imagetyp='light', overwrite=True):
         h['imagetyp'] = 'FLAT'
     ph.add_object_info(_test_dir)
     infos = get_patch_header_logs(caplog, level=logging.INFO)
@@ -471,7 +471,7 @@ def test_add_ra_dec_from_object_name(new_file_ext):
 def test_add_ra_dec_from_object_name_edge_cases(caplog):
     # add a 'dec' keyword to every light file so that none need RA/Dec
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
-    for h in ic.headers(imagetyp='light', clobber=True):
+    for h in ic.headers(imagetyp='light', overwrite=True):
         h['dec'] = '+17:42:00'
         h['ra'] = '03:45:06'
         h['object'] = 'm101'

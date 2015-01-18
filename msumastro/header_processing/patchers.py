@@ -532,7 +532,7 @@ def patch_headers(dir=None,
 
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         save_location=save_location,
-                                        clobber=overwrite,
+                                        overwrite=overwrite,
                                         do_not_scale_image_data=True,
                                         return_fname=True):
         run_time = datetime.now()
@@ -716,7 +716,7 @@ def add_object_info(directory=None,
     im_table['file'].mask = ~found_object
 
     for idx, (header, fname) in enumerate(images.headers(save_with_name=new_file_ext,
-                                          clobber=overwrite,
+                                          overwrite=overwrite,
                                           save_location=save_location,
                                           return_fname=True)):
 

@@ -124,7 +124,7 @@ def astrometry_for_directory(directories,
                                              / 2))
                 img_new.header['RA'] = ra_dec[0]
                 img_new.header['DEC'] = ra_dec[1]
-                img_new.save(img_new.fitsfile.filename(), clobber=True)
+                img_new.save(img_new.fitsfile.filename(), overwrite=True)
 
 
 def construct_parser():

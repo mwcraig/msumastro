@@ -204,7 +204,7 @@ class TestScript(object):
     @skip_no_astropysics
     def test_run_triage_on_set_with_no_light_files(self):
         ic = ImageFileCollection(self.test_dir.strpath, keywords=['imagetyp'])
-        for header in ic.headers(imagetyp='light', clobber=True):
+        for header in ic.headers(imagetyp='light', overwrite=True):
             header['imagetyp'] = 'BIAS'
         arglist = [self.test_dir.strpath]
         run_triage.main(arglist)
@@ -589,7 +589,7 @@ class TestSortFiles(object):
         images = ImageFileCollection(self.test_dir.strpath,
                                      keywords=['imagetyp', 'object'])
         n_light = 0
-        for header in images.headers(clobber=True, imagetyp='LIGHT'):
+        for header in images.headers(overwrite=True, imagetyp='LIGHT'):
             del header['object']
             n_light += 1
         dest = self.test_dir.mkdtemp()

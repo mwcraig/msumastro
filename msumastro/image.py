@@ -106,7 +106,7 @@ class ImageWithWCS(object):
 
         return ret
 
-    def save(self, fname, clobber=False):
+    def save(self, fname, overwrite=False):
         """
         Save FITS file.
 
@@ -115,10 +115,10 @@ class ImageWithWCS(object):
         fname : str
             Name of the file to save to
 
-        clobber : bool, optional
+        overwrite : bool, optional
             Set to ``True`` to overwrite an existing file.
         """
-        self.fitsfile.writeto(fname, clobber=clobber)
+        self.fitsfile.writeto(fname, clobber=overwrite)
 
     def close(self):
         """Close the file associated with this FITS image."""
