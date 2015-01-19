@@ -135,6 +135,13 @@ class ApogeeAltaU9(Instrument):
                             rows=2048, columns=3085,
                             overscan_start=3073,
                             overscan_axis=1)
+class SBIGSpectrometer(Instrument):
+    """
+    SBIG ST-7 spectromter.
+    """
+    def __init__(self):
+        super(SBIGSpectrometer, self).__init__("SBIG ST-7 Spectrometer",
+                                               fits_names=["SBIG ST-7"])
 
 
 class ImageSoftware(object):
@@ -270,7 +277,9 @@ class Feder(object):
     def __init__(self):
         self.site = FederSite()
         self._apogee_alta_u9 = ApogeeAltaU9()
-        self._instrument_objects = [self._apogee_alta_u9]
+        self._sbig_spectrometer = SBIGSpectrometer()
+        self._instrument_objects = [self._apogee_alta_u9,
+                                    self._sbig_spectrometer]
         self.instruments = {}
         for instrument in self._instrument_objects:
             for name in instrument.fits_names:
