@@ -611,6 +611,20 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
                for h in a_header['HISTORY'])
 
 
+def test_unit_is_added():
+    # patch in _test_dir, overwriting existing files
+    ph.patch_headers(_test_dir, overwrite=True, new_file_ext='')
+    ic = ImageFileCollection(_test_dir, keywords='*')
+    feder = Feder()
+    print(_test_dir)
+    for h, f in ic.headers(return_fname=True):
+        instrument = feder.instruments[h['instrume']]
+        if instrument.image_unit is not None:
+            print(str(instrument.image_unit), f)
+            # If the instrument has a unit, the header should too.
+            assert h['BUNIT'] == str(instrument.image_unit)
+
+
 @pytest.fixture(params=['object', 'OBJECT', 'Object'])
 def object_file_ra_change_col_case(request):
     object_file_with_ra_dec(_test_dir, object_col_name=request.param)

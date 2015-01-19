@@ -254,6 +254,30 @@ def change_imagetype_to_IRAF(header, history=True):
             header.add_history(comment)
 
 
+def add_image_unit(header, history=True):
+    """
+    Add unit of image to header.
+
+    Parameters
+    ----------
+    header : astropy.io.fits.Header
+        Header object in which image type is to be changed.
+
+    history : bool, optional
+        If `True`, add history of keyword modification to `header`.
+    """
+    instrument_key = 'instrume'
+    instrument = feder.instruments[header[instrument_key]]
+    if instrument.image_unit is not None:
+        unit_string = instrument.image_unit.to_string()
+        comment = 'Set image data unit to {}'.format(unit_string)
+        header['BUNIT'] = unit_string
+        print('UNIT STRING IS =========> {}'.format(unit_string))
+        logger.info(comment)
+        if history:
+            header.add_history(comment)
+
+
 def list_name_is_url(name):
     may_be_url = urlparse.urlparse(name)
     return (may_be_url.scheme and may_be_url.netloc)
@@ -483,7 +507,8 @@ def patch_headers(dir=None,
                   add_time=True,
                   add_apparent_pos=True,
                   add_overscan=True,
-                  fix_imagetype=True):
+                  fix_imagetype=True,
+                  add_unit=True):
     """
     Add minimal information to Feder FITS headers.
 
@@ -523,6 +548,9 @@ def patch_headers(dir=None,
     fix_imagetype : bool, optional
         If ``True``, change image types to IRAF-style. See
         :func:`change_imagetype_to_IRAF` for details.
+
+    add_unit : bool, optional
+        If ``True``, add image unit to FITS header.
     """
     dir = dir or '.'
     if new_file_ext is None:
@@ -558,11 +586,17 @@ def patch_headers(dir=None,
             if add_time:
                 add_time_info(header, history=True)
 
+            if add_overscan:
+                add_overscan_header(header, history=True)
+
+            if add_unit:
+                add_image_unit(header, history=True)
+
+            # add_apparent_pos_airmass can raise a ValueError, do it last.
             if add_apparent_pos and (header['imagetyp'] == 'LIGHT'):
                 add_object_pos_airmass(header,
                                        history=True)
-            if add_overscan:
-                add_overscan_header(header, history=True)
+
         except (KeyError, ValueError) as e:
             warning_msg = ('********* FILE NOT PATCHED *********'
                            'Stopped patching header of {0} because of '
