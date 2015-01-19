@@ -23,12 +23,12 @@ The purpose of the header processing is to:
 + Modify or add keywords to the FITS header to make working with other software
   easier:
 
-  + Standardize names instead using the MaxIm DL defaults (e.g. ``RA`` and 
+  + Standardize names instead using the MaxIm DL defaults (e.g. ``RA`` and
     ``Dec`` instead of ``OBJCTRA`` and ``OBJCTDEC``)
 
   + Set ``IMAGETYP`` to IRAF default, *i.e.* "BIAS", "DARK", "FLAT" or "LIGHT"
 
-  + Add convenient keywords that MaxImDL does not always include (e.g. 
+  + Add convenient keywords that MaxImDL does not always include (e.g.
     ``AIRMASS``, ``HA``, ``LST``)
 
   + Add keywords indicating the overscan region, if any, in the image.
@@ -72,7 +72,7 @@ not *required*, necessarily) to run:
 
 *  ``run_astrometry`` to use `astrometry.net <http://astrometry.net>`_ to add
    WCS (astrometry) information to the file. See :ref:`apply-astrometry` for
-   details. **Note that this requires a local installation** of 
+   details. **Note that this requires a local installation** of
    `astrometry.net <http://astrometry.net>`_.
 
 * If desired, ``run_triage`` again to regenerate the table of image information.
@@ -124,7 +124,7 @@ Manual intervention will be required in any of these circumstances:
     different type than its ``IMAGETYP`` in the FITS header (e.g. a file with
     ``IMAGETYP = LIGHT`` whose name is ``flat-001R.fit``)
 
-+ **The object being observed is not in the master object list.** The standard 
++ **The object being observed is not in the master object list.** The standard
   workflow has run but object names have not been add to all of the
   light files. This occurs when the object of the image was not in the list of
   objects used by ``run_patch.py`` or the object's RA/Dec was too far from the
@@ -223,9 +223,8 @@ The keywords that are currently added/modified by ``patch_headers`` for
   LST: Local Sidereal Time at start of observation
   JD-OBS: Julian Date at start of observation
   MJD-OBS: Modified Julian date at start of observation
-  OSCAN: True if image has overscan region
-  OSCANAX: Overscan axis, 1 is NAXIS1, 2 is NAXIS 2
-  OSCANST: Starting pixel of overscan region
+  BIASSEC: Region of the image useful for subtracting overscan
+  TRIMSEC: Region to which the image should be trimmed after removing overscan
 
 Keywords modified only for light files
 --------------------------------------
