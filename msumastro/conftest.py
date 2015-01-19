@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from astropy.io import fits
 from astropy.coordinates import SkyCoord, name_resolve
+from ccdproc.utils.slices import slice_from_string
 
 try:
     from .header_processing.patchers import IRAF_image_type
@@ -138,7 +139,8 @@ def make_overscan_test_files(request, tmpdir):
             data = np.zeros([apogee.rows, apogee.columns])
             has_oscan = name
         else:
-            data = np.zeros([apogee.rows, apogee.overscan_start])
+            osc_slice = slice_from_string(apogee.trim_region)
+            data = np.zeros([apogee.rows, osc_slice[0].stop])
             no_oscan = name
         hdu = fits.PrimaryHDU(data)
         hdr = hdu.header
