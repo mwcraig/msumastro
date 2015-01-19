@@ -3,6 +3,7 @@ import logging
 import datetime
 
 from astropysics import obstools
+import astropy.units as u
 import numpy as np
 
 from fitskeyword import FITSKeyword
@@ -79,6 +80,8 @@ class Instrument(object):
     overscan_axis : one of (1, 2)
         Axis along which the overscan varies. Numbers correspond to ``NAXIS1``
         and ``NAXIS2`` in the FITS header.
+    image_unit : astropy.units.Unit
+        Unit of the image; default value is ``None``
 
     Examples
     --------
@@ -95,13 +98,15 @@ class Instrument(object):
     def __init__(self, name, fits_names=None,
                  rows=0, columns=0,
                  overscan_start=None,
-                 overscan_axis=None):
+                 overscan_axis=None,
+                 image_unit=None):
         self.name = name
         self.fits_names = fits_names
         self.rows = rows
         self.columns = columns
         self.overscan_start = overscan_start
         self.overscan_axis = overscan_axis
+        self.image_unit = image_unit
 
     def has_overscan(self, image_dimensions):
         """
@@ -134,7 +139,10 @@ class ApogeeAltaU9(Instrument):
                             fits_names=["Apogee Alta", "Apogee USB/Net"],
                             rows=2048, columns=3085,
                             overscan_start=3073,
-                            overscan_axis=1)
+                            overscan_axis=1,
+                            image_unit=u.adu)
+
+
 class SBIGSpectrometer(Instrument):
     """
     SBIG ST-7 spectromter.
