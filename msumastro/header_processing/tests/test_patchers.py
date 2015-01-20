@@ -192,18 +192,22 @@ def test_adding_overscan_apogee_u9(make_overscan_test_files):
                      add_time=False, add_apparent_pos=False,
                      add_overscan=False, fix_imagetype=False)
     header_no_oscan = fits.getheader(has_no_oscan)
-    assert 'oscan' not in header_no_oscan
+    assert 'biassec' not in header_no_oscan
+    assert 'trimsec' not in header_no_oscan
 
+    # Now add overscan
     ph.patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
                      add_time=False, add_apparent_pos=False,
                      add_overscan=True, fix_imagetype=False)
     print _test_dir
     header_no_oscan = fits.getheader(has_no_oscan)
-    assert not header_no_oscan['oscan']
+    # This image had no overscan, so should be missing the relevant keywords.
+    assert 'biassec' not in header_no_oscan
+    assert 'trimsec' not in header_no_oscan
     header_yes_oscan = fits.getheader(has_oscan)
-    assert header_yes_oscan['oscan']
-    assert header_yes_oscan['oscanax'] == apogee.overscan_axis
-    assert header_yes_oscan['oscanst'] == apogee.overscan_start
+    # This one as overscan, so should include both of the overscan keywords.
+    assert header_yes_oscan['biassec'] == apogee.useful_overscan
+    assert header_yes_oscan['trimsec'] == apogee.trim_region
     print getcwd()
     chdir(original_dir)
     print getcwd()

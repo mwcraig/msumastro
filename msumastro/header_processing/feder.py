@@ -5,6 +5,7 @@ import datetime
 from astropysics import obstools
 import astropy.units as u
 import numpy as np
+from ccdproc.utils.slices import slice_from_string
 
 from fitskeyword import FITSKeyword
 
@@ -74,39 +75,51 @@ class Instrument(object):
     columns : int
         Number of columns in an image produced by this instrument, including
         overscan.
-    overscan_start : int
-        Position at which the overscan starts. The overscan region is assumed
-        to extend from this starting position to the edge of the image.
-    overscan_axis : one of (1, 2)
-        Axis along which the overscan varies. Numbers correspond to ``NAXIS1``
-        and ``NAXIS2`` in the FITS header.
+
     image_unit : astropy.units.Unit
         Unit of the image; default value is ``None``
+
+    trim_region : string
+        Region of the CCD that should be preserved after overscan subtraction.
+        Should use *FITS* conventions for specifying slices (i.e. slice
+        starts at 1, includes endpoint, and uses FITS NAXIS1, NAXIS2 for
+        order of indices).
+
+    useful_overscan_region : string
+        Complete specification of the region of the CCD actually useful for
+        overscan calibration. This may (or may not) be smaller than the
+        entire portion of the chip the manufacturer labels as overscan.
+        Should use *FITS* conventions for specifying slices (i.e. slice
+        starts at 1, includes endpoint, and uses FITS NAXIS1, NAXIS2 for
+        order of indices).
 
     Examples
     --------
 
     Consider an image whose dimensions as given in its FITS header are
     ``NAXIS1 = 3085`` and ``NAXIS2 = 2048`` with an overscan region that
-    begins at position 3073 along axis 1. The correct overscan settings for
-    this instrument are::
+    begins at position 3073 along axis 1. The useful part of that overscan is
+    from FITS column 3076 up to and including, 3079, and the full range of
+    rows (``NAXIS2``). The correct overscan settings for this instrument are::
 
-        overscan_start = 3073
-        overscan_axis = 1
+        # Note not all of the overscan region is actually useful.
+        useful_overscan_region = '[3076:3079, :]'
+        # But the whole overscan region should be trimmed away in reduction.
+        trim_region = '[1:3073, :]'
     """
 
     def __init__(self, name, fits_names=None,
                  rows=0, columns=0,
-                 overscan_start=None,
-                 overscan_axis=None,
-                 image_unit=None):
+                 image_unit=None,
+                 trim_region=None,
+                 useful_overscan_region=None):
         self.name = name
         self.fits_names = fits_names
         self.rows = rows
         self.columns = columns
-        self.overscan_start = overscan_start
-        self.overscan_axis = overscan_axis
         self.image_unit = image_unit
+        self.trim_region = trim_region
+        self.useful_overscan = useful_overscan_region
 
     def has_overscan(self, image_dimensions):
         """
@@ -116,14 +129,36 @@ class Instrument(object):
         ----------
         image_dimensions : list-like with two elements
             Shape of the image; can be any type as long as it has two elements.
+            The order should be the FITS order, ``NAXIS1`` then ``NAXIS2``.
 
         Returns
         -------
         bool
             Indicates whether or not image has overscan present.
         """
-        if (image_dimensions[self.overscan_axis - 1] >
-                self.overscan_start):
+        # Grab the trim region as a slice to make it easier to access end
+        # points. Do *not* convert from FITS convention because input
+        # dimensions follow FITS conventions.
+        trim_dim = slice_from_string(self.trim_region)
+
+        dim_end = lambda ax: (trim_dim[ax].stop + 1
+                              if trim_dim[ax].stop is not None
+                              else image_dimensions[ax])
+        # print(trim_dim1, trim_dim2)
+        # if trim_dim1.stop is not None:
+        #     dim1_end = trim_dim1.stop + 1
+        # else:
+        #     # None means use the whole thing....
+        #     dim1_end = image_dimensions[0]
+
+        # if trim_dim2.stop is not None:
+        #     dim2_end = trim_dim2.stop + 1
+        # else:
+        #     # None means use the whole thing....
+        #     dim2_end = image_dimensions[1]
+
+        if (dim_end(0) < image_dimensions[0] or
+            dim_end(1) < image_dimensions[1]):
 
             return True
         else:
@@ -138,8 +173,8 @@ class ApogeeAltaU9(Instrument):
         Instrument.__init__(self, "Apogee Alta U9",
                             fits_names=["Apogee Alta", "Apogee USB/Net"],
                             rows=2048, columns=3085,
-                            overscan_start=3073,
-                            overscan_axis=1,
+                            useful_overscan_region='[3076:3079, :]',
+                            trim_region='[1:3073, :]',
                             image_unit=u.adu)
 
 
@@ -401,14 +436,12 @@ class Feder(object):
         self._keywords_for_all_files.extend([LST, JD, MJD])
 
     def _define_overscan_keywords(self):
-        overscan_present = FITSKeyword(name='oscan',
-                                       comment='True if image has overscan region')
+        overscan_region = FITSKeyword(name='biassec',
+                                    comment='Useful region of the overscan')
 
-        overscan_axis = FITSKeyword(name='oscanax',
-                                    comment='Overscan axis, 1 is NAXIS1, 2 is NAXIS 2')
+        trim_region = FITSKeyword(name='trimsec',
+            comment=('The region of the image that should remain after '
+                     'overscan is removed.'))
 
-        overscan_start = FITSKeyword(name='oscanst',
-                                     comment='Starting pixel of overscan region')
-        self._overscan_keywords.extend([overscan_present,
-                                       overscan_axis,
-                                       overscan_start])
+        self._overscan_keywords.extend([overscan_region,
+                                       trim_region])

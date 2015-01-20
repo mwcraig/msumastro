@@ -629,18 +629,16 @@ def add_overscan_header(header, history=True):
     """
     image_dim = [header['naxis1'], header['naxis2']]
     instrument = feder.instruments[header['instrume']]
-    overscan_present = feder.OSCAN
-    overscan_present.value = instrument.has_overscan(image_dim)
-    overscan_present.add_to_header(header, history=history)
-    modified_keywords = [overscan_present]
-    if overscan_present.value:
-        overscan_axis = feder.OSCANAX
-        overscan_start = feder.OSCANST
-        overscan_axis.value = instrument.overscan_axis
-        overscan_start.value = instrument.overscan_start
-        overscan_axis.add_to_header(header, history=history)
-        overscan_start.add_to_header(header, history=history)
-        modified_keywords.extend([overscan_axis, overscan_start])
+    overscan_present = instrument.has_overscan(image_dim)
+    modified_keywords = []
+    if overscan_present:
+        overscan_region = feder.BIASSEC
+        trim_region = feder.TRIMSEC
+        overscan_region.value = instrument.useful_overscan
+        trim_region.value = instrument.trim_region
+        overscan_region.add_to_header(header, history=history)
+        trim_region.add_to_header(header, history=history)
+        modified_keywords.extend([overscan_region, trim_region])
 
     for keyword in modified_keywords:
         logger.info(keyword.history_comment())
