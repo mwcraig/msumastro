@@ -77,6 +77,13 @@ class ImageFileCollection(object):
                                    info_path)
                 else:
                     raise
+
+        # Used internally to keep track of whether the user asked for all
+        # keywords or a specific list. The keywords setter takes care of
+        # actually setting the correct value, this just ensure that there
+        # is always *some* value.
+        self._all_keywords = False
+
         if keywords:
             self.keywords = keywords
 
@@ -131,6 +138,11 @@ class ImageFileCollection(object):
         if keywords is None:
             self._summary_info = []
             return
+
+        if keywords == '*':
+            self._all_keywords = True
+        else:
+            self._all_keywords = False
 
         logging.debug('keywords in setter before pruning: %s', keywords)
 
@@ -212,6 +224,13 @@ class ImageFileCollection(object):
         self.summary_info['file'].mask = current_file_mask
         return filtered_files
 
+    def refresh(self):
+        """
+        Refresh the collection by re-reading headers.
+        """
+        keywords = '*' if self._all_keywords else self.keywords
+        self._summary_info = self._fits_summary(header_keywords=keywords)
+
     def _table_from_fits_header(self, file_name, input_summary=None,
                                 missing_marker=None):
         """
@@ -269,7 +288,7 @@ class ImageFileCollection(object):
 
             if k.lower() in ['comment', 'history']:
                 multi_entry_keys[k.lower()].append(str(v))
-                # Accumulate these is a separate dictionary until the
+                # Accumulate these in a separate dictionary until the
                 # end to avoid adding multiple entries to summary.
                 continue
             else:

@@ -506,3 +506,17 @@ class TestImageFileCollection(object):
         ic.summary_info.write('test_table.txt', format='ascii.csv')
         table_disk = Table.read('test_table.txt', format='ascii.csv')
         assert len(table_disk) == len(ic.summary_info)
+
+    def test_refresh_method(self, triage_setup):
+        ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
+        # Add a keyword I know isn't already in the header to each file.
+        not_in_header = 'BARKARK'
+        for h in ic.headers(overwrite=True):
+            h[not_in_header] = True
+        print(h)
+        assert not_in_header not in ic.summary_info.colnames
+
+        ic.refresh()
+        # After refreshing the odd keyword should be present.
+        print(ic.keywords)
+        assert not_in_header.lower() in ic.summary_info.colnames
