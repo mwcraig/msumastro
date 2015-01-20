@@ -231,10 +231,11 @@ class ImageFileCollection(object):
         keywords = '*' if self._all_keywords else self.keywords
         self._summary_info = self._fits_summary(header_keywords=keywords)
 
-    def _table_from_fits_header(self, file_name, input_summary=None,
-                                missing_marker=None):
+    def _dict_from_fits_header(self, file_name, input_summary=None,
+                               missing_marker=None):
         """
-        Construct a table whose columns are the header keywords
+        Construct a dictionary whose keys are the header keywords and values
+        are a list of the values from this file and the input dictionary.
 
         Parameters
         ----------
@@ -252,12 +253,12 @@ class ImageFileCollection(object):
         """
         from collections import OrderedDict
 
-        def _add_val_to_table(key, value, table, n_prev):
+        def _add_val_to_dict(key, value, tbl_dict, n_prev):
             try:
-                table[key.lower()].append(value)
+                tbl_dict[key.lower()].append(value)
             except KeyError:
-                table[key.lower()] = [missing_marker] * n_previous
-                table[key.lower()].append(value)
+                tbl_dict[key.lower()] = [missing_marker] * n_previous
+                tbl_dict[key.lower()].append(value)
 
         if input_summary is None:
             summary = OrderedDict()
@@ -294,12 +295,12 @@ class ImageFileCollection(object):
             else:
                 val = v
 
-            _add_val_to_table(k, val, summary, n_previous)
+            _add_val_to_dict(k, val, summary, n_previous)
 
         for k, v in multi_entry_keys.iteritems():
             if v:
                 joined = ','.join(v)
-                _add_val_to_table(k, joined, summary, n_previous)
+                _add_val_to_dict(k, joined, summary, n_previous)
 
         for missing in missing_in_this_file:
             summary[missing].append(missing_marker)
@@ -350,7 +351,7 @@ class ImageFileCollection(object):
         for file_name in file_name_column:
             file_path = path.join(self.location, file_name)
             try:
-                summary_dict = self._table_from_fits_header(
+                summary_dict = self._dict_from_fits_header(
                     file_path, input_summary=summary_dict,
                     missing_marker=missing_marker)
             except IOError as e:
