@@ -507,7 +507,7 @@ class TestImageFileCollection(object):
         table_disk = Table.read('test_table.txt', format='ascii.csv')
         assert len(table_disk) == len(ic.summary_info)
 
-    def test_refresh_method(self, triage_setup):
+    def test_refresh_method_sees_added_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
         # Add a keyword I know isn't already in the header to each file.
         not_in_header = 'BARKARK'
@@ -520,3 +520,15 @@ class TestImageFileCollection(object):
         # After refreshing the odd keyword should be present.
         print(ic.keywords)
         assert not_in_header.lower() in ic.summary_info.colnames
+
+    def test_refresh_method_sees_added_files(self, triage_setup):
+        ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
+        # Compressed files don't get copied. Not sure why...
+        original_len = len(ic.summary_info) - triage_setup.n_test['compressed']
+        # Generate additional files in this directory
+        for h in ic.headers(save_with_name="_foo"):
+            pass
+        ic.refresh()
+        new_len = len(ic.summary_info) - triage_setup.n_test['compressed']
+        print(ic.summary_info['file'])
+        assert new_len == 2 * original_len

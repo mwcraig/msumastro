@@ -229,6 +229,8 @@ class ImageFileCollection(object):
         Refresh the collection by re-reading headers.
         """
         keywords = '*' if self._all_keywords else self.keywords
+        # Re-load list of files
+        self._files = self._fits_files_in_directory()
         self._summary_info = self._fits_summary(header_keywords=keywords)
 
     def _dict_from_fits_header(self, file_name, input_summary=None,
