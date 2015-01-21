@@ -18,7 +18,7 @@ INSTALL_REQUIRES = ['astropy>=0.4.2', 'numpy', 'ccdproc>=0.2.2']
 
 setup(
     name='msumastro',
-    version='0.7.0',
+    version='0.7.1',
     description='Process FITS files',
     url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
