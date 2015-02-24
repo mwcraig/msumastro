@@ -1,4 +1,8 @@
 """A set of functions to standardize some options for python scripts"""
+
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 import logging
 import argparse
 from os import getcwd, path
