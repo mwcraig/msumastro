@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 from os import path
 from datetime import datetime
 import logging
@@ -12,14 +15,14 @@ from astropy import units as u
 from astropy.table import Table
 
 try:
-    from feder import Feder
+    from .feder import Feder
     feder = Feder()
 except ImportError:
     feder = None
     pass
 
 from ..image_collection import ImageFileCollection
-from fitskeyword import FITSKeyword
+from .fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 
