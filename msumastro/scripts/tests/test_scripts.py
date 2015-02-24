@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 import os
 from contextlib import contextmanager
 
@@ -13,7 +16,7 @@ from .. import run_patch as run_patch
 have_astropysics = True
 try:
     from .. import run_triage
-except ImportError:
+except ImportError as e:
     have_astropysics = False
 
 skip_no_astropysics = pytest.mark.skipif(not have_astropysics,
@@ -76,7 +79,7 @@ def clean_data(tmpdir, request):
             ]
     to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
     object_path = test_dir.join(_default_object_file_name)
-    print object_path
+    print(object_path)
     object_file = object_path.open(mode='wb')
     object_file.write(to_write)
     object_file.close()
@@ -99,20 +102,20 @@ class TestScript(object):
 
     @skip_no_astropysics
     def test_run_patch_does_not_overwite_fits_if_dest_set(self, recwarn):
-        fits_files = [fil for fil in self.test_dir.visit(fil='*.fit',
-                                                         sort=True)]
+        fits_files = [fil for fil in self.test_dir.visit(fil=str('*.fit'),
+                                                         sort=False)]
         set_mtimes(fits_files)
         original_mtimes = mtimes(fits_files)
-        print original_mtimes
+        print(original_mtimes)
         destination = self.test_dir.make_numbered_dir()
         arglist = ['--destination-dir', destination.strpath,
                    self.test_dir.strpath
                    ]
         run_patch.main(arglist)
         new_mtimes = mtimes(fits_files)
-        print new_mtimes
-        print destination
-        print self.test_dir
+        print(new_mtimes)
+        print(destination)
+        print(self.test_dir)
         for original, new in zip(original_mtimes, new_mtimes):
             assert (original == new)
         # assertion below is to catch whether add_object_info raised a warning
@@ -153,7 +156,7 @@ class TestScript(object):
 
     def _verify_triage_files_created(self, directory, triage_dict):
         for option_name, file_name in triage_dict.iteritems():
-            print option_name, file_name, directory.join(file_name).check()
+            print(option_name, file_name, directory.join(file_name).check())
             assert(directory.join(file_name).check())
 
     @skip_no_astropysics
@@ -185,7 +188,7 @@ class TestScript(object):
                                                triage_dict, extra_keys):
         table_file = 'tbl.txt'
         arglist = []
-        print extra_keys
+        print(extra_keys)
         for key in extra_keys:
             arglist.extend(['--key', key])
 
@@ -195,8 +198,8 @@ class TestScript(object):
         arglist.extend(['--table-name', table_file,
                        self.test_dir.strpath])
         run_triage.main(arglist=arglist)
-        print arglist
-        print gather_keys
+        print(arglist)
+        print(gather_keys)
         table = Table.read(self.test_dir.join(table_file), format='ascii')
         for key in gather_keys:
             assert (key in table.colnames)
@@ -261,7 +264,7 @@ class TestScript(object):
         rt_table = Table.read(self.test_dir.join(tbl_name).strpath,
                               format='ascii.csv')
         lcase_columns = [c.lower() for c in rt_table.colnames]
-        print lcase_columns
+        print(lcase_columns)
         ic = ImageFileCollection(self.test_dir.strpath,
                                  keywords='*')
         for h in ic.headers():
@@ -299,9 +302,9 @@ class TestScript(object):
                                  keywords=['IMAGETYP'])
         for image in ic.files_filtered(imagetyp='LIGHT'):
             image_path = destination.join(image)
-            print image_path.purebasename
+            print(image_path.purebasename)
             blind_path = destination.join(image_path.purebasename + '.blind')
-            print blind_path.strpath
+            print(blind_path.strpath)
             assert (blind_path.check())
 
     @pytest.mark.parametrize('file_column',
@@ -325,7 +328,7 @@ class TestScript(object):
 
         full_paths = [os.path.join(self.test_dir.strpath, fil) for
                       fil in ic.summary_info['file']]
-        print 'fill paths: %s' % ' '.join(full_paths)
+        print('fill paths: %s' % ' '.join(full_paths))
         ic.summary_info['file'][:] = full_paths
         ic.summary_info.remove_column('file')
         ic.summary_info.add_column(Column(data=full_paths, name=file_column))
@@ -405,8 +408,8 @@ class TestScriptHelper(object):
                                                   expected, a_parser):
         with pushd(run_in):
             args = a_parser.parse_args(argstring)
-            print argstring, expected
-            print type(expected)
+            print(argstring, expected)
+            print(type(expected))
             if expected == 'exception':
                 with pytest.raises(RuntimeError):
                     handle_destination_dir_logging_check(args)
@@ -428,7 +431,7 @@ class TestRunStandardHeaderProcess(object):
     def test_source_not_modified_if_dest_set(self, scratch_destination):
         arglist = ['--dest-root', scratch_destination.strpath]
         arglist += [self.test_dir.strpath]
-        fits_files = [fil for fil in self.test_dir.visit(fil='*.fit',
+        fits_files = [fil for fil in self.test_dir.visit(fil=str('*.fit'),
                                                          sort=True)]
         set_mtimes(fits_files)
         original_mtimes = mtimes(fits_files)
@@ -459,13 +462,13 @@ class TestSortFiles(object):
                 for exp, number in num_or_exp_dict.iteritems():
                     hdr['exptime'] = exp
                     base = make_base(hdr, band)
-                    print base
+                    print(base)
                     self.write_names(hdu, [base + str(i) + '.fit' for i in range(number)])
             else:
                 hdr['exptime'] = 17.0
                 base = make_base(hdr, band)
-                print base
-                print hdr['imagetyp']
+                print(base)
+                print(hdr['imagetyp'])
                 self.write_names(hdu, [base + str(i) + '.fit' for i in range(num_or_exp_dict)])
 
     @pytest.fixture
@@ -543,7 +546,7 @@ class TestSortFiles(object):
                               ('tmp', True),
                               (None, True)])
     def test_sort_called_with_destination(self, set_test_files, dest, move):
-        print set_test_files
+        print(set_test_files)
         if dest:
             dest_path = self.test_dir.mkdtemp().strpath
             args = ['-d', dest_path, self.test_dir.strpath]
@@ -559,13 +562,13 @@ class TestSortFiles(object):
             assert files_before_sort == files_after_sort
         if move:
             for f in files_after_sort:
-                print f
+                print(f)
                 assert os.path.isdir(os.path.join(self.test_dir.strpath, f))
         expected_unsorted = 0
         for key in set_test_files['LIGHT'][None]:
             expected_unsorted += set_test_files['LIGHT'][None][key][17.0]
         for parents, num_files in self._walk_dict_string_keys(set_test_files):
-            print parents
+            print(parents)
             if 'None' in parents:
                 path = os.path.join(dest_path, parents[0],
                                     sort_files.UNSORTED_DIR)
@@ -602,8 +605,8 @@ class TestSortFiles(object):
 @skip_no_astropysics
 def test_triage_via_triage_fits_files(triage_setup):
     file_info = run_triage.triage_fits_files(triage_setup.test_dir)
-    print "number of files should be %i" % triage_setup.n_test['files']
-    print file_info['files']['file']
+    print("number of files should be %i" % triage_setup.n_test['files'])
+    print(file_info['files']['file'])
     assert len(file_info['files']['file']) == triage_setup.n_test['files']
     assert len(file_info['needs_pointing']) == \
         triage_setup.n_test['need_pointing']

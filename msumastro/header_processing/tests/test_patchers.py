@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 from os import path, chdir, getcwd, remove
 from shutil import rmtree, copy, copytree, move
 from tempfile import mkdtemp
@@ -7,7 +10,7 @@ import logging
 from socket import timeout
 
 import pytest
-pytest_plugins = "capturelog"
+pytest_plugins = str("capturelog")
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
@@ -129,11 +132,11 @@ def test_writing_patched_files_to_directory():
     n_files_init = len(glob(path.join(_test_dir, '*.fit*')))
     dest_dir = mkdtemp()
     ph.patch_headers(_test_dir, new_file_ext='', save_location=dest_dir)
-    print files
+    print(files)
     n_files_after = len(glob(path.join(_test_dir, '*.fit*')))
-    print n_files_after
+    print(n_files_after)
     n_files_destination = len(glob(path.join(dest_dir, '*.fit*')))
-    print dest_dir
+    print(dest_dir)
     rmtree(dest_dir)
     assert ((n_files_init == n_files_after) &
             (n_files_init == n_files_destination))
@@ -182,9 +185,9 @@ def test_adding_overscan_apogee_u9(make_overscan_test_files):
     original_dir = getcwd()
 
     apogee = ApogeeAltaU9()
-    print getcwd()
+    print(getcwd())
     oscan_dir, has_oscan, has_no_oscan = make_overscan_test_files
-    print getcwd()
+    print(getcwd())
 
     chdir(path.join(_test_dir, oscan_dir))
     # first, does requesting *not* adding overscan actually leave it alone?
@@ -199,7 +202,7 @@ def test_adding_overscan_apogee_u9(make_overscan_test_files):
     ph.patch_headers(dir='.', new_file_ext='', overwrite=True, purge_bad=False,
                      add_time=False, add_apparent_pos=False,
                      add_overscan=True, fix_imagetype=False)
-    print _test_dir
+    print(_test_dir)
     header_no_oscan = fits.getheader(has_no_oscan)
     # This image had no overscan, so should be missing the relevant keywords.
     assert 'biassec' not in header_no_oscan
@@ -208,9 +211,9 @@ def test_adding_overscan_apogee_u9(make_overscan_test_files):
     # This one as overscan, so should include both of the overscan keywords.
     assert header_yes_oscan['biassec'] == apogee.useful_overscan
     assert header_yes_oscan['trimsec'] == apogee.trim_region
-    print getcwd()
+    print(getcwd())
     chdir(original_dir)
-    print getcwd()
+    print(getcwd())
 
 
 def test_fix_imagetype():
@@ -223,15 +226,15 @@ def test_fix_imagetype():
 
         header['imagetyp'] = im_type
         # first run SHOULD change imagetyp
-        print header
+        print(header)
         ph.change_imagetype_to_IRAF(header, history=False)
         assert(header['imagetyp'] == imagetypes_to_check[im_type])
         # second call should NOT change imagetyp
-        print header
+        print(header)
         ph.change_imagetype_to_IRAF(header, history=True)
         assert(header['imagetyp'] == imagetypes_to_check[im_type])
         with pytest.raises(KeyError):
-            print header['history']
+            print(header['history'])
         # change imagetype back to non-IRAF
         header['imagetyp'] = im_type
         # change with history
@@ -272,7 +275,7 @@ def test_adding_object_name(use_list=None,
     fname = path.join(_test_dir, check_file)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
-    print 'add object name: %s' % fname
+    print('add object name: %s' % fname)
     assert (with_name[0].header['object'] == 'm101')
     return with_name
 
@@ -310,7 +313,7 @@ def test_adding_object_name_to_different_directory(use_list=None,
     fname = path.join(destination_dir, test_file_basename)
     fname += new_ext + new_ext
     with_name = fits.open(fname + '.fit')
-    print 'add object name: %s' % fname
+    print('add object name: %s' % fname)
     assert (with_name[0].header['object'] == 'm101')
     return with_name
 
@@ -606,11 +609,11 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     # that their is no history added to the header that contains the name of
     # this keyword
     key_to_delete = software.bad_keywords[0]
-    print software.bad_keywords
+    print(software.bad_keywords)
     del a_header[key_to_delete]
-    print a_header
+    print(a_header)
     ph.purge_bad_keywords(a_header, history=True)
-    print a_header
+    print(a_header)
     assert all(key_to_delete.lower() not in h.lower()
                for h in a_header['HISTORY'])
 
@@ -678,7 +681,7 @@ def setup_function(function):
 
     _test_dir = path.join(mkdtemp(), 'data')
     data_source = get_data_dir()
-    print data_source
+    print(data_source)
     copytree(data_source, _test_dir)
     object_file_with_ra_dec(_test_dir)
 

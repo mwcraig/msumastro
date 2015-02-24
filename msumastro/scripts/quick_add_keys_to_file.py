@@ -14,6 +14,8 @@ DESCRIPTION
         This script OVERWRITES the image files in the list specified on the
         command line. There is NO WAY to override this behavior.
 """
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 from argparse import ArgumentParser
 import logging
@@ -97,7 +99,7 @@ def add_keys(*files, **kwd):
         for key, val in key_table:
             keyword = FITSKeyword(name=key, value=val)
             keyword.add_to_header(hdr, history=True)
-            print key, val
+            print(key, val)
             hdr[key] = val
         fil_fits.close()
 
