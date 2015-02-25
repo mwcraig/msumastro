@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 import pytest
 
 from astropy.table import Table
@@ -40,7 +43,7 @@ def expected_tree(testing_table):
               'y': {1: [1],
                     5: [3]},
               'z': {19: [4]}}
-    # the decimal entries in the table are subject to rounding, so use those 
+    # the decimal entries in the table are subject to rounding, so use those
     # entries rather than hand entering them below.
     # if the keys are c (only) then:
     tree_3 = {testing_table['c'][0]: [0, 1, 2, 3],
@@ -89,11 +92,11 @@ def test_grouper_initializer_number_arguments(good_grouper, testing_table):
     assert isinstance(good_grouper, tt.TableTree)
     # should fail because too few arguments
     with pytest.raises(TypeError):
-        print tt.TableTree(['a'])
+        print(tt.TableTree(['a']))
     # should fail because too many arguments
     with pytest.raises(TypeError):
-        print tt.TableTree(testing_table, testing_table.colnames[0:2],
-                            testing_table.meta['index_key'], 5)
+        print(tt.TableTree(testing_table, testing_table.colnames[0:2],
+                            testing_table.meta['index_key'], 5))
 
 
 def test_group_initialization_with_bad_group_key(testing_table):
@@ -188,9 +191,9 @@ def validate_walk(grouper, good_tree):
     for parents, children, index in grouper.walk():
         working_tree = dict(good_tree)
         # walk the comparison tree down to the same level as the grouper tree
-        print parents
+        print(parents)
         for parent in parents:
-            print parent
+            print(parent)
             working_tree = working_tree[parent]
         if children:
             assert set(children) == set(working_tree.keys())

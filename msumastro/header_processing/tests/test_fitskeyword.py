@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 import pytest
 from astropy.io.fits.hdu import PrimaryHDU
 from astropy.io.fits import Header
@@ -45,7 +48,7 @@ class TestGoodFITSKeyword(object):
 
     def test_add_header_history(self):
         self.keyword.add_to_header(self.hdu, history=True)
-        print self.hdu.header['history']
+        print(self.hdu.header['history'])
         assert (len(self.hdu.header['history']) ==
                 (1 + len(self.keyword.synonyms)))
 

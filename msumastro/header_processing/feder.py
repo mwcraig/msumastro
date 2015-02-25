@@ -1,3 +1,6 @@
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 from itertools import chain
 import logging
 import datetime
@@ -7,7 +10,7 @@ import astropy.units as u
 import numpy as np
 from ccdproc.utils.slices import slice_from_string
 
-from fitskeyword import FITSKeyword
+from .fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)
 

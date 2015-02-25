@@ -38,6 +38,10 @@ EXAMPLES
         run_triage.main(['--list-default'])
 
 """
+
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 import os
 from argparse import ArgumentParser
 from sys import exit
@@ -294,9 +298,9 @@ def main(arglist=None):
     use_keys = list(DEFAULT_KEYS)  # force a copy so DEFAULT_KEYS not modified
 
     if args.list_default:
-        print 'Keys included by default are:\n'
+        print('Keys included by default are:\n')
         keys_print = [key.upper() for key in use_keys]
-        print ', '.join(keys_print)
+        print(', '.join(keys_print))
         return use_keys
 
     use_keys.extend(args.key)
