@@ -66,7 +66,7 @@ class ImageFileCollection(object):
         if info_file is not None:
             try:
                 info_path = path.join(self.location, info_file)
-            except AttributeError:
+            except (AttributeError, TypeError):
                 info_path = info_file
             try:
                 self._summary_info = Table.read(info_path,
