@@ -1,7 +1,4 @@
 language: python
-python:
-    - 2.7
-    - 3.4
 
 env:
     global:
@@ -9,6 +6,13 @@ env:
         - ASTROPY_VERSION=stable
         - CONDA_INSTALL='conda install -c astropy-ci-extras --yes'
         - PIP_INSTALL='pip install'
+
+matrix:
+    - python: 2.7
+      env: EXTRA_INSTALLS='astropysics' # handle this dependency manually
+
+    - python: 3.4
+      env: EXTRA_INSTALLS=''  # no astropysics in python3
 
 before_install:
     # Use utf8 encoding. Should be default, but this is insurance against
@@ -32,7 +36,7 @@ install:
     - $CONDA_INSTALL -f pip setuptools  # necessary to make sure both function correctly
     - $CONDA_INSTALL numpy=$NUMPY_VERSION astropy
     - $CONDA_INSTALL numpy=$NUMPY_VERSION scipy
-    - pip install coverage coveralls
+    - pip install coverage coveralls $EXTRA_INSTALLS
     # need to install scripts because one test ends up invoking a subprocess
     - python setup.py install_scripts
 script:
