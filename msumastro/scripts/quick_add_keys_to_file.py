@@ -22,6 +22,7 @@ import logging
 
 import astropy.io.fits as fits
 from astropy.table import Table
+from astropy.extern import six
 
 from . import script_helpers
 from ..header_processing.fitskeyword import FITSKeyword
@@ -91,7 +92,7 @@ def add_keys(*files, **kwd):
     if key_file:
         key_table = Table.read(key_file, format='ascii')
     else:
-        key_table = [(key, value) for key, value in kwd.iteritems()]
+        key_table = [(key, value) for key, value in six.iteritems(kwd)]
     for fil in files:
         logger.info('Adding keys to file %s', fil)
         fil_fits = fits.open(fil, mode='update')

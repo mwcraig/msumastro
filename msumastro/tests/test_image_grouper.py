@@ -4,6 +4,7 @@ from __future__ import (print_function, division, absolute_import,
 import pytest
 
 from astropy.table import Table
+from astropy.extern import six
 
 from .. import table_tree as tt
 
@@ -181,7 +182,7 @@ def compare_trees(tree1, tree2):
 
 def test_grouper_with_expected_trees(testing_table, expected_tree):
     index_with = testing_table.meta['index_key']
-    for grouping_string, good_tree in expected_tree.iteritems():
+    for grouping_string, good_tree in six.iteritems(expected_tree):
         grouping_keys = grouping_string.split(',')
         grouper = tt.TableTree(testing_table, grouping_keys, index_with)
         compare_trees(grouper, good_tree)
@@ -203,7 +204,7 @@ def validate_walk(grouper, good_tree):
 
 def test_grouper_walk(testing_table, expected_tree):
     index_with = testing_table.meta['index_key']
-    for grouping_string, good_tree in expected_tree.iteritems():
+    for grouping_string, good_tree in six.iteritems(expected_tree):
         grouping_keys = grouping_string.split(',')
         grouper = tt.TableTree(testing_table, grouping_keys, index_with)
         validate_walk(grouper, good_tree)
