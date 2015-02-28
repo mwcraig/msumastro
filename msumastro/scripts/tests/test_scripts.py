@@ -82,7 +82,8 @@ def clean_data(tmpdir, request):
     to_write = '# comment 1\n# comment 2\nobject, RA, Dec\n' + '\n'.join(objs)
     object_path = test_dir.join(_default_object_file_name)
     print(object_path)
-    object_file = object_path.open(mode='wb')
+    object_file = object_path.open(mode='wt')
+    print(object_file)
     object_file.write(to_write)
     object_file.close()
 
