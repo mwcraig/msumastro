@@ -5,7 +5,6 @@ from os import path
 from datetime import datetime
 import logging
 from socket import timeout
-import urlparse
 
 import numpy as np
 import astropy.io.fits as fits
@@ -13,6 +12,8 @@ from astropy.time import Time
 from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
+
+from astropy.extern.six.moves.urllib import parse as urlparse
 
 try:
     from .feder import Feder

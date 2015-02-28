@@ -68,8 +68,9 @@ from __future__ import (print_function, division, absolute_import,
 
 import os
 import logging
-from itertools import izip
 import shutil
+
+from astropy.extern.six.moves import zip as izip
 
 from ..customlogger import console_handler, add_file_handlers
 from .. import ImageFileCollection

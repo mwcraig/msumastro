@@ -177,7 +177,7 @@ def main(arglist=None):
         if not args.scripts_only:
             subprocess.call(make_destination)
             script_path = os.path.join(destination, SCRIPT_NAME)
-            with open(script_path, 'wb') as script_to_reproduce_this:
+            with open(script_path, 'wt') as script_to_reproduce_this:
                 script_to_reproduce_this.write(cmd_list)
             if patch:
                 subprocess.call(run_patch)

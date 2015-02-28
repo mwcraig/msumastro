@@ -10,6 +10,7 @@ import numpy.ma as ma
 
 from astropy.table import Table, vstack
 import astropy.io.fits as fits
+from astropy.extern import six
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class ImageFileCollection(object):
         if info_file is not None:
             try:
                 info_path = path.join(self.location, info_file)
-            except AttributeError:
+            except (AttributeError, TypeError):
                 info_path = info_file
             try:
                 self._summary_info = Table.read(info_path,
@@ -288,7 +289,7 @@ class ImageFileCollection(object):
         multi_entry_keys = {'comment': [],
                             'history': []}
 
-        for k, v in h.iteritems():
+        for k, v in six.iteritems(h):
             if k == '':
                 continue
 
@@ -302,7 +303,7 @@ class ImageFileCollection(object):
 
             _add_val_to_dict(k, val, summary, n_previous)
 
-        for k, v in multi_entry_keys.iteritems():
+        for k, v in six.iteritems(multi_entry_keys):
             if v:
                 joined = ','.join(v)
                 _add_val_to_dict(k, joined, summary, n_previous)
@@ -317,7 +318,7 @@ class ImageFileCollection(object):
         key_name_dict = {k.lower(): k for k in header_keys
                          if k != k.lower()}
 
-        for lcase, user_case in key_name_dict.iteritems():
+        for lcase, user_case in six.iteritems(key_name_dict):
             try:
                 summary_table.rename_column(lcase, user_case)
             except KeyError:
@@ -426,7 +427,7 @@ class ImageFileCollection(object):
             if value == '*':
                 have_this_value = value_not_missing
             elif value is not None:
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                     # need to loop explicitly over array rather than using
                     # where to correctly do string comparison.
                     have_this_value = np.array([False] * len(use_info))

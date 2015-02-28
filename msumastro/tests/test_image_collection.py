@@ -394,7 +394,7 @@ class TestImageFileCollection(object):
         # no location, so should be no files
         assert len(ic.files) == 0
         # no location, so no way to iterate over files
-        with pytest.raises(AttributeError):
+        with pytest.raises((AttributeError, TypeError)):
             for h in ic.headers():
                 #print h
                 pass

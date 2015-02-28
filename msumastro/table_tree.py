@@ -2,9 +2,10 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from collections import Iterable
-from itertools import izip
 
 from astropy.table import Table
+from astropy.extern.six.moves import zip as izip
+from astropy.extern import six
 
 __all__ = ['TableTree', 'RecursiveTree']
 
@@ -80,11 +81,11 @@ class TableTree(RecursiveTree):
         if not isinstance(table, Table):
             raise TypeError('First argument must be an '
                             'astropy.table.Table instance')
-        if (isinstance(tree_keys, basestring) or
+        if (isinstance(tree_keys, six.string_types) or
                 not isinstance(tree_keys, Iterable)):
             raise TypeError('Second argument must be list-like but not '
                             'a single string.')
-        if not isinstance(index_key, basestring):
+        if not isinstance(index_key, six.string_types):
             raise TypeError('Third argument must be a string.')
         self._table = table
         self._tree_keys = tree_keys

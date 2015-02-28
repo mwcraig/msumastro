@@ -5,6 +5,8 @@ import logging
 import subprocess
 from os import path, remove, rename
 
+from astropy.extern import six
+
 __all__ = ['call_astrometry', 'add_astrometry']
 
 logger = logging.getLogger(__name__)
@@ -57,7 +59,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
         option_list.append(
             "--scale-low 0.4 --scale-high 0.56 --scale-units arcsecperpix")
 
-    if isinstance(sextractor, basestring):
+    if isinstance(sextractor, six.string_types):
         option_list.append("--sextractor-path " + sextractor)
     elif sextractor:
         option_list.append("--use-sextractor")
