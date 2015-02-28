@@ -1,6 +1,7 @@
 language: python
 python:
     - 2.7
+    - 3.4
 
 env:
     global:
@@ -27,7 +28,8 @@ install:
     - conda create --yes -n test -c astropy-ci-extras python=$TRAVIS_PYTHON_VERSION
     - source activate test
 
-    - $CONDA_INSTALL numpy=$NUMPY_VERSION pytest pip
+    - $CONDA_INSTALL numpy=$NUMPY_VERSION pytest
+    - $CONDA_INSTALL -f pip setuptools  # necessary to make sure both function correctly
     - $CONDA_INSTALL numpy=$NUMPY_VERSION astropy
     - $CONDA_INSTALL numpy=$NUMPY_VERSION scipy
     - pip install coverage coveralls
