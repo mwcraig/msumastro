@@ -56,6 +56,10 @@ class ImageWithWCS(object):
         """Set image data to numpy array"""
         self.fitsfile[0].data = array
 
+    @property
+    def shape(self):
+        return self.fitsfile[0].data.shape
+
     def wcs_pix2world(self, pix, **kwargs):
         """
         Wrapper around astropy.wcs function that handles a single tuple
