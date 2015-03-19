@@ -10,10 +10,7 @@ env:
 matrix:
     include:
         - python: 2.7
-          env: EXTRA_INSTALLS='astropysics' # handle this dependency manually
-
         - python: 3.4
-          env: EXTRA_INSTALLS=''  # no astropysics in python3
 
 before_install:
     # Use utf8 encoding. Should be default, but this is insurance against
