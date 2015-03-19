@@ -5,7 +5,7 @@ from itertools import chain
 import logging
 import datetime
 
-from astropysics import obstools
+from astropy.coordinates import EarthLocation
 import astropy.units as u
 import numpy as np
 from ccdproc.utils.slices import slice_from_string
@@ -18,48 +18,33 @@ __all__ = ['FederSite', 'ImageSoftware', 'Instrument', 'ApogeeAltaU9',
            'MaximDL4', 'MaximDL5']
 
 
-class FederSite(obstools.Site):
+class FederSite(EarthLocation):
     """
     The Feder Observatory site.
 
-    An astropysics site with the observatory location and name pre-set to:
+    An astropy location with the observatory location pre-set to:
 
         + `lat` = 46.86678 degrees North
         + `long` = -96.453278 degrees East
-        + `alt` = 311.8 meters
+        + `height` = 311.8 meters
+
+    and a few additional properties/methods that are convenient:
+
         + `name` = Feder Observatory
     """
 
+    def __new__(cls):
+        return EarthLocation.__new__(FederSite,
+                                     lat=46.86678*u.degree,
+                                     lon=-96.453278*u.degree,
+                                     height=311.8*u.m)
+
     def __init__(self):
-        obstools.Site.__init__(self,
-                               lat=46.86678,
-                               long=-96.453278,
-                               alt=311.8,
-                               name='Feder Observatory')
+        self._name = 'Feder Observatory'
 
-    def localSiderialTime(self, seconds_decimal=None, *arg, **kwd):
-        try:
-            return_type = kwd['returntype']
-        except KeyError:
-            return_type = 'hours'
-
-        if return_type is None or return_type == 'hours':
-            return super(FederSite, self).localSiderialTime(*arg,
-                                                            **kwd)
-
-        return_type = kwd.pop('returntype', None)
-        lst = super(FederSite, self).localSiderialTime(*arg,
-                                                       returntype='datetime',
-                                                       **kwd)
-        if seconds_decimal is not None:
-            seconds = np.round(lst.second + lst.microsecond / 1e6,
-                               seconds_decimal)
-            sec = np.int(seconds)
-            microsec = np.int(np.round((seconds - sec) * 1e6))
-            lst = datetime.time(lst.hour, lst.minute, sec, microsec)
-        if return_type == 'string':
-            lst = lst.isoformat()
-        return lst
+    @property
+    def name(self):
+        return self._name
 
 
 class Instrument(object):
@@ -421,9 +406,10 @@ class Feder(object):
                                 synonyms='sitelong')
         obs_altitude = FITSKeyword(name='altitude',
                                    comment='[meters] Observatory altitude')
-        latitude.value = self.site.latitude.getDmsStr(canonical=True)
-        longitude.value = self.site.longitude.getDmsStr(canonical=True)
-        obs_altitude.value = self.site.altitude
+        lat_lon_format = {'sep': ':', 'pad': True, 'alwayssign': True}
+        latitude.value = self.site.latitude.to_string(**lat_lon_format)
+        longitude.value = self.site.longitude.to_string(**lat_lon_format)
+        obs_altitude.value = self.site.height.value
         self._keywords_for_all_files.extend([latitude, longitude,
                                             obs_altitude])
 
