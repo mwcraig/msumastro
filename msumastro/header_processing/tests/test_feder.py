@@ -1,22 +1,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import pytest
-
-have_astropysics = True
-try:
-    from ..feder import Feder, ApogeeAltaU9
-except ImportError:
-    have_astropysics = False
-
-pytestmark = pytest.mark.skipif(not have_astropysics,
-                                reason="astropysics not installed")
-
-# def test_localSiderialTime():
-#    feder_site = FederSite()
-#    feder_site.currentobsjd = calendar_to_jd((2000, 1, 1, 5, 13, 0.4))
-#    lst = feder_site.localSiderialTime(returntype='datetime')
-#    assert 1
+from ..feder import Feder, ApogeeAltaU9
 
 
 def test_apogee_has_overscan():
