@@ -9,7 +9,7 @@ from socket import timeout
 import numpy as np
 import astropy.io.fits as fits
 from astropy.time import Time
-from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
+from astropy.coordinates import Angle, name_resolve, SkyCoord, AltAz
 from astropy import units as u
 from astropy.table import Table
 
@@ -69,12 +69,8 @@ def add_time_info(header, history=False):
     feder.JD_OBS.value = dateobs.jd
     feder.MJD_OBS.value = dateobs.mjd
 
-    # setting currentobsjd makes calls following it use that time
-    # for calculations
-
-    feder.site.currentobsjd = feder.JD_OBS.value
-    LST_tmp = Angle(feder.site.localSiderialTime(), unit=u.hour)
-    feder.LST.value = LST_tmp.to_string(unit=u.hour, sep=':', precision=2,
+    LST_tmp = dateobs.sidereal_time('apparent', longitude=feder.site.longitude)
+    feder.LST.value = LST_tmp.to_string(unit=u.hour, sep=':', precision=4,
                                         pad=True)
 
     for keyword in feder.keywords_for_all_files:
@@ -101,10 +97,9 @@ def add_object_pos_airmass(header, history=False):
     """
     # not sure why coverage is not picking up both branches, but it is not, so
     # marking it no cover
-    if feder.JD_OBS.value is not None:
-        feder.site.currentobsjd = feder.JD_OBS.value
-    else:
-        raise ValueError('Need to set JD_OBS.value before calling.')  # pragma: no cover
+    if feder.JD_OBS.value is None:   # pragma: no cover
+        raise ValueError('Need to set JD_OBS.value '
+                         'before calling.')
 
     try:
         feder.RA.set_value_from_header(header)
@@ -115,23 +110,20 @@ def add_object_pos_airmass(header, history=False):
     feder.RA.value = feder.RA.value.replace(' ', ':')
     feder.DEC.value = feder.DEC.value.replace(' ', ':')
 
-    obj_coord2 = FK5(feder.RA.value, feder.DEC.value,
-                     unit=(u.hour, u.degree))
+    obj_coord2 = SkyCoord(feder.RA.value, feder.DEC.value,
+                          unit=(u.hour, u.degree), frame='fk5')
 
-    # monkeypatch obj_coord2 so it looks like an astropysics coord
-    obj_coord2.raerr = None
-    obj_coord2.decerr = None
-    # and, for astropy 0.3, monkeypatch an hours method and a radians method:
-    obj_coord2.ra.hours = obj_coord2.ra.hour
-    obj_coord2.dec.radians = obj_coord2.dec.radian
+    obstime = Time(feder.MJD_OBS.value, format='mjd')
+    alt_az = obj_coord2.transform_to(AltAz(obstime=obstime,
+                                           location=feder.site))
 
-    alt_az = feder.site.apparentCoordinates(obj_coord2, refraction=False)
+    feder.ALT_OBJ.value = round(alt_az.alt.degree, 5)
+    feder.AZ_OBJ.value = round(alt_az.az.degree, 5)
+    feder.AIRMASS.value = round(1 / np.cos(np.pi / 2 - alt_az.alt.radian), 3)
 
-    feder.ALT_OBJ.value = round(alt_az.alt.d, 5)
-    feder.AZ_OBJ.value = round(alt_az.az.d, 5)
-    feder.AIRMASS.value = round(1 / np.cos(np.pi / 2 - alt_az.alt.r), 3)
-
-    HA = feder.site.localSiderialTime() - obj_coord2.ra.hours
+    # TODO: replace the LST calculation
+    LST = obstime.sidereal_time('apparent', longitude=feder.site.longitude)
+    HA = LST.hour - obj_coord2.ra.hour
     HA = Angle(HA, unit=u.hour)
 
     feder.HA.value = HA.to_string(unit=u.hour, sep=':')
@@ -419,7 +411,7 @@ def read_object_list(directory=None, input_list=None,
 
     if (RA is not None) and (Dec is not None):
         default_angle_units = (u.hour, u.degree)
-        ra_dec = FK5(RA, Dec, unit=default_angle_units)
+        ra_dec = SkyCoord(RA, Dec, unit=default_angle_units, frame='fk5')
     else:
         if skip_lookup_from_object_name:
             ra_dec = None
@@ -436,7 +428,7 @@ def read_object_list(directory=None, input_list=None,
             for a_coord in ra_dec:
                 ra.append(a_coord.ra.radian)
                 dec.append(a_coord.dec.radian)
-            ra_dec = FK5(ra, dec, unit=(u.radian, u.radian))
+            ra_dec = SkyCoord(ra, dec, unit=(u.radian, u.radian), frame='fk5')
 
     if skip_consistency_check and skip_lookup_from_object_name:
         return object_names, ra_dec
@@ -731,8 +723,10 @@ def add_object_info(directory=None,
     # ...construct list of object names for those images.
     default_angle_units = (u.hour, u.degree)
 
-    img_pos = FK5(im_table['ra'][needs_object], im_table['dec'][needs_object],
-                  unit=default_angle_units)
+    img_pos = SkyCoord(im_table['ra'][needs_object],
+                       im_table['dec'][needs_object],
+                       unit=default_angle_units,
+                       frame='fk5')
     match_idx, d2d, d3d = img_pos.match_to_catalog_sky(ra_dec)
     good_match = (d2d.arcmin <= match_radius)
     found_object = np.array(needs_object)
