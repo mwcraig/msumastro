@@ -10,7 +10,6 @@ import logging
 from socket import timeout
 
 import pytest
-pytest_plugins = str("capturelog")
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
@@ -23,6 +22,8 @@ from .. import patchers as ph
 from ..feder import Feder, ApogeeAltaU9, FederSite
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
+
+pytest_plugins = str("capturelog")
 
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
