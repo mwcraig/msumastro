@@ -50,7 +50,7 @@ def test_read_object_list_ra_dec():
     RA_in = "09:02:20.76"
     Dec_in = "+49:49:09.3"
     to_write = 'object, RA, Dec\n{},{},{}'.format(object_in, RA_in, Dec_in)
-    object_file = open(object_path, 'wb')
+    object_file = open(object_path, 'wt')
     object_file.write(to_write)
     object_file.close()
     obj, ra_dec = ph.read_object_list(temp_dir, obj_name)
@@ -361,7 +361,7 @@ def test_ambiguous_object_file_raises_error():
     Dec_in = "+49:49:09.3"
     to_write = 'object, RA, Dec\n{},{},{}\n'.format(object_in, RA_in, Dec_in)
     to_write += '{},{},{}\n'.format('crap', RA_in, Dec_in)
-    object_file = open(obj_path, 'wb')
+    object_file = open(obj_path, 'wt')
     object_file.write(to_write)
     object_file.close()
     with pytest.raises(RuntimeError):
@@ -379,7 +379,7 @@ def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     to_write = ('# comment 1\n# comment 2\nobject,RA,Dec\n'
                 'sz lyn,8:09:35.75,+44:28:17.59')
-    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wt')
     object_file.write(to_write)
     object_file.close()
     ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
@@ -640,7 +640,7 @@ def object_file_no_ra(request):
         object_col_name = 'object'
     to_write = ('# comment 1\n# comment 2\n' + object_col_name +
                 '\ney uma\nm101\n')
-    object_file = open(path.join(_test_dir, _default_object_file_name), 'wb')
+    object_file = open(path.join(_test_dir, _default_object_file_name), 'wt')
     object_file.write(to_write)
     object_file.close()
 
@@ -656,7 +656,7 @@ def object_file_with_ra_dec(dir, object_col_name='object',
 
     to_write = ('# comment 1\n# comment 2\n' + object_col_name +
                 ', RA, Dec\n' + '\n'.join(objs))
-    object_file = open(path.join(dir, _default_object_file_name), 'wb')
+    object_file = open(path.join(dir, _default_object_file_name), 'wt')
     object_file.write(to_write)
     object_file.close()
 
