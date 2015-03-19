@@ -369,7 +369,7 @@ def read_object_list(directory=None, input_list=None,
                                                           in names]
 
         if not contains_col(key, table.columns):
-            raise(KeyError, 'Keyword {0} not found in table'.format(key))
+            raise KeyError('Keyword {0} not found in table'.format(key))
 
         for column in table.columns:
             if ((key.lower() == column.lower()) and (key != column)):
@@ -394,7 +394,7 @@ def read_object_list(directory=None, input_list=None,
         normalize_column_name('object', objects)
     except KeyError as e:
         logger.debug('%s', e)
-        raise(RuntimeError,
+        raise RuntimeError(
               'No column named object found in file {}'.format(list_name))
 
     try:
