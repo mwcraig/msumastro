@@ -100,7 +100,6 @@ def add_keys(*files, **kwd):
         for key, val in key_table:
             keyword = FITSKeyword(name=key, value=val)
             keyword.add_to_header(hdr, history=True)
-            print(key, val)
             hdr[key] = val
         fil_fits.close()
 
