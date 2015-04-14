@@ -21,4 +21,34 @@ This software was developed primarily to process the files coming off the Paul P
 + Add astrometry using http://astrometry.net
 + Rummage through a tree of directories containing images and create, for each directory, a table of user-configurable image information (e.g. file name, filter, image type, object)
 
+There is one generally useful piece: image collections
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Make a collection by providing the name of a directory and a list of the FITS keywords
+you want the collection to make a table of (or ``*`` for all keywords in any of the
+files):
+
+.. code::
+
+    >>> from msumastro import ImageFileCollection
+    >>> ic = ImageFileCollection('path/to/my/directory', keywords='*')
+
+Then you can easily iterate over all of the HDUs (well, primary HDUs), headers
+and/or data, filtering by FITS keyword values (``*`` represents any value):
+
+.. code::
+
+    >>> for hdu in ic.hdus(imagetyp='LIGHT', object='M101'):
+    >>>     pass
+
+If you don't mind a bit of hidden magic, the iterator will also automatically
+save a copy of each FITS file it acts on if you tell it where you want the new
+files to go:
+
+.. code::
+
+    >>> for hdu in ic.hdus(save_location='some/other/directory', imagetyp='LIGHT', object='M101'):
+    >>>     hdu.data = 2 * hdu.data   # modified HDU automatically saved
+
+
 Documentation is at http://msum-astro.readthedocs.org
