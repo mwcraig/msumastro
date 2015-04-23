@@ -1,7 +1,7 @@
 numpy>=1.7
 numpydoc
 sphinx-argparse
-astropy
 ccdproc
+astropy
 astropy-helpers<1.0
 
