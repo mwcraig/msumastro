@@ -11,14 +11,12 @@ import stat
 import astropy.io.fits as fits
 import numpy as np
 import pytest
-import py
 
 from .. import image_collection as tff
 from ..header_processing.patchers import IRAF_image_type
 
 _filters = []
 _original_dir = ''
-#triage_setup = None
 
 
 def test_fits_summary(triage_setup):
@@ -41,7 +39,7 @@ def test_fits_summary(triage_setup):
 
 
 # this should work, but doesn't:
-#@pytest.mark.usefixtures("triage_setup")
+# @pytest.mark.usefixtures("triage_setup")
 class TestImageFileCollection(object):
     def test_filter_files(self, triage_setup):
         img_collection = tff.ImageFileCollection(
@@ -169,8 +167,9 @@ class TestImageFileCollection(object):
                                              keywords=['imagetyp'])
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, fits.Header)
-        new_collection = tff.ImageFileCollection(location=triage_setup.test_dir,
-                                                 keywords=['imagetyp'])
+        new_collection = \
+            tff.ImageFileCollection(location=triage_setup.test_dir,
+                                    keywords=['imagetyp'])
         assert (len(new_collection._paths()) ==
                 2 * (triage_setup.n_test['files']) -
                 triage_setup.n_test['compressed'])
@@ -395,7 +394,6 @@ class TestImageFileCollection(object):
         # no location, so no way to iterate over files
         with pytest.raises((AttributeError, TypeError)):
             for h in ic.headers():
-                #print h
                 pass
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      info_file=table_path)
