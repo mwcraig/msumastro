@@ -11,15 +11,12 @@ import stat
 import astropy.io.fits as fits
 import numpy as np
 import pytest
-import py
 
 from .. import image_collection as tff
 from ..header_processing.patchers import IRAF_image_type
-from .data import get_data_dir
 
 _filters = []
 _original_dir = ''
-#triage_setup = None
 
 
 def test_fits_summary(triage_setup):
@@ -42,7 +39,7 @@ def test_fits_summary(triage_setup):
 
 
 # this should work, but doesn't:
-#@pytest.mark.usefixtures("triage_setup")
+# @pytest.mark.usefixtures("triage_setup")
 class TestImageFileCollection(object):
     def test_filter_files(self, triage_setup):
         img_collection = tff.ImageFileCollection(
@@ -170,8 +167,9 @@ class TestImageFileCollection(object):
                                              keywords=['imagetyp'])
         for header in collection.headers(save_with_name='_new'):
             assert isinstance(header, fits.Header)
-        new_collection = tff.ImageFileCollection(location=triage_setup.test_dir,
-                                                 keywords=['imagetyp'])
+        new_collection = \
+            tff.ImageFileCollection(location=triage_setup.test_dir,
+                                    keywords=['imagetyp'])
         assert (len(new_collection._paths()) ==
                 2 * (triage_setup.n_test['files']) -
                 triage_setup.n_test['compressed'])
@@ -396,7 +394,6 @@ class TestImageFileCollection(object):
         # no location, so no way to iterate over files
         with pytest.raises((AttributeError, TypeError)):
             for h in ic.headers():
-                #print h
                 pass
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      info_file=table_path)
@@ -479,14 +476,17 @@ class TestImageFileCollection(object):
         assert keyword_not_in_headers in ic.summary_info.colnames
         self.check_all_keywords_in_collection(ic)
 
-    def test_grabbing_all_keywords_excludes_empty_key(self, tmpdir):
-        # This test needs the data directory from tests rather than the
-        # files set up in triage_setup because one of the data files
-        # includes an odd keyword ('') that is produced by MaxImDL.
-        data_dir = py.path.local(get_data_dir())
-        test_dir = tmpdir
-        data_dir.copy(test_dir)
-        ic = tff.ImageFileCollection(test_dir.strpath, keywords='*')
+    def test_grabbing_all_keywords_excludes_empty_key(self, triage_setup):
+        # This test needs a file with a blank keyword in it to ensure
+        # that case is handled correctly.
+        blank_keyword = fits.PrimaryHDU()
+        blank_keyword.data = np.zeros((100, 100))
+        blank_keyword.header[''] = 'blank'
+
+        blank_keyword.writeto(os.path.join(triage_setup.test_dir,
+                                           'blank.fits'))
+
+        ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
         print(ic.summary_info.colnames)
         assert 'col0' not in ic.summary_info.colnames
 
