@@ -3,5 +3,5 @@ numpydoc
 sphinx-argparse
 ccdproc
 astropy
-astropy-helpers<1.0
+astropy-helpers>1.0
 
