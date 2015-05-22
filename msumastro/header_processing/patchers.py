@@ -54,6 +54,22 @@ def IRAF_image_type(image_type):
     return image_type.split()[0].upper()
 
 
+def _lst_from_obstime(obstime):
+    try:
+        LST = obstime.sidereal_time('apparent',
+                                    longitude=feder.site.longitude)
+    except IndexError:
+        # We are outside the range of the IERS table installed with astropy,
+        # so get a newer one.
+        from astropy.utils import iers
+        from astropy.utils.data import download_file
+        iers.IERS.iers_table = iers.IERS_A.open(download_file(iers.IERS_A_URL,
+                                                cache=True))
+        LST = obstime.sidereal_time('apparent',
+                                    longitude=feder.site.longitude)
+    return LST
+
+
 def add_time_info(header, history=False):
     """
     Add JD, MJD, LST to FITS header
@@ -69,7 +85,8 @@ def add_time_info(header, history=False):
     feder.JD_OBS.value = dateobs.jd
     feder.MJD_OBS.value = dateobs.mjd
 
-    LST_tmp = dateobs.sidereal_time('apparent', longitude=feder.site.longitude)
+    LST_tmp = _lst_from_obstime(dateobs)
+
     feder.LST.value = LST_tmp.to_string(unit=u.hour, sep=':', precision=4,
                                         pad=True)
 
@@ -122,7 +139,7 @@ def add_object_pos_airmass(header, history=False):
     feder.AIRMASS.value = round(1 / np.cos(np.pi / 2 - alt_az.alt.radian), 3)
 
     # TODO: replace the LST calculation
-    LST = obstime.sidereal_time('apparent', longitude=feder.site.longitude)
+    LST = _lst_from_obstime(obstime)
     HA = LST.hour - obj_coord2.ra.hour
     HA = Angle(HA, unit=u.hour)
 

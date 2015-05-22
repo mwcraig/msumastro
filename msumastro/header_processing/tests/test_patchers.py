@@ -17,6 +17,7 @@ from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 from astropy.extern import six
+from astropy.time import Time
 
 from .. import patchers as ph
 from ..feder import Feder, ApogeeAltaU9, FederSite
@@ -625,6 +626,13 @@ def test_unit_is_added():
             print(str(instrument.image_unit), f)
             # If the instrument has a unit, the header should too.
             assert h['BUNIT'] == str(instrument.image_unit)
+
+
+def test_lst_in_future():
+    header = fits.Header()
+    future = Time.now() + 1 * u.year
+    header['date-obs'] = future.isot
+    ph.add_time_info(header)
 
 
 @pytest.fixture(params=['object', 'OBJECT', 'Object'])
