@@ -103,6 +103,7 @@ DEFAULT_OBJECT_URL = ('https://raw.github.com/mwcraig/feder-object-list'
 def patch_directories(directories, verbose=False, object_list=None,
                       destination=None,
                       no_log_destination=False,
+                      overscan_only=False,
                       script_name='run_patch'):
     """
     Patch all of the files in each of a list of directories.
@@ -151,17 +152,28 @@ def patch_directories(directories, verbose=False, object_list=None,
             # suppress warning from overwriting FITS files
             ignore_from = 'astropy.io.fits.hdu.hdulist'
             warnings.filterwarnings('ignore', module=ignore_from)
-            patch_headers(currentDir, new_file_ext='', overwrite=True,
-                          save_location=destination)
+            if overscan_only:
+                patch_headers(currentDir, new_file_ext='', overwrite=True,
+                              save_location=destination,
+                              purge_bad=False,
+                              add_time=False,
+                              add_apparent_pos=False,
+                              add_overscan=True,
+                              fix_imagetype=False,
+                              add_unit=False)
 
-            default_object_list_present = path.exists(path.join(currentDir,
-                                                      DEFAULT_OBJ_LIST))
-            if (default_object_list_present and no_explicit_object_list):
-                obj_dir = currentDir
-                obj_name = DEFAULT_OBJ_LIST
-            add_object_info(working_dir, new_file_ext='', overwrite=True,
-                            save_location=destination,
-                            object_list_dir=obj_dir, object_list=obj_name)
+            else:
+                patch_headers(currentDir, new_file_ext='', overwrite=True,
+                              save_location=destination)
+
+                default_object_list_present = path.exists(path.join(currentDir,
+                                                          DEFAULT_OBJ_LIST))
+                if (default_object_list_present and no_explicit_object_list):
+                    obj_dir = currentDir
+                    obj_name = DEFAULT_OBJ_LIST
+                add_object_info(working_dir, new_file_ext='', overwrite=True,
+                                save_location=destination,
+                                object_list_dir=obj_dir, object_list=obj_name)
 
 
 def construct_parser():
@@ -175,6 +187,8 @@ def construct_parser():
     parser.add_argument('-o', '--object-list',
                         help=object_list_help,
                         default=DEFAULT_OBJECT_URL)
+    parser.add_argument('--overscan-only', action='store_true',
+                        help='Only add appropriate overscan keywords')
     return parser
 
 
@@ -193,6 +207,7 @@ def main(arglist=None):
     patch_directories(args.dir, verbose=args.verbose,
                       object_list=args.object_list,
                       destination=args.destination_dir,
-                      no_log_destination=do_not_log_in_destination)
+                      no_log_destination=do_not_log_in_destination,
+                      overscan_only=args.overscan_only)
 
 main.__doc__ = _main_function_docstring(__name__)

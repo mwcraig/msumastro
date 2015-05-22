@@ -141,6 +141,19 @@ class TestScript(object):
         h = fits.getheader(self.test_dir.join('uint16.fit').strpath)
         assert h['object'] == 'm101'
 
+    def test_run_patch_overscan_only(self, simbad_down):
+        if simbad_down:
+            pytest.xfail("simbad is down")
+        arglist = ['-o', OBJECT_LIST_URL, '--overscan-only',
+                   self.test_dir.strpath]
+        # Remove default object file just to make sure object information can
+        # come only from the remote list.
+        self.test_dir.join(_default_object_file_name).remove()
+        run_patch.main(arglist)
+        h = fits.getheader(self.test_dir.join('uint16.fit').strpath)
+        print(h)
+        assert 'object' not in h
+
     def test_run_triage_no_output_generated(self, default_keywords):
         list_before = self.test_dir.listdir(sort=True)
         run_triage.triage_directories([self.test_dir.strpath],
