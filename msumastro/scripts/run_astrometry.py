@@ -47,6 +47,8 @@ import logging
 
 import numpy as np
 
+from astropy.io import fits
+
 from ..customlogger import console_handler, add_file_handlers
 from ..header_processing import astrometry as ast
 from .. import ImageFileCollection
@@ -99,7 +101,8 @@ def astrometry_for_directory(directories,
                 src = path.join(currentDir, light_file)
                 shutil.copy(src, destination)
 
-            img = ImageWithWCS(path.join(working_dir, light_file))
+            original_fname = path.join(working_dir, light_file)
+            img = ImageWithWCS(original_fname)
             try:
                 ra = img.header['ra']
                 dec = img.header['dec']
@@ -108,7 +111,6 @@ def astrometry_for_directory(directories,
                 ra_dec = None
 
             if (ra_dec is None) and (not blind):
-                original_fname = path.join(working_dir, light_file)
                 root, ext = path.splitext(original_fname)
                 f = open(root + '.blind', 'wb')
                 f.close()
@@ -119,12 +121,18 @@ def astrometry_for_directory(directories,
                                             note_failure=True,
                                             overwrite=True)
 
+            with fits.open(img.fitsfile.filename()) as f:
+                try:
+                    del f[0].header['imageh'], f[0].header['imagew']
+                except KeyError:
+                    pass
+                f.writeto(img.fitsfile.filename(), clobber=True)
+
             if astrometry and ra_dec is None:
-                original_fname = path.join(working_dir, light_file)
                 root, ext = path.splitext(original_fname)
                 img_new = ImageWithWCS(original_fname)
                 ra_dec = img_new.wcs_pix2world(np.trunc(np.array(img_new.shape)
-                                             / 2))
+                                               / 2))
                 img_new.header['RA'] = ra_dec[0]
                 img_new.header['DEC'] = ra_dec[1]
                 img_new.save(img_new.fitsfile.filename(), overwrite=True)
@@ -144,7 +152,6 @@ def construct_parser():
 def main(arglist=None):
     """See script_helpers._main_function_docstring for actual documentation
     """
-    #__doc__ = _main_function_docstring.__doc__
 
     parser = construct_parser()
     args = parser.parse_args(arglist)
