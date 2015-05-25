@@ -121,12 +121,13 @@ def astrometry_for_directory(directories,
                                             note_failure=True,
                                             overwrite=True)
 
-            with fits.open(img.fitsfile.filename()) as f:
+            with fits.open(img.fitsfile.filename(),
+                           do_not_scale_image_data=True) as f:
                 try:
                     del f[0].header['imageh'], f[0].header['imagew']
+                    f.writeto(img.fitsfile.filename(), clobber=True)
                 except KeyError:
                     pass
-                f.writeto(img.fitsfile.filename(), clobber=True)
 
             if astrometry and ra_dec is None:
                 root, ext = path.splitext(original_fname)
