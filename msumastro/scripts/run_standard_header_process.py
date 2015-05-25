@@ -48,6 +48,11 @@ def construct_parser():
                               'and [t]riage.'),
                         choices='atp')
 
+    parser.add_argument('--no-blind',
+                        help=('Disable astrometry for images without '
+                              'pointing information '),
+                        action='store_true')
+
     object_list_help = ('Path to or URL of file containing list (and '
                         'optionally coordinates of) objects that might be in '
                         'these files. If not provided it defaults to looking '
@@ -92,6 +97,8 @@ def main(arglist=None):
     quiet_console = '--quiet-console' if args.quiet_console else ''
     silent_console = '--silent-console' if args.silent_console else ''
     common_args.extend([verbose, quiet_console, silent_console])
+
+    no_blind = args.no_blind
 
     object_list_option = []
     if args.object_list is not None:
@@ -151,9 +158,15 @@ def main(arglist=None):
         else:
             source_for_rest = root
 
+        if no_blind:
+            additional_args = None
+        else:
+            additional_args = ['--blind']
+
         run_astrometry = construct_command('run_astrometry.py',
                                            source_for_rest,
-                                           destination, common_args)
+                                           destination, common_args,
+                                           additional_args=additional_args)
         if not astrometry:
             run_astrometry = ''
 
