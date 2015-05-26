@@ -120,12 +120,10 @@ local installation of `astrometry.net <http://astrometry.net>`_ and
 astrometry.net) The easiest way to do that (on a Mac) is with `homebrew`_. Once
 you have installed `homebrew`_ the rest is easy (unless it fails, of course...):
 
-+ ``brew tap camphogg/science`` (only needs to be done once; connects the set of
-  `homebrew`_ science formulae maintained by the maintainers of `astrometry.net
-  <http://astrometry.net>`_)
++ ``brew tap homebrew/science`` (only needs to be done once; connects the set of
+  `homebrew`_ science formulae)
 
-+ ``brew install sextractor`` (note this can take a very long time to compile
-  the linear algebra libraries)
++ ``brew install sextractor`` (note this can take a a few minutes)
 
 + ``brew install --env=std astrometry.net`` [Note the option ``--env=std``. It
   is necessary to ensure `homebrew`_ sees your python installation.]
