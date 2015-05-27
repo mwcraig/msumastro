@@ -429,8 +429,7 @@ class Feder(object):
                                     comment='Useful region of the overscan')
 
         trim_region = FITSKeyword(name='trimsec',
-            comment=('The region of the image that should remain after '
-                     'overscan is removed.'))
+            comment=('Region to keep after trimming overscan'))
 
         self._overscan_keywords.extend([overscan_region,
                                        trim_region])
