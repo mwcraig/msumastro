@@ -63,7 +63,8 @@ def _lst_from_obstime(obstime):
         # so get a newer one.
         from astropy.utils import iers
         from astropy.utils.data import download_file
-        iers_a = iers.IERS_A.open(download_file(iers.IERS_A_URL))
+        iers_a = iers.IERS_A.open(download_file(iers.IERS_A_URL,
+                                  cache=True))
         obstime.delta_ut1_utc = obstime.get_delta_ut1_utc(iers_a)
         LST = obstime.sidereal_time('apparent',
                                     longitude=feder.site.longitude)
