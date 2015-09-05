@@ -48,6 +48,8 @@ import logging
 import numpy as np
 
 from astropy.io import fits
+import astropy.units as u
+from astropy.coordinates import SkyCoord
 
 from ..customlogger import console_handler, add_file_handlers
 from ..header_processing import astrometry as ast
@@ -134,8 +136,14 @@ def astrometry_for_directory(directories,
                 img_new = ImageWithWCS(original_fname)
                 ra_dec = img_new.wcs_pix2world(np.trunc(np.array(img_new.shape)
                                                / 2))
-                img_new.header['RA'] = ra_dec[0]
-                img_new.header['DEC'] = ra_dec[1]
+                # RA/Dec are in degrees. Convert them to sexagesimal for
+                # output. Yuck, but makes it easier for existing code to
+                # handle.
+                # Note that FK5 is J2000.
+                coords = SkyCoord(*ra_dec, unit=(u.degree, u.degree),
+                                  frame='fk5')
+                img_new.header['RA'] = coords.ra.to_string(unit=u.hour, sep=':')
+                img_new.header['DEC'] = coords.dec.to_string(sep=':')
                 img_new.save(img_new.fitsfile.filename(), overwrite=True)
 
 
