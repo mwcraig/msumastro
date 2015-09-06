@@ -129,7 +129,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         fails. The "failed" file contains the error messages genreated by
         astrometry.net.
 
-    try_biultin_source_finder : bool
+    try_builtin_source_finder : bool
         If true, try using astrometry.net's built-in source extractor if
         sextractor fails.
 
