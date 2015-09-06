@@ -463,9 +463,9 @@ def test_add_ra_dec_from_object_name(new_file_ext):
                       unit=(u.hour, u.degree))
 
     assert_almost_equal(m101_ra_dec_correct.ra.hour,
-                        header_m101.ra.hour)
+                        header_m101.ra.hour, decimal=6)
     assert_almost_equal(m101_ra_dec_correct.dec.degree,
-                        header_m101.dec.degree)
+                        header_m101.dec.degree, decimal=6)
 
 
 def test_add_ra_dec_from_object_name_edge_cases(caplog):
