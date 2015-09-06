@@ -6,6 +6,7 @@ import argparse
 import subprocess
 
 from . import script_helpers
+from .run_triage import DefaultFileNames
 from .. import ImageFileCollection
 
 
@@ -181,6 +182,17 @@ def main(arglist=None):
         cmd_list = [separator_format.format(cmd_start_str)]
         for cmd in [make_destination, run_patch, run_astrometry, run_triage]:
             cmd_list.append(' '.join(cmd))
+        # Re-run patch and triage if any files are missing pointing-related
+        # keywords.
+        if run_patch or run_triage:
+            pointing_file = DefaultFileNames().pointing_file_name
+            rerun_patch = construct_command('run_patch.py', source_for_rest,
+                                            destination, common_args,
+                                            additional_args=object_list_option)
+            cmd_list.append('if [[ -e {} ]]; then'.format(pointing_file))
+            cmd_list.append('    ' + ' '.join(rerun_patch))
+            cmd_list.append('    ' + ' '.join(run_triage))
+            cmd_list.append('fi')
         end_str = separator_format.format('END commands for {}'.format(root))
         cmd_list.append(end_str)
         cmd_list = '\n'.join(cmd_list) + '\n'*5
