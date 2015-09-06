@@ -204,6 +204,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     if solved_field:
         try:
             remove(base + '-indx.xyls')
+            remove(base + '.solved')
         except OSError:
             pass
 
