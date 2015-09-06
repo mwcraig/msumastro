@@ -73,6 +73,8 @@ def triage_setup(request):
     n_test['files'] += 1
     n_test['light'] += 1
     n_test['need_object'] += 1
+    n_test['need_pointing'] += 1
+
     with open('filter_object_light.fit', 'rb') as f_in:
         with gzip.open('filter_object_light.fit.gz', 'wb') as f_out:
             f_out.write(f_in.read())
@@ -80,6 +82,7 @@ def triage_setup(request):
     n_test['compressed'] += 1
     n_test['light'] += 1
     n_test['need_object'] += 1
+    n_test['need_pointing'] += 1
 
     filter_object.header['RA'] = filter_object.header['OBJCTRA']
     filter_object.header['Dec'] = filter_object.header['OBJCTDEC']
@@ -87,6 +90,7 @@ def triage_setup(request):
     n_test['files'] += 1
     n_test['light'] += 1
     n_test['need_object'] += 1
+    n_test['need_pointing'] += 1
 
     def teardown():
         for key in n_test.keys():

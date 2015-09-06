@@ -97,6 +97,32 @@ def contains_maximdl_imagetype(image_collection):
         return False
 
 
+def get_column_name_case_insensitive(name, column_names):
+    """
+    Return the column name that matches name in a case-insensitive comparison.
+
+    Parameters
+    ----------
+
+    name : str
+        Name for which match is desired.
+
+    column_names : list
+        List of column names.
+
+    Returns
+    -------
+
+    str or None
+        name of first matching column or ``None``, if no match is found.
+    """
+    for cname in column_names:
+        if name.lower() == cname.lower():
+            return cname
+    else:
+        return ''
+
+
 def triage_fits_files(dir=None, file_info_to_keep=None):
     """
     Check FITS files in a directory for deficient headers
@@ -137,13 +163,23 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     file_needs_pointing = []
     if lights:
         has_no_ra = np.array([True] * len(lights))
+        has_no_ha = np.array([True] * len(lights))
         for ra_name in RA.names:
+            col_name = \
+                get_column_name_case_insensitive(ra_name, lights.colnames)
             try:
-                has_no_ra &= (lights[ra_name].mask)
+                has_no_ra &= (lights[col_name].mask)
+            except KeyError:
+                pass
+        for ha_name in feder.HA.names:
+            col_name = \
+                get_column_name_case_insensitive(ha_name, lights.colnames)
+            try:
+                has_no_ha &= lights[col_name].mask
             except KeyError:
                 pass
 
-        needs_minimal_pointing = (lights['object'].mask) & has_no_ra
+        needs_minimal_pointing = has_no_ha | has_no_ra
         file_needs_pointing = list(lights['file'][needs_minimal_pointing])
 
     full_path = os.path.abspath(dir)
@@ -156,7 +192,8 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
                 'needs_pointing': file_needs_pointing,
-                'needs_object_name': file_needs_object_name}
+                'needs_object_name': file_needs_object_name,}
+                # 'needs_position_dependent_keywords': file_needs_pointing_dep_keys}
     return dir_info
 
 

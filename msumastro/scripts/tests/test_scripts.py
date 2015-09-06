@@ -285,6 +285,15 @@ class TestScript(object):
         tab = Table.read(tmpdir.join(dump_file).strpath, format='ascii')
         assert custom_name in tab.colnames
 
+    def test_triage_case_inseneistive_column_name_matching(self):
+        columns = ['one', 'Two', 'THREE']
+        assert (run_triage.get_column_name_case_insensitive('one', columns)
+                == 'one')
+        assert (run_triage.get_column_name_case_insensitive('NOT', columns)
+                == '')
+        assert (run_triage.get_column_name_case_insensitive('two', columns)
+                == 'Two')
+
     def test_run_astrometry_with_dest_does_not_modify_source(self):
 
         destination = self.test_dir.make_numbered_dir()
