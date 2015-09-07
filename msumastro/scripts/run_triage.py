@@ -66,6 +66,7 @@ class DefaultFileNames(object):
         self.pointing_file_name = 'NEEDS_POINTING_INFO.txt'
         self.filter_file_name = 'NEEDS_FILTER.txt'
         self.output_table = 'Manifest.txt'
+        self.astrometry_file_name = 'NEEDS_ASTROMETRY.txt'
 
     def as_dict(self):
         return self.__dict__
@@ -133,7 +134,8 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     for for each FITS file in `dir`.
     """
     dir = dir or '.'
-    all_file_info = file_info_to_keep or ['imagetyp', 'object', 'filter']
+    all_file_info = file_info_to_keep or ['imagetyp', 'object',
+                                          'filter', 'wcsaxes']
     feder = Feder()
     RA = feder.RA
     if ((not (set(RA.names) <= set(all_file_info))) and
@@ -161,6 +163,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
 
     lights = file_info[file_info['imagetyp'] == 'LIGHT']
     file_needs_pointing = []
+    file_needs_astrometry = []
     if lights:
         has_no_ra = np.array([True] * len(lights))
         has_no_ha = np.array([True] * len(lights))
@@ -179,6 +182,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
             except KeyError:
                 pass
 
+        file_needs_astrometry = list(lights['file'][lights['wcsaxes'].mask])
         needs_minimal_pointing = has_no_ha | has_no_ra
         file_needs_pointing = list(lights['file'][needs_minimal_pointing])
 
@@ -192,8 +196,9 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
     dir_info = {'files': file_info,
                 'needs_filter': file_needs_filter,
                 'needs_pointing': file_needs_pointing,
-                'needs_object_name': file_needs_object_name,}
-                # 'needs_position_dependent_keywords': file_needs_pointing_dep_keys}
+                'needs_object_name': file_needs_object_name,
+                'needs_astrometry': file_needs_astrometry}
+
     return dir_info
 
 
@@ -203,6 +208,7 @@ def triage_directories(directories,
                        object_file_name=None,
                        pointing_file_name=None,
                        filter_file_name=None,
+                       astrometry_file_name=None,
                        output_table=None,
                        destination=None,
                        no_log_destination=False):
@@ -239,6 +245,7 @@ def triage_directories(directories,
         need_pointing = result['needs_pointing']
         need_filter = result['needs_filter']
         need_object_name = result['needs_object_name']
+        need_astrometry = result['needs_astrometry']
 
         if need_pointing and pointing_file_name is not None:
             write_list(target_dir, pointing_file_name, need_pointing)
@@ -247,6 +254,9 @@ def triage_directories(directories,
         if need_object_name and object_file_name is not None:
             write_list(target_dir, object_file_name,
                        need_object_name)
+        if need_astrometry and astrometry_file_name is not None:
+            write_list(target_dir, astrometry_file_name, need_astrometry)
+
         tbl = result['files']
         if ((len(tbl) > 0) and (output_table is not None)):
             tbl.write(os.path.join(target_dir, output_table),
@@ -314,11 +324,18 @@ def construct_parser():
                         default=default_names.filter_file_name,
                         help=needs_filter_help)
 
+    needs_astrometry_help = 'Name of file to which list of files that need '
+    needs_astrometry_help += 'astrometry is saved; default is '
+    needs_astrometry_help += default_names.astrometry_file_name
+    parser.add_argument('-y', '--astrometry-needed-list',
+                        default=default_names.astrometry_file_name,
+                        help=needs_astrometry_help)
+
     return parser
 
 DEFAULT_KEYS = ['imagetyp', 'filter', 'exptime', 'ccd-temp',
                 'object', 'observer', 'airmass', 'instrume',
-                'RA', 'Dec', 'date-obs', 'jd']
+                'RA', 'Dec', 'date-obs', 'jd', 'wcsaxes']
 
 
 def main(arglist=None):
@@ -353,6 +370,7 @@ def main(arglist=None):
                        object_file_name=args.object_needed_list,
                        pointing_file_name=args.pointing_needed_list,
                        filter_file_name=args.filter_needed_list,
+                       astrometry_file_name=args.astrometry_needed_list,
                        output_table=args.table_name,
                        destination=args.destination_dir,
                        no_log_destination=do_not_log_in_destination)
