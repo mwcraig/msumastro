@@ -620,6 +620,7 @@ def test_triage_via_triage_fits_files(triage_setup):
     assert len(file_info['needs_object_name']) == \
         triage_setup.n_test['need_object']
     assert len(file_info['needs_filter']) == triage_setup.n_test['need_filter']
+    assert len(file_info['needs_astrometry']) == triage_setup.n_test['light']
     bias_check = np.where(file_info['files']['imagetyp'] ==
                           IRAF_image_type('bias'))
     assert (len(bias_check[0]) == 2)
