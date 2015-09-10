@@ -262,7 +262,8 @@ class MaximDL5(ImageSoftware):
                     'OBJCTHA', 'AIRMASS', 'OBSERVER']
         fits_name = ['MaxIm DL Version 5.21 130912 01A17',
                      'MaxIm DL Version 5.21 120829 2R1M0',
-                     'MaxIm DL Version 5.23 130912 01A17']
+                     'MaxIm DL Version 5.23 130912 01A17',
+                     'MaxIm DL Version 5.15']
         super(MaximDL5, self).__init__("MaxImDL",
                                        fits_name=fits_name,
                                        major_version=5,
