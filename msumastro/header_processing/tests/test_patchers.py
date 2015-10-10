@@ -24,8 +24,6 @@ from ..feder import Feder, ApogeeAltaU9, FederSite
 from ...tests.data import get_data_dir
 from ... import ImageFileCollection
 
-pytest_plugins = str("capturelog")
-
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
