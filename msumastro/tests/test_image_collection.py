@@ -83,9 +83,7 @@ class TestImageFileCollection(object):
         n_hdus = 0
         for hdu in collection.hdus():
             assert isinstance(hdu, fits.PrimaryHDU)
-            data = hdu.data  # must access the data to force scaling
-            with pytest.raises(KeyError):
-                hdu.header['bzero']
+            assert hdu.data.dtype is np.dtype(np.uint16)
             n_hdus += 1
         assert n_hdus == triage_setup.n_test['files']
 
