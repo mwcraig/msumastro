@@ -57,7 +57,7 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     option_list.append("--obj 200")
     if feder_settings:
         option_list.append(
-            "--scale-low 0.4 --scale-high 0.56 --scale-units arcsecperpix")
+            "--scale-low 0.4 --scale-high 0.6 --scale-units arcsecperpix")
 
     if isinstance(sextractor, six.string_types):
         option_list.append("--sextractor-path " + sextractor)
