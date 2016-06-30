@@ -66,7 +66,7 @@ class TableTree(RecursiveTree):
         Raised if the number of initialization arguments is incorrect or the
         types of any of the arguments is incorrect.
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwd):
         super(TableTree, self).__init__()
         if not args:
             return
@@ -78,16 +78,29 @@ class TableTree(RecursiveTree):
         tree_keys = args[1]
         index_key = args[2]
 
-        if not isinstance(table, Table):
+        fill_missing = kwd.pop('fill_missing', None)
+
+        if fill_missing is not None:
+            for k in tree_keys:
+                if table[k].mask.any():
+                    table[k] = table[k].filled('No ' + k)
+                use_table = table
+        else:
+            use_table = table
+
+        if not isinstance(use_table, Table):
             raise TypeError('First argument must be an '
                             'astropy.table.Table instance')
+
         if (isinstance(tree_keys, six.string_types) or
                 not isinstance(tree_keys, Iterable)):
             raise TypeError('Second argument must be list-like but not '
                             'a single string.')
+
         if not isinstance(index_key, six.string_types):
             raise TypeError('Third argument must be a string.')
-        self._table = table
+
+        self._table = use_table
         self._tree_keys = tree_keys
         self._validate_group_keys()
         self._index_key = index_key
