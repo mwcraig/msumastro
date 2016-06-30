@@ -235,7 +235,7 @@ def triage_directories(directories,
 
         result = triage_fits_files(currentDir, file_info_to_keep=use_keys)
         outfiles = [pointing_file_name, filter_file_name,
-                    object_file_name, output_table]
+                    object_file_name, output_table, astrometry_file_name]
         for fil in [outfile for outfile in outfiles if outfile is not None]:
             try:
                 os.remove(os.path.join(currentDir, fil))
