@@ -522,7 +522,10 @@ class TestSortFiles(object):
         light_hdu = make_hdu(light)
         for obj, filter_dict in six.iteritems(files[light]):
             if not obj:
-                del light_hdu.header['object']
+                try:
+                    del light_hdu.header['object']
+                except KeyError:
+                    pass
             else:
                 light_hdu.header['object'] = obj
             obj_name = obj or None
@@ -601,7 +604,10 @@ class TestSortFiles(object):
                                      keywords=['imagetyp', 'object'])
         n_light = 0
         for header in images.headers(overwrite=True, imagetyp='LIGHT'):
-            del header['object']
+            try:
+                del header['object']
+            except KeyError:
+                pass
             n_light += 1
         dest = self.test_dir.mkdtemp()
         sort_files.main(['-d', dest.strpath, self.test_dir.strpath])

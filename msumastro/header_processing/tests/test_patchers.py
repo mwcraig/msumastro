@@ -433,8 +433,13 @@ def test_add_ra_dec_from_object_name(new_file_ext):
     full_path = path.join(_test_dir, _test_image_name)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
-    del h['OBJCTRA']
-    del h['OBJCTDEC']
+
+    try:
+        del h['OBJCTRA']
+        del h['OBJCTDEC']
+    except KeyError:
+        pass
+
     h['OBJECT'] = 'M101'
     with warnings.catch_warnings():
         ignore_from = 'astropy.io.fits.hdu.hdulist'
@@ -480,8 +485,13 @@ def test_add_ra_dec_from_object_name_edge_cases(caplog):
     image_path = path.join(_test_dir, _test_image_name)
     f = fits.open(image_path)
     h = f[0].header
-    del h['RA']
-    del h['dec']
+
+    try:
+        del h['RA']
+        del h['dec']
+    except KeyError:
+        pass
+
     h['object'] = 'i am a fake object'
     f.writeto(image_path, clobber=True)
     ph.add_ra_dec_from_object_name(_test_dir)
@@ -604,7 +614,11 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     # this keyword
     key_to_delete = software.bad_keywords[0]
     print(software.bad_keywords)
-    del a_header[key_to_delete]
+    try:
+        del a_header[key_to_delete]
+    except KeyError:
+        pass
+
     print(a_header)
     ph.purge_bad_keywords(a_header, history=True)
     print(a_header)
