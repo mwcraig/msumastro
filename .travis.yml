@@ -33,10 +33,7 @@ install:
     - conda create --yes -n test -c astropy-ci-extras -c astropy python=$TRAVIS_PYTHON_VERSION
     - source activate test
 
-    - $CONDA_INSTALL numpy=$NUMPY_VERSION pytest
-    - $CONDA_INSTALL -f pip setuptools  # necessary to make sure both function correctly
-    - $CONDA_INSTALL numpy=$NUMPY_VERSION astropy ccdproc
-    - $CONDA_INSTALL numpy=$NUMPY_VERSION scipy
+    - $CONDA_INSTALL numpy=$NUMPY_VERSION pytest astropy ccdproc scipy
     - pip install coverage coveralls $EXTRA_INSTALLS
     # need to install scripts because one test ends up invoking a subprocess
     - python setup.py install_scripts
