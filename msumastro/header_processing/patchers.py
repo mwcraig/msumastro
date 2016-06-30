@@ -232,10 +232,12 @@ def purge_bad_keywords(header, history=False, force=False, file_name=None):
         try:
             comment = ('Deleted keyword ' + keyword +
                        ' with value ' + str(header[keyword]))
+            del header[keyword]
         except KeyError:
             continue
+
         logger.info(comment)
-        del header[keyword]
+
         if history:
             header.add_history(comment)
 

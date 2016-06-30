@@ -13,7 +13,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_almost_equal
 from astropy.io import fits
-from astropy.coordinates import Angle, FK5, name_resolve, SkyCoord
+from astropy.coordinates import Angle, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 from astropy.extern import six
@@ -54,7 +54,7 @@ def test_read_object_list_ra_dec():
     object_file.close()
     obj, ra_dec = ph.read_object_list(temp_dir, obj_name)
     assert(obj[0] == object_in)
-    ra_dec_in = FK5(RA_in, Dec_in, unit=(u.hour, u.degree))
+    ra_dec_in = SkyCoord(RA_in, Dec_in, unit=(u.hour, u.degree), frame='fk5')
     assert ra_dec_in.separation(ra_dec[0]).arcsec < 1e-4
 
 
@@ -433,8 +433,13 @@ def test_add_ra_dec_from_object_name(new_file_ext):
     full_path = path.join(_test_dir, _test_image_name)
     f = fits.open(full_path, do_not_scale_image_data=True)
     h = f[0].header
-    del h['OBJCTRA']
-    del h['OBJCTDEC']
+
+    try:
+        del h['OBJCTRA']
+        del h['OBJCTDEC']
+    except KeyError:
+        pass
+
     h['OBJECT'] = 'M101'
     with warnings.catch_warnings():
         ignore_from = 'astropy.io.fits.hdu.hdulist'
@@ -456,14 +461,14 @@ def test_add_ra_dec_from_object_name(new_file_ext):
     new_path = base + new_ext + ext
     f = fits.open(new_path, do_not_scale_image_data=True)
     h = f[0].header
-    m101_ra_dec_correct = FK5('14h03m12.58s +54d20m55.50s')
-    header_m101 = FK5(ra=h['ra'], dec=h['dec'],
-                      unit=(u.hour, u.degree))
+    m101_ra_dec_correct = SkyCoord('14h03m12.58s +54d20m55.50s', frame='icrs')
+    header_m101 = SkyCoord(ra=h['ra'], dec=h['dec'],
+                           unit=(u.hour, u.degree), frame='icrs')
 
     assert_almost_equal(m101_ra_dec_correct.ra.hour,
-                        header_m101.ra.hour, decimal=6)
+                        header_m101.ra.hour, decimal=5)
     assert_almost_equal(m101_ra_dec_correct.dec.degree,
-                        header_m101.dec.degree, decimal=6)
+                        header_m101.dec.degree, decimal=5)
 
 
 def test_add_ra_dec_from_object_name_edge_cases(caplog):
@@ -480,8 +485,13 @@ def test_add_ra_dec_from_object_name_edge_cases(caplog):
     image_path = path.join(_test_dir, _test_image_name)
     f = fits.open(image_path)
     h = f[0].header
-    del h['RA']
-    del h['dec']
+
+    try:
+        del h['RA']
+        del h['dec']
+    except KeyError:
+        pass
+
     h['object'] = 'i am a fake object'
     f.writeto(image_path, clobber=True)
     ph.add_ra_dec_from_object_name(_test_dir)
@@ -604,7 +614,11 @@ def test_purge_bad_keywords_logic_for_conditionals(caplog):
     # this keyword
     key_to_delete = software.bad_keywords[0]
     print(software.bad_keywords)
-    del a_header[key_to_delete]
+    try:
+        del a_header[key_to_delete]
+    except KeyError:
+        pass
+
     print(a_header)
     ph.purge_bad_keywords(a_header, history=True)
     print(a_header)
