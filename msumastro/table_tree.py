@@ -1,7 +1,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from collections import Iterable
+from collections import Iterable, OrderedDict
 
 from astropy.table import Table
 from astropy.extern.six.moves import zip as izip
@@ -10,7 +10,7 @@ from astropy.extern import six
 __all__ = ['TableTree', 'RecursiveTree']
 
 
-class RecursiveTree(dict):
+class RecursiveTree(OrderedDict):
     """A dict-base recursive tree."""
     def __init__(self):
         super(RecursiveTree, self).__init__()
