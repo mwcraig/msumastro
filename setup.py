@@ -17,6 +17,8 @@ class PyTest(TestCommand):
 
 INSTALL_REQUIRES = ['astropy>=1.0', 'numpy', 'ccdproc>=1.0']
 
+versioneer_cmdclass = versioneer.get_cmdclass()
+versioneer_cmdclass['test'] = PyTest
 setup(
     name='msumastro',
     version=versioneer.get_version(),
@@ -33,7 +35,7 @@ setup(
         'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme', 'astropy-helpers'],
     },
     tests_require=['scipy', 'pytest>=2.9', 'pytest-capturelog'] + INSTALL_REQUIRES,
-    cmdclass=versioneer.get_cmdclass(),
+    cmdclass=versioneer_cmdclass,
     entry_points={
         'console_scripts': [
             ('quick_add_keys_to_file.py = '
