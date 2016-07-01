@@ -4,8 +4,6 @@ from __future__ import (print_function, division, absolute_import,
 from .image_collection import ImageFileCollection
 from .table_tree import TableTree
 
-from .version import version as __version__
-
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions

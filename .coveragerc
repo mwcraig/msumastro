@@ -1,9 +1,0 @@
-[run]
-branch = True
-omit =
-    *__init__*
-    */test_*
-    setup.py
-    msumastro/version.py
-    msumastro/tests/data.py
-    msumastro/conftest.py
