@@ -41,6 +41,11 @@ def test_fits_summary(triage_setup):
 # this should work, but doesn't:
 # @pytest.mark.usefixtures("triage_setup")
 class TestImageFileCollection(object):
+    def test_deprecation_warning(self, tmpdir, recwarn):
+        # Make sure DeprecationWarning is being raised.
+        pytest.deprecated_call(tff.ImageFileCollection,
+                               tmpdir.strpath)
+
     def test_filter_files(self, triage_setup):
         img_collection = tff.ImageFileCollection(
             location=triage_setup.test_dir, keywords=['imagetyp', 'filter'])
@@ -239,7 +244,8 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir,
                                              keywords=['imagetyp'])
         for header, fname in collection.headers(return_fname=True):
-            assert (fname in collection._paths())
+            assert (os.path.join(collection.location, fname) in
+                    collection._paths())
             assert (isinstance(header, fits.Header))
 
     def test_dir_with_no_fits_files(self, tmpdir):
@@ -263,7 +269,7 @@ class TestImageFileCollection(object):
         # make sure an error will be generated if the FITS file is read
         with pytest.raises(IOError):
             fits.getheader(not_really_fits.strpath)
-        ic = tff.ImageFileCollection(location=bad_dir.strpath)
+        ic = tff.ImageFileCollection(location=bad_dir.strpath, keywords=[])
         # ImageFileCollection will suppress the IOError but log a warning
         # so check the log for the appropriate warning
         warnings = [rec for rec in caplog.records()
@@ -428,7 +434,8 @@ class TestImageFileCollection(object):
                                          info_file='iufadsdhfasdifre')
 
     def test_initialization_with_no_keywords(self, triage_setup):
-        ic = tff.ImageFileCollection(location=triage_setup.test_dir)
+        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
+                                     keywords=[])
         # iteration below failed before bugfix...
         execs = 0
         for h in ic.headers():

@@ -31,7 +31,7 @@ setup(
     extras_require={
         'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme', 'astropy-helpers'],
     },
-    tests_require=['scipy', 'pytest>1.4', 'pytest-capturelog'] + INSTALL_REQUIRES,
+    tests_require=['scipy', 'pytest>=2.9', 'pytest-capturelog'] + INSTALL_REQUIRES,
     cmdclass={'test': PyTest},
     entry_points={
         'console_scripts': [
