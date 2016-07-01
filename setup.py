@@ -14,7 +14,7 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
 
-INSTALL_REQUIRES = ['astropy>=1.0', 'numpy', 'ccdproc>=0.3.1']
+INSTALL_REQUIRES = ['astropy>=1.0', 'numpy', 'ccdproc>=1.0']
 
 setup(
     name='msumastro',
