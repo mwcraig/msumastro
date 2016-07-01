@@ -124,6 +124,10 @@ class Instrument(object):
         bool
             Indicates whether or not image has overscan present.
         """
+
+        if self.trim_region is None:
+            return False
+
         # Grab the trim region as a slice to make it easier to access end
         # points. Do *not* convert from FITS convention because input
         # dimensions follow FITS conventions.
@@ -173,6 +177,16 @@ class SBIGSpectrometer(Instrument):
     def __init__(self):
         super(SBIGSpectrometer, self).__init__("SBIG ST-7 Spectrometer",
                                                fits_names=["SBIG ST-7"])
+
+
+class CelestronNightscape10100(Instrument):
+    """
+    The Celestron Nightscape 10100, an RGB color CCD.
+    """
+    def __init__(self):
+        Instrument.__init__(self, "Celestron Nightscape 10100",
+                            fits_names=["Celestron Nightscape 10100"],
+                            image_unit=u.adu)
 
 
 class ImageSoftware(object):
@@ -288,6 +302,21 @@ class SBIGCCDOps(ImageSoftware):
                                          fits_keyword='SWCREATE')
 
 
+class CelestronAstroFX(ImageSoftware):
+    """
+    Represents software used to create images from the SBIG spectrometer.
+    """
+    def __init__(self):
+        bad_keys = []
+        fits_name = ['Celestron AstroFX V1.06']
+        super(CelestronAstroFX, self).__init__("Celestron AstroFX",
+                                               fits_name=fits_name,
+                                               major_version=1,
+                                               minor_version="06",
+                                               bad_keywords=bad_keys,
+                                               fits_keyword='SWCREATE')
+
+
 class Feder(object):
     """
     Class encapsulating site, instrument, and software information for Feder
@@ -310,8 +339,10 @@ class Feder(object):
         self.site = FederSite()
         self._apogee_alta_u9 = ApogeeAltaU9()
         self._sbig_spectrometer = SBIGSpectrometer()
+        self._celestron_10100 = CelestronNightscape10100()
         self._instrument_objects = [self._apogee_alta_u9,
-                                    self._sbig_spectrometer]
+                                    self._sbig_spectrometer,
+                                    self._celestron_10100]
         self.instruments = {}
         for instrument in self._instrument_objects:
             for name in instrument.fits_names:
@@ -319,7 +350,9 @@ class Feder(object):
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
         self._sbig_ccdops = SBIGCCDOps()
-        self._software_objects = [self._maximdl4, self._maximdl5, self._sbig_ccdops]
+        self._astrofx = CelestronAstroFX()
+        self._software_objects = \
+            [self._maximdl4, self._maximdl5, self._sbig_ccdops, self._astrofx]
         self.software = {}
         self.software_FITS_keywords = []
         for software in self._software_objects:
