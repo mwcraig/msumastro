@@ -1,10 +1,7 @@
 MSUM Astro library
 ------------------
 
-.. image:: https://pypip.in/v/msumastro/badge.png
-    :target: https://pypi.python.org/pypi/msumastro
-
-.. image:: https://pypip.in/d/msumastro/badge.png
+.. image:: https://img.shields.io/pypi/v/msumastro.svg
     :target: https://pypi.python.org/pypi/msumastro
 
 .. image:: https://travis-ci.org/mwcraig/msumastro.png?branch=master
