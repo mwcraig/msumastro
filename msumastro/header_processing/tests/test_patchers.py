@@ -11,7 +11,7 @@ from socket import timeout
 
 import pytest
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_allclose
 from astropy.io import fits
 from astropy.coordinates import Angle, name_resolve, SkyCoord
 from astropy import units as u
@@ -465,10 +465,10 @@ def test_add_ra_dec_from_object_name(new_file_ext):
     header_m101 = SkyCoord(ra=h['ra'], dec=h['dec'],
                            unit=(u.hour, u.degree), frame='icrs')
 
-    assert_almost_equal(m101_ra_dec_correct.ra.hour,
-                        header_m101.ra.hour, decimal=5)
-    assert_almost_equal(m101_ra_dec_correct.dec.degree,
-                        header_m101.dec.degree, decimal=5)
+    assert_allclose(m101_ra_dec_correct.ra.hour,
+                    header_m101.ra.hour, rtol=1e-5)
+    assert_allclose(m101_ra_dec_correct.dec.degree,
+                    header_m101.dec.degree, rtol=1e-5)
 
 
 def test_add_ra_dec_from_object_name_edge_cases(caplog):
