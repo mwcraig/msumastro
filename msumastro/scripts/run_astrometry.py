@@ -51,10 +51,11 @@ from astropy.io import fits
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 
+from ccdproc import CCDData
+
 from ..customlogger import console_handler, add_file_handlers
 from ..header_processing import astrometry as ast
 from .. import ImageFileCollection
-from ..image import ImageWithWCS
 from .script_helpers import (construct_default_parser, setup_logging,
                              handle_destination_dir_logging_check,
                              _main_function_docstring)
@@ -104,7 +105,7 @@ def astrometry_for_directory(directories,
                 shutil.copy(src, destination)
 
             original_fname = path.join(working_dir, light_file)
-            img = ImageWithWCS(original_fname)
+            img = CCDData.read(original_fname, unit='adu')
             try:
                 ra = img.header['ra']
                 dec = img.header['dec']
@@ -118,33 +119,42 @@ def astrometry_for_directory(directories,
                 f.close()
                 continue
 
-            astrometry = ast.add_astrometry(img.fitsfile.filename(),
+            astrometry = ast.add_astrometry(original_fname,
                                             ra_dec=ra_dec,
                                             note_failure=True,
                                             overwrite=True)
 
-            with fits.open(img.fitsfile.filename(),
+            with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
                 try:
                     del f[0].header['imageh'], f[0].header['imagew']
-                    f.writeto(img.fitsfile.filename(), clobber=True)
+                    f.writeto(original_fname, clobber=True)
                 except KeyError:
                     pass
 
             if astrometry and ra_dec is None:
                 root, ext = path.splitext(original_fname)
-                img_new = ImageWithWCS(original_fname)
-                ra_dec = img_new.wcs_pix2world(np.trunc(np.array(img_new.shape)
-                                               / 2))
+                img_new = CCDData.read(original_fname, unit='adu')
+
+                # The ndmin below ensures center_pix has the right shape
+                # for WCS conversion.
+                center_pix = np.trunc(np.array(img_new.shape, ndmin=2) / 2)
+                print(center_pix[np.newaxis, :].shape)
+                ra_dec = \
+                    img_new.wcs.all_pix2world(center_pix,
+                                              1)
+                ra_dec = ra_dec[0]
                 # RA/Dec are in degrees. Convert them to sexagesimal for
                 # output. Yuck, but makes it easier for existing code to
                 # handle.
                 # Note that FK5 is J2000.
                 coords = SkyCoord(*ra_dec, unit=(u.degree, u.degree),
                                   frame='fk5')
-                img_new.header['RA'] = coords.ra.to_string(unit=u.hour, sep=':')
+
+                img_new.header['RA'] = coords.ra.to_string(unit=u.hour,
+                                                           sep=':')
                 img_new.header['DEC'] = coords.dec.to_string(sep=':')
-                img_new.save(img_new.fitsfile.filename(), overwrite=True)
+                img_new.write(original_fname, clobber=True)
 
 
 def construct_parser():
