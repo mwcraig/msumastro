@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 
+import versioneer
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -18,7 +19,7 @@ INSTALL_REQUIRES = ['astropy>=1.0', 'numpy', 'ccdproc>=1.0']
 
 setup(
     name='msumastro',
-    version='0.8.6',
+    version=versioneer.get_version(),
     description='Process FITS files',
     url='http://github.com/mwcraig/msumastro',
     long_description=(open('README.rst').read()),
@@ -32,7 +33,7 @@ setup(
         'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme', 'astropy-helpers'],
     },
     tests_require=['scipy', 'pytest>=2.9', 'pytest-capturelog'] + INSTALL_REQUIRES,
-    cmdclass={'test': PyTest},
+    cmdclass=versioneer.get_cmdclass(),
     entry_points={
         'console_scripts': [
             ('quick_add_keys_to_file.py = '
