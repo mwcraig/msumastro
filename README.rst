@@ -23,8 +23,10 @@ several things:
 There is one generally useful piece: image collections
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-``ImageFileCollection`` has been moved to `ccdproc
-<https://github.com/astropy/ccdproc>`_. It is marked as deprecated in
+``ImageFileCollection`` has been moved to `ccdproc <https://github.com/astropy/ccdproc>`_.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+It is marked as *deprecated* in
 ``msumastro`` version 0.9 and will be removed in the next release.
 
 Make a collection by providing the name of a directory and a list of the FITS
