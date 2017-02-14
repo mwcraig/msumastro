@@ -68,7 +68,9 @@ logger.addHandler(screen_handler)
 def astrometry_for_directory(directories,
                              destination=None,
                              no_log_destination=False,
-                             blind=False):
+                             blind=False,
+                             custom_sextractor=False,
+                             odds_ratio=None):
     """
     Add astrometry to files in list of directories
 
@@ -122,7 +124,9 @@ def astrometry_for_directory(directories,
             astrometry = ast.add_astrometry(original_fname,
                                             ra_dec=ra_dec,
                                             note_failure=True,
-                                            overwrite=True)
+                                            overwrite=True,
+                                            custom_sextractor=custom_sextractor,
+                                            odds_ratio=odds_ratio)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -164,6 +168,11 @@ def construct_parser():
     blind_help += 'disabled by default because it is so slow.'
     parser.add_argument('-b', '--blind',
                         help=blind_help, action='store_true')
+    parser.add_argument('-c', '--custom-sextractor', action='store_true',
+                        help='Use Feder-specific SExtractor settings')
+    parser.add_argument('-o', '--odds-ratio', action='store',
+                        help='Change the odds-ratio for accepting a match'
+                             ' from the default of 1e9.')
 
     return parser
 
@@ -184,6 +193,8 @@ def main(arglist=None):
     astrometry_for_directory(args.dir,
                              destination=args.destination_dir,
                              blind=args.blind,
-                             no_log_destination=do_not_log_in_destination)
+                             custom_sextractor=args.custom_sextractor,
+                             no_log_destination=do_not_log_in_destination,
+                             odds_ratio=args.odds_ratio)
 
 main.__doc__ = _main_function_docstring(__name__)

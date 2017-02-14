@@ -4,6 +4,8 @@ from __future__ import (print_function, division, absolute_import,
 import logging
 import subprocess
 from os import path, remove, rename
+import tempfile
+from textwrap import dedent
 
 from astropy.extern import six
 
@@ -12,11 +14,13 @@ __all__ = ['call_astrometry', 'add_astrometry']
 logger = logging.getLogger(__name__)
 
 
-def call_astrometry(filename, sextractor=False, feder_settings=True,
+def call_astrometry(filename, sextractor=False,
+                    custom_sextractor_config=False, feder_settings=True,
                     no_plots=True, minimal_output=True,
                     save_wcs=False, verify=None,
                     ra_dec=None, overwrite=False,
-                    wcs_reference_image_center=True):
+                    wcs_reference_image_center=True,
+                    odds_ratio=None):
     """
     Wrapper around astrometry.net solve-field.
 
@@ -25,6 +29,9 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
     sextractor : bool or str, optional
         ``True`` to use `sextractor`, or a ``str`` with the
         path to sextractor.
+    custom_sextractor_config : bool, optional
+        If ``True``, use a sexractor configuration file customized for Feder
+        images.
     feder_settings : bool, optional
         Set True if you want to use plate scale appropriate for Feder
         Observatory Apogee Alta U9 camera.
@@ -85,6 +92,36 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
 
     solve_field.extend(options.split())
 
+    if custom_sextractor_config:
+        tmp_location = tempfile.mkdtemp()
+        param_location = path.join(tmp_location, 'default.param')
+        config_location = path.join(tmp_location, 'feder.config')
+        config_contents = SExtractor_config.format(param_file=param_location)
+        with open(config_location, 'w') as f:
+            f.write(config_contents)
+        with open(param_location, 'w') as f:
+            contents = """
+                X_IMAGE
+                Y_IMAGE
+                MAG_AUTO
+                FLUX_AUTO
+            """
+
+            f.write(dedent(contents))
+
+        additional_solve_args = [
+            '--sextractor-config', config_location,
+            '--x-column', 'X_IMAGE',
+            '--y-column',  'Y_IMAGE',
+            '--sort-column', 'MAG_AUTO',
+            '--sort-ascending'
+        ]
+
+        solve_field.extend(additional_solve_args)
+
+    if odds_ratio is not None:
+        solve_field.append('--odds-to-solve')
+        solve_field.append(odds_ratio)
     # kludge to handle case when path of verify file contains a space--split
     # above does not work for that case.
 
@@ -111,7 +148,9 @@ def call_astrometry(filename, sextractor=False, feder_settings=True,
 
 def add_astrometry(filename, overwrite=False, ra_dec=None,
                    note_failure=False, save_wcs=False,
-                   verify=None, try_builtin_source_finder=False):
+                   verify=None, try_builtin_source_finder=False,
+                   custom_sextractor=False,
+                   odds_ratio=None):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -162,7 +201,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         solved_field = (call_astrometry(filename,
                                         sextractor=True,
                                         ra_dec=ra_dec,
-                                        save_wcs=save_wcs, verify=verify)
+                                        save_wcs=save_wcs, verify=verify,
+                                        custom_sextractor_config=custom_sextractor,
+                                        odds_ratio=odds_ratio)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')
@@ -219,3 +260,84 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
 
     logger.info('END ADDING ASTROMETRY for %s', filename)
     return solved_field
+
+
+SExtractor_config = """
+# Configuration file for SExtractor 2.19.5 based on default by EB 2014-11-26
+#
+
+# modification was to change DETECT_MINAREA and turn of filter convolution
+
+#-------------------------------- Catalog ------------------------------------
+
+PARAMETERS_NAME  {param_file}  # name of the file containing catalog contents
+
+#------------------------------- Extraction ----------------------------------
+
+DETECT_TYPE      CCD            # CCD (linear) or PHOTO (with gamma correction)
+DETECT_MINAREA   15              # min. # of pixels above threshold
+DETECT_THRESH    1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
+ANALYSIS_THRESH  1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
+
+FILTER           N              # apply filter for detection (Y or N)?
+FILTER_NAME      default.conv   # name of the file containing the filter
+
+DEBLEND_NTHRESH  32             # Number of deblending sub-thresholds
+DEBLEND_MINCONT  0.005          # Minimum contrast parameter for deblending
+
+CLEAN            Y              # Clean spurious detections? (Y or N)?
+CLEAN_PARAM      1.0            # Cleaning efficiency
+
+MASK_TYPE        CORRECT        # type of detection MASKing: can be one of
+                                # NONE, BLANK or CORRECT
+
+#------------------------------ Photometry -----------------------------------
+
+PHOT_APERTURES   10              # MAG_APER aperture diameter(s) in pixels
+PHOT_AUTOPARAMS  2.5, 3.5       # MAG_AUTO parameters: <Kron_fact>,<min_radius>
+PHOT_PETROPARAMS 2.0, 3.5       # MAG_PETRO parameters: <Petrosian_fact>,
+                                # <min_radius>
+
+SATUR_LEVEL      50000.0        # level (in ADUs) at which arises saturation
+SATUR_KEY        SATURATE       # keyword for saturation level (in ADUs)
+
+MAG_ZEROPOINT    0.0            # magnitude zero-point
+MAG_GAMMA        4.0            # gamma of emulsion (for photographic scans)
+GAIN             0.0            # detector gain in e-/ADU
+GAIN_KEY         GAIN           # keyword for detector gain in e-/ADU
+PIXEL_SCALE      1.0            # size of pixel in arcsec (0=use FITS WCS info)
+
+#------------------------- Star/Galaxy Separation ----------------------------
+
+SEEING_FWHM      1.2            # stellar FWHM in arcsec
+STARNNW_NAME     default.nnw    # Neural-Network_Weight table filename
+
+#------------------------------ Background -----------------------------------
+
+BACK_SIZE        64             # Background mesh: <size> or <width>,<height>
+BACK_FILTERSIZE  3              # Background filter: <size> or <width>,<height>
+
+BACKPHOTO_TYPE   GLOBAL         # can be GLOBAL or LOCAL
+
+#------------------------------ Check Image ----------------------------------
+
+CHECKIMAGE_TYPE  NONE           # can be NONE, BACKGROUND, BACKGROUND_RMS,
+                                # MINIBACKGROUND, MINIBACK_RMS, -BACKGROUND,
+                                # FILTERED, OBJECTS, -OBJECTS, SEGMENTATION,
+                                # or APERTURES
+CHECKIMAGE_NAME  check.fits     # Filename for the check-image
+
+#--------------------- Memory (change with caution!) -------------------------
+
+MEMORY_OBJSTACK  3000           # number of objects in stack
+MEMORY_PIXSTACK  300000         # number of pixels in stack
+MEMORY_BUFSIZE   1024           # number of lines in buffer
+
+#----------------------------- Miscellaneous ---------------------------------
+
+VERBOSE_TYPE     NORMAL         # can be QUIET, NORMAL or FULL
+HEADER_SUFFIX    .head          # Filename extension for additional headers
+WRITE_XML        N              # Write XML file (Y/N)?
+XML_NAME         sex.xml        # Filename for XML output
+
+"""
