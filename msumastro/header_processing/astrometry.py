@@ -20,7 +20,8 @@ def call_astrometry(filename, sextractor=False,
                     save_wcs=False, verify=None,
                     ra_dec=None, overwrite=False,
                     wcs_reference_image_center=True,
-                    odds_ratio=None):
+                    odds_ratio=None,
+                    astrometry_config=None):
     """
     Wrapper around astrometry.net solve-field.
 
@@ -122,6 +123,11 @@ def call_astrometry(filename, sextractor=False,
     if odds_ratio is not None:
         solve_field.append('--odds-to-solve')
         solve_field.append(odds_ratio)
+
+    if astrometry_config is not None:
+        solve_field.append('--config')
+        solve_field.append(astrometry_config)
+
     # kludge to handle case when path of verify file contains a space--split
     # above does not work for that case.
 
@@ -150,7 +156,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    note_failure=False, save_wcs=False,
                    verify=None, try_builtin_source_finder=False,
                    custom_sextractor=False,
-                   odds_ratio=None):
+                   odds_ratio=None,
+                   astrometry_config=None):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -203,7 +210,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                         ra_dec=ra_dec,
                                         save_wcs=save_wcs, verify=verify,
                                         custom_sextractor_config=custom_sextractor,
-                                        odds_ratio=odds_ratio)
+                                        odds_ratio=odds_ratio,
+                                        astrometry_config=astrometry_config)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')

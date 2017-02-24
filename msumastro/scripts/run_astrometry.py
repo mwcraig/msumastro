@@ -70,7 +70,8 @@ def astrometry_for_directory(directories,
                              no_log_destination=False,
                              blind=False,
                              custom_sextractor=False,
-                             odds_ratio=None):
+                             odds_ratio=None,
+                             astrometry_config=None):
     """
     Add astrometry to files in list of directories
 
@@ -126,7 +127,8 @@ def astrometry_for_directory(directories,
                                             note_failure=True,
                                             overwrite=True,
                                             custom_sextractor=custom_sextractor,
-                                            odds_ratio=odds_ratio)
+                                            odds_ratio=odds_ratio,
+                                            astrometry_config=astrometry_config)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -173,6 +175,9 @@ def construct_parser():
     parser.add_argument('-o', '--odds-ratio', action='store',
                         help='Change the odds-ratio for accepting a match'
                              ' from the default of 1e9.')
+    parser.add_argument('--astrometry-config', action='store',
+                        help='File to use for configuring astrometry engine, '
+                             'including, e.g., the location of index files.')
 
     return parser
 
@@ -195,6 +200,7 @@ def main(arglist=None):
                              blind=args.blind,
                              custom_sextractor=args.custom_sextractor,
                              no_log_destination=do_not_log_in_destination,
-                             odds_ratio=args.odds_ratio)
+                             odds_ratio=args.odds_ratio,
+                             astrometry_config=args.astrometry_config)
 
 main.__doc__ = _main_function_docstring(__name__)
