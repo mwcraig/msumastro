@@ -189,6 +189,21 @@ class CelestronNightscape10100(Instrument):
                             image_unit=u.adu)
 
 
+class ApogeeAspenCG16(Instrument):
+    """
+    Apogee Aspen CG16 (manufactured by Andor).by
+    """
+    def __init__(self):
+        super(ApogeeAspenCG16, self).__init__(
+            'Apogee Aspen CG16',
+            fits_names=["Apogee Aspen CG16M"],
+            rows=4096, columns=4109,
+            useful_overscan_region='[4096:4109]',
+            trim_region='[1:4096, :]',
+            image_unit=u.adu
+        )
+
+
 class ImageSoftware(object):
 
     """
@@ -340,9 +355,11 @@ class Feder(object):
         self._apogee_alta_u9 = ApogeeAltaU9()
         self._sbig_spectrometer = SBIGSpectrometer()
         self._celestron_10100 = CelestronNightscape10100()
+        self._apogee_aspen = ApogeeAspenCG16()
         self._instrument_objects = [self._apogee_alta_u9,
                                     self._sbig_spectrometer,
-                                    self._celestron_10100]
+                                    self._celestron_10100,
+                                    self._apogee_aspen]
         self.instruments = {}
         for instrument in self._instrument_objects:
             for name in instrument.fits_names:
