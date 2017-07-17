@@ -411,28 +411,6 @@ class TestImageFileCollection(object):
         # Does ImageFileCollection summary contain values from table?
         assert nonsense in ic.summary_info['imagetyp']
 
-    def test_initializing_from_table_file_that_does_not_exist(self,
-                                                              triage_setup,
-                                                              caplog):
-        # Do we get a warning if we try reading a file that doesn't exist,
-        # but where we can initialize from a directory?
-        ic = tff.ImageFileCollection(location=triage_setup.test_dir,
-                                     info_file='iufadsdhfasdifre')
-        warnings = [rec for rec in caplog.records()
-                    if ((rec.levelno == logging.WARN) &
-                        ('Unable to open table file' in rec.message))]
-        assert (len(warnings) == 1)
-        # Do we raise an error if the table name is bad AND the location
-        # is None?
-        with pytest.raises(IOError):
-            ic = tff.ImageFileCollection(location=None,
-                                         info_file='iufadsdhfasdifre')
-        # Do we raise an error if the table name is bad AND
-        # the location is given but is bad?
-        with pytest.raises(OSError):
-            ic = tff.ImageFileCollection(location='dasifjoaurun',
-                                         info_file='iufadsdhfasdifre')
-
     def test_initialization_with_no_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords=[])

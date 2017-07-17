@@ -21,7 +21,8 @@ def call_astrometry(filename, sextractor=False,
                     ra_dec=None, overwrite=False,
                     wcs_reference_image_center=True,
                     odds_ratio=None,
-                    astrometry_config=None):
+                    astrometry_config=None,
+                    additional_args=None):
     """
     Wrapper around astrometry.net solve-field.
 
@@ -58,6 +59,13 @@ def call_astrometry(filename, sextractor=False,
     wcs_reference_image_center :
         If ``True``, force the WCS reference point in the image to be the
         image center.
+    odds_ratio : float, optional
+        The odds ratio to use for a successful solve. Default is to use the
+        default in `solve-field`.
+    astrometry_config : str, optional
+        Name of configuration file to use for SExtractor.
+    additional_args : str or list of str, optional
+        Additional arguments to pass to `solve-field`
     """
     solve_field = ["solve-field"]
     option_list = []
@@ -66,6 +74,13 @@ def call_astrometry(filename, sextractor=False,
     if feder_settings:
         option_list.append(
             "--scale-low 0.4 --scale-high 0.6 --scale-units arcsecperpix")
+
+    if additional_args is not None:
+        if isinstance(additional_args, basestring):
+            add_ons = [additional_args]
+        else:
+            add_ons = additional_args
+        option_list.extend(additional_args)
 
     if isinstance(sextractor, six.string_types):
         option_list.append("--sextractor-path " + sextractor)
@@ -157,7 +172,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    verify=None, try_builtin_source_finder=False,
                    custom_sextractor=False,
                    odds_ratio=None,
-                   astrometry_config=None):
+                   astrometry_config=None,
+                   camera=''):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -183,6 +199,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     verify :
         See :func:`call_astrometry`
 
+    camera : str, one of ['celestron', 'u9', 'cp16'], optional
+        Name of camera; determines the pixel scale used in the solved. Default
+        is to use `'u9'`.
     Returns
     -------
     bool
@@ -202,6 +221,22 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     """
     base, ext = path.splitext(filename)
 
+    # All are in arcsec per pixel, values are approximate
+    camera_pixel_scales = {
+        'celestron': 0.3,
+        'u9': 0.55,
+        'cp16': 0.55
+    }
+
+    if camera:
+        use_feder = False
+        scale = camera_pixel_scales[camera]
+        scale_options = ("--scale-low {low} --scale-high {high} "
+                         "--scale-units arcsecperpix".format(low=0.8*scale, high=1.2 * scale))
+    else:
+        use_feder = True
+        scale_options = None
+
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     try:
         logger.debug('About to call call_astrometry')
@@ -211,7 +246,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                         save_wcs=save_wcs, verify=verify,
                                         custom_sextractor_config=custom_sextractor,
                                         odds_ratio=odds_ratio,
-                                        astrometry_config=astrometry_config)
+                                        astrometry_config=astrometry_config,
+                                        feder_settings=use_feder,
+                                        additional_args=scale_options)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')
