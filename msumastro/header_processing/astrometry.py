@@ -76,7 +76,7 @@ def call_astrometry(filename, sextractor=False,
             "--scale-low 0.4 --scale-high 0.6 --scale-units arcsecperpix")
 
     if additional_args is not None:
-        if isinstance(additional_args, basestring):
+        if isinstance(additional_args, six.string_types):
             add_ons = [additional_args]
         else:
             add_ons = additional_args
