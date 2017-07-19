@@ -80,7 +80,7 @@ def call_astrometry(filename, sextractor=False,
             add_ons = [additional_args]
         else:
             add_ons = additional_args
-        option_list.extend(additional_args)
+        option_list.extend(add_ons)
 
     if isinstance(sextractor, six.string_types):
         option_list.append("--sextractor-path " + sextractor)

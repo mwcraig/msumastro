@@ -71,7 +71,8 @@ def astrometry_for_directory(directories,
                              blind=False,
                              custom_sextractor=False,
                              odds_ratio=None,
-                             astrometry_config=None):
+                             astrometry_config=None,
+                             camera=None):
     """
     Add astrometry to files in list of directories
 
@@ -128,7 +129,8 @@ def astrometry_for_directory(directories,
                                             overwrite=True,
                                             custom_sextractor=custom_sextractor,
                                             odds_ratio=odds_ratio,
-                                            astrometry_config=astrometry_config)
+                                            astrometry_config=astrometry_config,
+                                            camera=camera)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -178,6 +180,10 @@ def construct_parser():
     parser.add_argument('--astrometry-config', action='store',
                         help='File to use for configuring astrometry engine, '
                              'including, e.g., the location of index files.')
+    parser.add_argument('--camera', action='store',
+                        help='Name of camera; used to set pixel scale in '
+                             'solve. If omitted, uses settings for Apogee '
+                             'Alta U9.')
 
     return parser
 
@@ -201,6 +207,8 @@ def main(arglist=None):
                              custom_sextractor=args.custom_sextractor,
                              no_log_destination=do_not_log_in_destination,
                              odds_ratio=args.odds_ratio,
-                             astrometry_config=args.astrometry_config)
+                             astrometry_config=args.astrometry_config,
+                             camera=args.camera)
+
 
 main.__doc__ = _main_function_docstring(__name__)
