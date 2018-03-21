@@ -486,8 +486,8 @@ class Feder(object):
         obs_altitude = FITSKeyword(name='altitude',
                                    comment='[meters] Observatory altitude')
         lat_lon_format = {'sep': ':', 'pad': True, 'alwayssign': True}
-        latitude.value = self.site.latitude.to_string(**lat_lon_format)
-        longitude.value = self.site.longitude.to_string(**lat_lon_format)
+        latitude.value = self.site.lat.to_string(**lat_lon_format)
+        longitude.value = self.site.lon.to_string(**lat_lon_format)
         obs_altitude.value = self.site.height.value
         self._keywords_for_all_files.extend([latitude, longitude,
                                             obs_altitude])
