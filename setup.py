@@ -15,7 +15,7 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
 
-INSTALL_REQUIRES = ['astropy>=1.0', 'numpy', 'ccdproc>=1.0']
+INSTALL_REQUIRES = ['astropy>=2.0', 'numpy', 'ccdproc>=1.0']
 
 versioneer_cmdclass = versioneer.get_cmdclass()
 versioneer_cmdclass['test'] = PyTest
