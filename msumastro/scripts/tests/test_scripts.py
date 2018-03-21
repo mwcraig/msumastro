@@ -330,20 +330,20 @@ class TestScript(object):
                                             file_arg, file_column):
         ic = ImageFileCollection(self.test_dir.strpath,
                                  keywords=['imagetyp'])
-        ic.summary_info.keep_columns('file')
+        ic.summary.keep_columns('file')
 
         file_list = os.path.join(ic.location, 'files.txt')
         keyword_list = os.path.join(ic.location, 'keys.txt')
 
         full_paths = [os.path.join(self.test_dir.strpath, fil) for
-                      fil in ic.summary_info['file']]
+                      fil in ic.summary['file']]
         print('fill paths: %s' % ' '.join(full_paths))
-        ic.summary_info['file'][:] = full_paths
-        ic.summary_info.remove_column('file')
-        ic.summary_info.add_column(Column(data=full_paths, name=file_column))
-        ic.summary_info.write(file_list, format='ascii')
+        ic.summary['file'][:] = full_paths
+        ic.summary.remove_column('file')
+        ic.summary.add_column(Column(data=full_paths, name=file_column))
+        ic.summary.write(file_list, format='ascii')
         if file_column != 'file':
-            ic.summary_info.rename_column(file_column, 'file')
+            ic.summary.rename_column(file_column, 'file')
         dumb_keyword = 'munkeez'.upper()
         dumb_value = 'bananaz'
         keywords = Column(data=[dumb_keyword], name='Keyword')

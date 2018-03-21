@@ -61,7 +61,7 @@ class TestImageFileCollection(object):
     def test_summary_is_summary_info(self, triage_setup):
         img_collection = tff.ImageFileCollection(
             location=triage_setup.test_dir, keywords=['imagetyp', 'filter'])
-        assert img_collection.summary is img_collection.summary_info
+        assert img_collection.summary is img_collection.summary
 
     def test_files_with_compressed(self, triage_setup):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir)
@@ -95,10 +95,10 @@ class TestImageFileCollection(object):
     def test_hdus_masking(self, triage_setup):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir,
                                              keywords=['imagetyp', 'exposure'])
-        old_data = np.array(collection.summary_info)
+        old_data = np.array(collection.summary)
         for hdu in collection.hdus(imagetyp='bias'):
             pass
-        new_data = np.array(collection.summary_info)
+        new_data = np.array(collection.summary)
         assert (new_data == old_data).all()
 
     def test_headers(self, triage_setup):
@@ -204,11 +204,11 @@ class TestImageFileCollection(object):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir,
                                              keywords=['imagetyp'])
         # ensure all files are originally unmasked
-        assert(not collection.summary_info['file'].mask.any())
+        assert(not collection.summary['file'].mask.any())
         # generate list that will match NO files
         collection.files_filtered(imagetyp='foisajfoisaj')
         # if the code works, this should have no permanent effect
-        assert(not collection.summary_info['file'].mask.any())
+        assert(not collection.summary['file'].mask.any())
 
     @pytest.mark.parametrize("new_keywords,collection_keys", [
                             (['imagetyp', 'object'], ['imagetyp', 'filter']),
@@ -217,9 +217,9 @@ class TestImageFileCollection(object):
                              triage_setup):
         collection = tff.ImageFileCollection(location=triage_setup.test_dir,
                                              keywords=collection_keys)
-        tbl_orig = collection.summary_info
+        tbl_orig = collection.summary
         collection.keywords = new_keywords
-        tbl_new = collection.summary_info
+        tbl_new = collection.summary
 
         if set(new_keywords).issubset(collection_keys):
             # should just delete columns without rebuilding table
@@ -255,7 +255,7 @@ class TestImageFileCollection(object):
         print(empty_dir.listdir())
         collection = tff.ImageFileCollection(location=empty_dir.strpath,
                                              keywords=['imagetyp'])
-        assert (collection.summary_info is None)
+        assert (collection.summary is None)
         for hdr in collection.headers():
             # this statement should not be reached if there are no FITS files
             assert 0
@@ -272,7 +272,7 @@ class TestImageFileCollection(object):
         ic = tff.ImageFileCollection(location=bad_dir.strpath, keywords=[])
         # ImageFileCollection will suppress the IOError but log a warning
         # so check the log for the appropriate warning
-        warnings = [rec for rec in caplog.records()
+        warnings = [rec for rec in caplog.records
                     if ((rec.levelno == logging.WARN) &
                         ('Unable to get FITS header' in rec.message))]
         assert (len(warnings) == 0)
@@ -312,7 +312,7 @@ class TestImageFileCollection(object):
         ic = tff.ImageFileCollection(triage_setup.test_dir,
                                      keywords=['imagetyp'])
         ic.keywords = None
-        assert ic.summary_info == []
+        assert ic.summary == []
 
     def test_getting_value_for_keyword(self, triage_setup):
         ic = tff.ImageFileCollection(triage_setup.test_dir,
@@ -322,12 +322,12 @@ class TestImageFileCollection(object):
             ic.values('filter')
         # If I ask for unique values do I get them?
         values = ic.values('imagetyp', unique=True)
-        print(ic.summary_info['imagetyp'])
-        assert values == list(set(ic.summary_info['imagetyp']))
-        assert len(values) < len(ic.summary_info['imagetyp'])
+        print(ic.summary['imagetyp'])
+        assert values == list(set(ic.summary['imagetyp']))
+        assert len(values) < len(ic.summary['imagetyp'])
         # Does the list of non-unique values match the raw column?
         values = ic.values('imagetyp', unique=False)
-        assert values == list(ic.summary_info['imagetyp'])
+        assert values == list(ic.summary['imagetyp'])
         # Does unique actually default to false?
         values2 = ic.values('imagetyp')
         assert values == values2
@@ -340,7 +340,7 @@ class TestImageFileCollection(object):
             pass
         ic = tff.ImageFileCollection(triage_setup.test_dir,
                                      keywords=['imagetyp'])
-        assert not_fits not in ic.summary_info['file']
+        assert not_fits not in ic.summary['file']
         os.remove(path_bad)
 
     def test_data_type_mismatch_in_fits_keyword_values(self, tmpdir,
@@ -355,7 +355,7 @@ class TestImageFileCollection(object):
         ic = tff.ImageFileCollection(triage_setup.test_dir,
                                      keywords=['filter'])
         # dtype is object when there is a mix of types
-        assert ic.summary_info['filter'].dtype == np.dtype('O')
+        assert ic.summary['filter'].dtype == np.dtype('O')
         os.remove(path_bad)
 
     def test_filter_by_numerical_value(self, triage_setup):
@@ -384,7 +384,7 @@ class TestImageFileCollection(object):
         keys = ['imagetyp', 'filter']
         ic = tff.ImageFileCollection(triage_setup.test_dir,
                                      keywords=keys)
-        table = ic.summary_info
+        table = ic.summary
         table_path = os.path.join(triage_setup.test_dir, 'input_tbl.csv')
         nonsense = 'forks'
         table['imagetyp'][0] = nonsense
@@ -404,12 +404,12 @@ class TestImageFileCollection(object):
         # we now have a location, so did we get files?
         assert len(ic.files) == len(table)
         # Is the summary table masked?
-        assert ic.summary_info.masked
+        assert ic.summary.masked
         # can I loop over headers?
         for h in ic.headers():
             assert isinstance(h, fits.Header)
         # Does ImageFileCollection summary contain values from table?
-        assert nonsense in ic.summary_info['imagetyp']
+        assert nonsense in ic.summary['imagetyp']
 
     def test_initialization_with_no_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
@@ -423,7 +423,7 @@ class TestImageFileCollection(object):
 
     def check_all_keywords_in_collection(self, image_collection):
         lower_case_columns = [c.lower() for c in
-                              image_collection.summary_info.colnames]
+                              image_collection.summary.colnames]
         for h in image_collection.headers():
             for k in h:
                 assert k.lower() in lower_case_columns
@@ -437,26 +437,26 @@ class TestImageFileCollection(object):
         # First, try grabbing all of the keywords
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords='*')
-        assert ic.summary_info.masked
+        assert ic.summary.masked
         # Now, try keywords that every file will have
         ic.keywords = ['bitpix']
-        assert ic.summary_info.masked
+        assert ic.summary.masked
         # What about keywords that include some that will surely be missing?
         ic.keywords = ['bitpix', 'dsafui']
-        assert ic.summary_info.masked
+        assert ic.summary.masked
 
     def test_case_of_keywords_respected(self, triage_setup):
         keywords_in = ['BitPix', 'instrume', 'NAXIS']
         ic = tff.ImageFileCollection(location=triage_setup.test_dir,
                                      keywords=keywords_in)
         for key in keywords_in:
-            assert key in ic.summary_info.colnames
+            assert key in ic.summary.colnames
 
     def test_grabbing_all_keywords_and_specific_keywords(self, triage_setup):
         keyword_not_in_headers = 'OIdn89!@'
         ic = tff.ImageFileCollection(triage_setup.test_dir,
                                      keywords=['*', keyword_not_in_headers])
-        assert keyword_not_in_headers in ic.summary_info.colnames
+        assert keyword_not_in_headers in ic.summary.colnames
         self.check_all_keywords_in_collection(ic)
 
     def test_grabbing_all_keywords_excludes_empty_key(self, triage_setup):
@@ -470,8 +470,8 @@ class TestImageFileCollection(object):
                                            'blank.fits'))
 
         ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
-        print(ic.summary_info.colnames)
-        assert 'col0' not in ic.summary_info.colnames
+        print(ic.summary.colnames)
+        assert 'col0' not in ic.summary.colnames
 
     def test_header_with_long_history_roundtrips_to_disk(self, triage_setup):
         # I tried combing several history comments into one table entry with
@@ -489,9 +489,9 @@ class TestImageFileCollection(object):
         path_history = os.path.join(triage_setup.test_dir, 'long_history.fit')
         long_history.writeto(path_history)
         ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
-        ic.summary_info.write('test_table.txt', format='ascii.csv')
+        ic.summary.write('test_table.txt', format='ascii.csv')
         table_disk = Table.read('test_table.txt', format='ascii.csv')
-        assert len(table_disk) == len(ic.summary_info)
+        assert len(table_disk) == len(ic.summary)
 
     def test_refresh_method_sees_added_keywords(self, triage_setup):
         ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
@@ -500,21 +500,21 @@ class TestImageFileCollection(object):
         for h in ic.headers(overwrite=True):
             h[not_in_header] = True
         print(h)
-        assert not_in_header not in ic.summary_info.colnames
+        assert not_in_header not in ic.summary.colnames
 
         ic.refresh()
         # After refreshing the odd keyword should be present.
         print(ic.keywords)
-        assert not_in_header.lower() in ic.summary_info.colnames
+        assert not_in_header.lower() in ic.summary.colnames
 
     def test_refresh_method_sees_added_files(self, triage_setup):
         ic = tff.ImageFileCollection(triage_setup.test_dir, keywords='*')
         # Compressed files don't get copied. Not sure why...
-        original_len = len(ic.summary_info) - triage_setup.n_test['compressed']
+        original_len = len(ic.summary) - triage_setup.n_test['compressed']
         # Generate additional files in this directory
         for h in ic.headers(save_with_name="_foo"):
             pass
         ic.refresh()
-        new_len = len(ic.summary_info) - triage_setup.n_test['compressed']
-        print(ic.summary_info['file'])
+        new_len = len(ic.summary) - triage_setup.n_test['compressed']
+        print(ic.summary['file'])
         assert new_len == 2 * original_len

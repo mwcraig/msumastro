@@ -57,7 +57,7 @@ def IRAF_image_type(image_type):
 def _lst_from_obstime(obstime):
     try:
         LST = obstime.sidereal_time('apparent',
-                                    longitude=feder.site.longitude)
+                                    longitude=feder.site.lon)
     except IndexError:
         # We are outside the range of the IERS table installed with astropy,
         # so get a newer one.
@@ -67,7 +67,7 @@ def _lst_from_obstime(obstime):
                                   cache=True))
         obstime.delta_ut1_utc = obstime.get_delta_ut1_utc(iers_a)
         LST = obstime.sidereal_time('apparent',
-                                    longitude=feder.site.longitude)
+                                    longitude=feder.site.lon)
     return LST
 
 
@@ -709,7 +709,7 @@ def add_object_info(directory=None,
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'ra',
                                            'dec', 'object'])
-    im_table = images.summary_info
+    im_table = images.summary
 
     object_dir = directory if object_list_dir is None else object_list_dir
 
@@ -811,7 +811,7 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
     images = ImageFileCollection(directory,
                                  keywords=['imagetyp', 'ra',
                                            'dec', 'object'])
-    summary = images.summary_info
+    summary = images.summary
     missing_dec = summary[(np.logical_not(summary['object'].mask)) &
                           (summary['ra'].mask) &
                           (summary['dec'].mask) &
