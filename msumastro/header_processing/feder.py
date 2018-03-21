@@ -15,7 +15,7 @@ from .fitskeyword import FITSKeyword
 logger = logging.getLogger(__name__)
 
 __all__ = ['FederSite', 'ImageSoftware', 'Instrument', 'ApogeeAltaU9',
-           'MaximDL4', 'MaximDL5']
+           'ApogeeAspenCG16', 'MaximDL4', 'MaximDL5']
 
 
 class FederSite(EarthLocation):
@@ -196,7 +196,7 @@ class ApogeeAspenCG16(Instrument):
     def __init__(self):
         super(ApogeeAspenCG16, self).__init__(
             'Apogee Aspen CG16',
-            fits_names=["Apogee Aspen CG16M"],
+            fits_names=["Apogee Aspen CG16M", "AspenCG16"],
             rows=4096, columns=4109,
             useful_overscan_region='[4096:4109]',
             trim_region='[1:4096, :]',
@@ -302,6 +302,28 @@ class MaximDL5(ImageSoftware):
                                        )
 
 
+class MaximDL6(ImageSoftware):
+
+    """
+    Represents MaximDL version 6, all sub-versions.
+
+    Subversions are included by listing the FITS names of all versions that
+    have been used at Feder Observatory.
+    """
+
+    def __init__(self):
+        bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
+                    'OBJCTHA', 'AIRMASS', 'OBSERVER']
+        fits_name = ['MaxIm DL Version 6.16 190601 00KPP']
+        super(MaximDL6, self).__init__("MaxImDL",
+                                       fits_name=fits_name,
+                                       major_version=6,
+                                       minor_version=16,
+                                       bad_keywords=bad_keys,
+                                       fits_keyword='SWCREATE'
+                                       )
+
+
 class SBIGCCDOps(ImageSoftware):
     """
     Represents software used to create images from the SBIG spectrometer.
@@ -366,10 +388,16 @@ class Feder(object):
                 self.instruments[name] = instrument
         self._maximdl4 = MaximDL4()
         self._maximdl5 = MaximDL5()
+        self._maximdl6 = MaximDL6()
         self._sbig_ccdops = SBIGCCDOps()
         self._astrofx = CelestronAstroFX()
-        self._software_objects = \
-            [self._maximdl4, self._maximdl5, self._sbig_ccdops, self._astrofx]
+        self._software_objects = [
+            self._maximdl4,
+            self._maximdl5,
+            self._maximdl6,
+            self._sbig_ccdops,
+            self._astrofx
+        ]
         self.software = {}
         self.software_FITS_keywords = []
         for software in self._software_objects:
