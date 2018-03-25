@@ -173,7 +173,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    custom_sextractor=False,
                    odds_ratio=None,
                    astrometry_config=None,
-                   camera=''):
+                   camera='',
+                   avoid_pyfits=False):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -202,6 +203,11 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     camera : str, one of ['celestron', 'u9', 'cp16'], optional
         Name of camera; determines the pixel scale used in the solved. Default
         is to use `'u9'`.
+
+    avoid_pyfits : bool
+        Add arguments to solve-field to avoid calls to pyfits.BinTableHDU.
+        See https://groups.google.com/forum/#!topic/astrometry/AT21x6zVAJo
+
     Returns
     -------
     bool
@@ -235,7 +241,15 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                          "--scale-units arcsecperpix".format(low=0.8*scale, high=1.2 * scale))
     else:
         use_feder = True
-        scale_options = None
+        scale_options = ''
+
+    if avoid_pyfits:
+        pyfits_options = '--no-remove-lines --uniformize 0'
+    else:
+        pyfits_options = ''
+
+    additional_opts = ' '.join([scale_options,
+                                pyfits_options])
 
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     try:
@@ -248,7 +262,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                         odds_ratio=odds_ratio,
                                         astrometry_config=astrometry_config,
                                         feder_settings=use_feder,
-                                        additional_args=scale_options)
+                                        additional_args=additional_opts)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')

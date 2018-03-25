@@ -72,7 +72,8 @@ def astrometry_for_directory(directories,
                              custom_sextractor=False,
                              odds_ratio=None,
                              astrometry_config=None,
-                             camera=None):
+                             camera=None,
+                             avoid_pyfits=False):
     """
     Add astrometry to files in list of directories
 
@@ -130,7 +131,8 @@ def astrometry_for_directory(directories,
                                             custom_sextractor=custom_sextractor,
                                             odds_ratio=odds_ratio,
                                             astrometry_config=astrometry_config,
-                                            camera=camera)
+                                            camera=camera,
+                                            avoid_pyfits=avoid_pyfits)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -184,6 +186,8 @@ def construct_parser():
                         help='Name of camera; used to set pixel scale in '
                              'solve. If omitted, uses settings for Apogee '
                              'Alta U9.')
+    parser.add_argument('--avoid-pyfits', action='store_true',
+                        help='Add options to avoid calls to pyfits.')
 
     return parser
 
@@ -208,7 +212,8 @@ def main(arglist=None):
                              no_log_destination=do_not_log_in_destination,
                              odds_ratio=args.odds_ratio,
                              astrometry_config=args.astrometry_config,
-                             camera=args.camera)
+                             camera=args.camera,
+                             avoid_pyfits=args.avoid_pyfits)
 
 
 main.__doc__ = _main_function_docstring(__name__)
