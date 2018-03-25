@@ -92,7 +92,7 @@ def astrometry_for_directory(directories,
         images = ImageFileCollection(currentDir,
                                      keywords=['imagetyp', 'object',
                                                'wcsaxes', 'ra', 'dec'])
-        summary = images.summary_info
+        summary = images.summary
         if len(summary) == 0:
             continue
         logger.debug('\n %s', '\n'.join(summary.pformat()))
@@ -138,7 +138,7 @@ def astrometry_for_directory(directories,
                            do_not_scale_image_data=True) as f:
                 try:
                     del f[0].header['imageh'], f[0].header['imagew']
-                    f.writeto(original_fname, clobber=True)
+                    f.writeto(original_fname, overwrite=True)
                 except KeyError:
                     pass
 
