@@ -392,7 +392,7 @@ def test_missing_object_column_raises_error():
     object_path = path.join(_test_dir, _default_object_file_name)
     object_table = Table.read(object_path, format='ascii')
     object_table.rename_column('object', 'BADBADBAD')
-    object_table.write(object_path, format='ascii')
+    object_table.write(object_path, format='ascii', overwrite=True)
     with pytest.raises(RuntimeError):
         ph.read_object_list(directory=_test_dir,
                             input_list=_default_object_file_name)
@@ -406,7 +406,7 @@ def test_read_object_list_logs_error_if_object_on_list_not_found(caplog):
     object_table = Table.read(object_path, format='ascii',
                               comment='#', delimiter=',')
     object_table.add_row(['not_a_simbad_object'])
-    object_table.write(object_path, format='ascii')
+    object_table.write(object_path, format='ascii', overwrite=True)
     with pytest.raises(name_resolve.NameResolveError):
         ph.read_object_list(_test_dir)
     errs = get_patch_header_logs(caplog, level=logging.ERROR)

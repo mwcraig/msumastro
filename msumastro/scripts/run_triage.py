@@ -85,7 +85,7 @@ def contains_maximdl_imagetype(image_collection):
     Check an image file collection for MaxImDL-style image types
     """
     import re
-    file_info = image_collection.summary_info
+    file_info = image_collection.summary
 
     if file_info['imagetyp'].mask.any():
         logger.warn('One or more image is missing IMAGETYP in header')
@@ -143,7 +143,7 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
         all_file_info.extend(RA.names)
 
     images = ImageFileCollection(dir, keywords=all_file_info)
-    file_info = images.summary_info
+    file_info = images.summary
 
     # check for bad image type and halt until that is fixed.
     if contains_maximdl_imagetype(images):

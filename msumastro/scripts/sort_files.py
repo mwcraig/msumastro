@@ -146,7 +146,7 @@ def sort_directory(directory, verbose=False,
     images = ImageFileCollection(directory, keywords=default_keys)
     if not images.files:
         return
-    full_table = images.summary_info
+    full_table = images.summary
     bias = 'BIAS'
     dark = 'DARK'
     flat = 'FLAT'

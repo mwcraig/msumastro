@@ -870,5 +870,5 @@ def add_ra_dec_from_object_name(directory=None, new_file_ext=None,
             else:
                 new_file_name = full_name
                 overwrite = True
-            hdulist.writeto(new_file_name, clobber=overwrite)
+            hdulist.writeto(new_file_name, overwrite=overwrite)
             hdulist.close()

@@ -164,7 +164,7 @@ def astrometry_for_directory(directories,
                 img_new.header['RA'] = coords.ra.to_string(unit=u.hour,
                                                            sep=':')
                 img_new.header['DEC'] = coords.dec.to_string(sep=':')
-                img_new.write(original_fname, clobber=True)
+                img_new.write(original_fname, overwrite=True)
 
 
 def construct_parser():
