@@ -314,11 +314,12 @@ class MaximDL6(ImageSoftware):
     def __init__(self):
         bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
                     'OBJCTHA', 'AIRMASS', 'OBSERVER']
-        fits_name = ['MaxIm DL Version 6.16 190601 00KPP']
+        fits_name = ['MaxIm DL Version 6.16 190601 00KPP',
+                     'MaxIm DL Version 6.17 190601 00KPP']
         super(MaximDL6, self).__init__("MaxImDL",
                                        fits_name=fits_name,
                                        major_version=6,
-                                       minor_version=16,
+                                       minor_version=17,
                                        bad_keywords=bad_keys,
                                        fits_keyword='SWCREATE'
                                        )
