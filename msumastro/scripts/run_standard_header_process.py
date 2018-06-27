@@ -159,10 +159,10 @@ def main(arglist=None):
         else:
             source_for_rest = root
 
-        if no_blind:
-            additional_args = None
-        else:
-            additional_args = ['--blind']
+        additional_args = ['--avoid-pyfits']
+
+        if not no_blind:
+            additional_args.append('--blind')
 
         run_astrometry = construct_command('run_astrometry.py',
                                            source_for_rest,
