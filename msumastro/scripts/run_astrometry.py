@@ -73,7 +73,8 @@ def astrometry_for_directory(directories,
                              odds_ratio=None,
                              astrometry_config=None,
                              camera=None,
-                             avoid_pyfits=False):
+                             avoid_pyfits=False,
+                             ignore_ra_dec=False):
     """
     Add astrometry to files in list of directories
 
@@ -116,6 +117,9 @@ def astrometry_for_directory(directories,
                 dec = img.header['dec']
                 ra_dec = (ra, dec)
             except KeyError:
+                ra_dec = None
+
+            if ignore_ra_dec:
                 ra_dec = None
 
             if (ra_dec is None) and (not blind):
@@ -188,6 +192,9 @@ def construct_parser():
                              'Alta U9.')
     parser.add_argument('--avoid-pyfits', action='store_true',
                         help='Add options to avoid calls to pyfits.')
+    parser.add_argument('--ignore-fits-ra-dec', action='store_true',
+                        help='Ignore any RA/Dec information in the '
+                             'FITS header.')
 
     return parser
 
@@ -213,7 +220,8 @@ def main(arglist=None):
                              odds_ratio=args.odds_ratio,
                              astrometry_config=args.astrometry_config,
                              camera=args.camera,
-                             avoid_pyfits=args.avoid_pyfits)
+                             avoid_pyfits=args.avoid_pyfits,
+                             ignore_ra_dec=args.ignore_fits_ra_dec)
 
 
 main.__doc__ = _main_function_docstring(__name__)
