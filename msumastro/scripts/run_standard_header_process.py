@@ -54,6 +54,10 @@ def construct_parser():
                               'pointing information '),
                         action='store_true')
 
+    parser.add_argument('--ignore-fits-ra-dec',
+                        help='Ignore ptg information in FITS headers',
+                        action='store_true')
+
     object_list_help = ('Path to or URL of file containing list (and '
                         'optionally coordinates of) objects that might be in '
                         'these files. If not provided it defaults to looking '
@@ -100,6 +104,7 @@ def main(arglist=None):
     common_args.extend([verbose, quiet_console, silent_console])
 
     no_blind = args.no_blind
+    ignore_fits_ra_dec = args.ignore_fits_ra_dec
 
     object_list_option = []
     if args.object_list is not None:
@@ -163,6 +168,9 @@ def main(arglist=None):
 
         if not no_blind:
             additional_args.append('--blind')
+
+        if ignore_fits_ra_dec:
+            additional_args.append('--ignore-fits-ra-dec')
 
         run_astrometry = construct_command('run_astrometry.py',
                                            source_for_rest,
