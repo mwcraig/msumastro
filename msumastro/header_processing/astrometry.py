@@ -151,7 +151,7 @@ def call_astrometry(filename, sextractor=False,
         solve_field.append("%s" % verify)
 
     solve_field.extend([filename])
-    logger.debug(' '.join(solve_field))
+    logger.info(' '.join(solve_field))
     try:
         solve_field_output = subprocess.check_output(solve_field,
                                                      stderr=subprocess.STDOUT)
