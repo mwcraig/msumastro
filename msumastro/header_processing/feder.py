@@ -315,7 +315,8 @@ class MaximDL6(ImageSoftware):
         bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
                     'OBJCTHA', 'AIRMASS', 'OBSERVER']
         fits_name = ['MaxIm DL Version 6.16 190601 00KPP',
-                     'MaxIm DL Version 6.17 190601 00KPP']
+                     'MaxIm DL Version 6.17 190601 00KPP',
+                     'MaxIm DL Version 6.18 190601 00KPP']
         super(MaximDL6, self).__init__("MaxImDL",
                                        fits_name=fits_name,
                                        major_version=6,
