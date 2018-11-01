@@ -70,10 +70,10 @@ def call_astrometry(filename, sextractor=False,
     solve_field = ["solve-field"]
     option_list = []
 
-    option_list.append("--obj 200")
+    option_list.append("--obj 100")
     if feder_settings:
         option_list.append(
-            "--scale-low 0.4 --scale-high 0.6 --scale-units arcsecperpix")
+            "--scale-low 0.5 --scale-high 0.6 --scale-units arcsecperpix")
 
     if additional_args is not None:
         if isinstance(additional_args, six.string_types):
@@ -151,6 +151,7 @@ def call_astrometry(filename, sextractor=False,
         solve_field.append("%s" % verify)
 
     solve_field.extend([filename])
+    print(' '.join(solve_field))
     logger.info(' '.join(solve_field))
     try:
         solve_field_output = subprocess.check_output(solve_field,
