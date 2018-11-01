@@ -160,7 +160,7 @@ def call_astrometry(filename, sextractor=False,
         log_level = logging.DEBUG
     except subprocess.CalledProcessError as e:
         return_status = e.returncode
-        solve_field_output = 'Output from astrometry.net:\n' + e.output
+        solve_field_output = 'Output from astrometry.net:\n' + str(e.output)
         log_level = logging.WARN
         logger.warning('Adding astrometry failed for %s', filename)
         raise e
