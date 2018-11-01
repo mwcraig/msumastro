@@ -12,7 +12,7 @@ env:
 
 matrix:
     include:
-        - python: 3.7
+        - python: 3.6
 
 before_install:
     # Use utf8 encoding. Should be default, but this is insurance against
