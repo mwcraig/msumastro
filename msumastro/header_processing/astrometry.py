@@ -147,8 +147,11 @@ def call_astrometry(filename, sextractor=False,
     # above does not work for that case.
 
     if verify is not None:
-        solve_field.append("--verify")
-        solve_field.append("%s" % verify)
+        if verify:
+            solve_field.append("--verify")
+            solve_field.append("%s" % verify)
+        else:
+            solve_field.append("--no-verify")
 
     solve_field.extend([filename])
     print(' '.join(solve_field))

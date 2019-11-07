@@ -74,7 +74,9 @@ def astrometry_for_directory(directories,
                              astrometry_config=None,
                              camera=None,
                              avoid_pyfits=False,
-                             ignore_ra_dec=False):
+                             ignore_ra_dec=False,
+                             no_verify=False,
+                             force=False):
     """
     Add astrometry to files in list of directories
 
@@ -89,22 +91,33 @@ def astrometry_for_directory(directories,
         blind astrometry is slow.
     """
 
+    if not no_verify:
+        verify_option = None
+    else:
+        verify_option = False
+
+    print(verify_option)
+
     for currentDir in directories:
         images = ImageFileCollection(currentDir,
                                      keywords=['imagetyp', 'object',
                                                'wcsaxes', 'ra', 'dec'])
         summary = images.summary
+        print(summary['imagetyp'], summary['wcsaxes'].mask)
         if len(summary) == 0:
             continue
         logger.debug('\n %s', '\n'.join(summary.pformat()))
-        lights = summary[((summary['imagetyp'] == 'LIGHT') &
-                          (summary['wcsaxes'].mask))]
+        light_mask = summary['imagetyp'] == 'LIGHT'
+        if not force:
+            light_mask = light_mask & summary['wcsaxes'].mask
+        lights = summary[light_mask]
 
         working_dir = destination if destination is not None else currentDir
         if (not no_log_destination) and (destination is not None):
             add_file_handlers(logger, working_dir, 'run_astrometry')
 
         logger.debug('About to loop over %d files', len(lights['file']))
+        print(lights['file'])
         for light_file in lights['file']:
             if ((destination is not None) and (destination != currentDir)):
                 src = path.join(currentDir, light_file)
@@ -136,7 +149,8 @@ def astrometry_for_directory(directories,
                                             odds_ratio=odds_ratio,
                                             astrometry_config=astrometry_config,
                                             camera=camera,
-                                            avoid_pyfits=avoid_pyfits)
+                                            avoid_pyfits=avoid_pyfits,
+                                            verify=verify_option)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -195,6 +209,12 @@ def construct_parser():
     parser.add_argument('--ignore-fits-ra-dec', action='store_true',
                         help='Ignore any RA/Dec information in the '
                              'FITS header.')
+    parser.add_argument('--no-verify', action='store_true',
+                        help='Use to force astrometry.net to ignore any '
+                             'WCS present in the file.')
+    parser.add_argument('--force', action='store_true',
+                        help='Run astrometry.net even if WCS is already '
+                             'present')
 
     return parser
 
@@ -221,7 +241,9 @@ def main(arglist=None):
                              astrometry_config=args.astrometry_config,
                              camera=args.camera,
                              avoid_pyfits=args.avoid_pyfits,
-                             ignore_ra_dec=args.ignore_fits_ra_dec)
+                             ignore_ra_dec=args.ignore_fits_ra_dec,
+                             no_verify=args.no_verify,
+                             force=args.force)
 
 
 main.__doc__ = _main_function_docstring(__name__)
