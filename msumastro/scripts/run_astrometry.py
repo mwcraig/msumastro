@@ -96,14 +96,11 @@ def astrometry_for_directory(directories,
     else:
         verify_option = False
 
-    print(verify_option)
-
     for currentDir in directories:
         images = ImageFileCollection(currentDir,
                                      keywords=['imagetyp', 'object',
                                                'wcsaxes', 'ra', 'dec'])
         summary = images.summary
-        print(summary['imagetyp'], summary['wcsaxes'].mask)
         if len(summary) == 0:
             continue
         logger.debug('\n %s', '\n'.join(summary.pformat()))
@@ -117,7 +114,6 @@ def astrometry_for_directory(directories,
             add_file_handlers(logger, working_dir, 'run_astrometry')
 
         logger.debug('About to loop over %d files', len(lights['file']))
-        print(lights['file'])
         for light_file in lights['file']:
             if ((destination is not None) and (destination != currentDir)):
                 src = path.join(currentDir, light_file)
