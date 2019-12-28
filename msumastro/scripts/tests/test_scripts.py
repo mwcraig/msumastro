@@ -6,7 +6,6 @@ from contextlib import contextmanager
 
 import astropy.io.fits as fits
 from astropy.table import Table, Column
-from astropy.extern import six
 
 import pytest
 import py
@@ -166,7 +165,7 @@ class TestScript(object):
         assert(list_before == list_after)
 
     def _verify_triage_files_created(self, directory, triage_dict):
-        for option_name, file_name in six.iteritems(triage_dict):
+        for option_name, file_name in triage_dict.items():
             print(option_name, file_name, directory.join(file_name).check())
             assert(directory.join(file_name).check())
 
@@ -464,10 +463,10 @@ class TestSortFiles(object):
         hdr = hdu.header
         make_base = lambda hdr, band: \
             hdr['imagetyp'] + add_to_name + band + str(hdr['exptime'])
-        for band, num_or_exp_dict in six.iteritems(filter_dict):
+        for band, num_or_exp_dict in filter_dict.items():
             hdr['filter'] = band
             if isinstance(num_or_exp_dict, dict):
-                for exp, number in six.iteritems(num_or_exp_dict):
+                for exp, number in num_or_exp_dict.items():
                     hdr['exptime'] = exp
                     base = make_base(hdr, band)
                     print(base)
@@ -512,7 +511,7 @@ class TestSortFiles(object):
         bias_names = make_file_names(bias, files[bias])
         bias_hdu = make_hdu(bias)
         self.write_names(bias_hdu, bias_names)
-        for exp, number in six.iteritems(files[dark]):
+        for exp, number in files[dark].items():
             dark_hdu = make_hdu(dark)
             dark_hdu.header['exptime'] = exp
             dark_names = make_file_names(dark + str(exp), number)
@@ -520,7 +519,7 @@ class TestSortFiles(object):
         flat_hdu = make_hdu(flat)
         self.make_filter_exp(flat_hdu, files[flat])
         light_hdu = make_hdu(light)
-        for obj, filter_dict in six.iteritems(files[light]):
+        for obj, filter_dict in files[light].items():
             if not obj:
                 try:
                     del light_hdu.header['object']
@@ -543,7 +542,7 @@ class TestSortFiles(object):
     def _walk_dict_string_keys(self, d, parent=None):
         if parent is None:
             parent = []
-        for key, val in six.iteritems(d):
+        for key, val in d.items():
             new_parent = list(parent) + [str(key)]
             if isinstance(val, dict):
                 for d in self._walk_dict_string_keys(val, parent=new_parent):
