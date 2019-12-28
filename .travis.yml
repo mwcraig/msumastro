@@ -32,10 +32,10 @@ install:
     - source activate test
 
     - $CONDA_INSTALL numpy pytest astropy ccdproc scipy
-    - pip install coverage coveralls $EXTRA_INSTALLS
+    - pip install coverage codecov $EXTRA_INSTALLS
     # need to install scripts because one test ends up invoking a subprocess
     - python setup.py install_scripts
 script:
     coverage run --source=msumastro setup.py test
 after_success:
-    coveralls
+    - codecov
