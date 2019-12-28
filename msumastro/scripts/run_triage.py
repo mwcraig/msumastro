@@ -44,11 +44,11 @@ from argparse import ArgumentParser
 import logging
 
 from astropy.table import Table, Column
+from ccdproc import ImageFileCollection
 import numpy as np
 
 from ..customlogger import console_handler, add_file_handlers
 from ..header_processing.feder import Feder
-from .. import ImageFileCollection
 from . import script_helpers
 
 logger = logging.getLogger()

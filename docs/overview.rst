@@ -10,17 +10,8 @@ This package provides two types of functionality; only the first is likely to be
 Classes for managing a collection of FITS files
 ***********************************************
 
-The class :class:`~msumastro.image_collection.ImageFileCollection` provides a table summarizing the values of FITS keywords in the files in a directory and provides easy ways to iterate over the HDUs, headers or data in those files. As a quick example::
 
-    >>> from msumastro import ImageFileCollection
-    >>> ic = ImageFileCollection('.', keywords=['imagetyp', 'filter'])
-    >>> for hdu in ic.hdus(imagetype='LIGHT', filter='I'):
-    ...     print hdu.header, hdu.data.mean()
-
-does what you would expect: it loops over all of the images in the collection whose image type is 'LIGHT' and filter is 'I'. For more details see :ref:`image_management`.
-
-The :class:`~msumastro.table_tree.TableTree` constructs, from the summary table of an :class:`~msumastro.image_collection.ImageFileCollection`, a tree organized by values in the FITS headers of the collection. See :ref:`image_management` for more details and examples.
-
+The :class:`~msumastro.table_tree.TableTree` constructs, from the summary table of an :class:`~ccdproc.ImageFileCollection`, a tree organized by values in the FITS headers of the collection.
 
 ******************************************************
 Header processing of images from the Feder Observatory

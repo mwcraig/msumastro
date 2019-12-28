@@ -32,7 +32,7 @@ setup(
     include_package_data=True,
     install_requires=INSTALL_REQUIRES,
     extras_require={
-        'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme', 'astropy-helpers'],
+        'docs': ['numpydoc', 'sphinx-argparse', 'sphinx_rtd_theme', 'sphinx-astropy'],
     },
     tests_require=['scipy', 'pytest>=2.9'] + INSTALL_REQUIRES,
     cmdclass=versioneer_cmdclass,

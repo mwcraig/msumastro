@@ -2,9 +2,10 @@ import os
 import argparse
 import subprocess
 
+from ccdproc import ImageFileCollection
+
 from . import script_helpers
 from .run_triage import DefaultFileNames
-from .. import ImageFileCollection
 
 
 def construct_parser():

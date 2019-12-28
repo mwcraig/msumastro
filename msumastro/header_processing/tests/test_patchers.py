@@ -15,11 +15,11 @@ from astropy.coordinates import Angle, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
 from astropy.time import Time
+from ccdproc import ImageFileCollection
 
 from .. import patchers as ph
 from ..feder import Feder, ApogeeAltaU9, FederSite
 from ...tests.data import get_data_dir
-from ... import ImageFileCollection
 
 _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'

@@ -10,6 +10,7 @@ from astropy.time import Time
 from astropy.coordinates import Angle, name_resolve, SkyCoord, AltAz
 from astropy import units as u
 from astropy.table import Table
+from ccdproc import ImageFileCollection
 
 try:
     from .feder import Feder
@@ -18,7 +19,6 @@ except ImportError:
     feder = None
     pass
 
-from ..image_collection import ImageFileCollection
 from .fitskeyword import FITSKeyword
 
 logger = logging.getLogger(__name__)

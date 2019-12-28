@@ -65,9 +65,9 @@ EXAMPLES
 import os
 import logging
 import shutil
+from ccdproc import ImageFileCollection
 
 from ..customlogger import console_handler, add_file_handlers
-from .. import ImageFileCollection
 from .. import TableTree
 from . import script_helpers
 

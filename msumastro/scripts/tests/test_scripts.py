@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 import astropy.io.fits as fits
 from astropy.table import Table, Column
+from ccdproc import ImageFileCollection
 
 import pytest
 import py
@@ -16,7 +17,6 @@ from .. import run_triage
 from .. import run_astrometry
 from .. import run_standard_header_process
 from .. import sort_files
-from ...image_collection import ImageFileCollection
 from ..script_helpers import handle_destination_dir_logging_check
 from .. import quick_add_keys_to_file
 from ...tests.data import get_data_dir

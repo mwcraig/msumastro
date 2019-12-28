@@ -48,11 +48,10 @@ from astropy.io import fits
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 
-from ccdproc import CCDData
+from ccdproc import CCDData, ImageFileCollection
 
 from ..customlogger import console_handler, add_file_handlers
 from ..header_processing import astrometry as ast
-from .. import ImageFileCollection
 from .script_helpers import (construct_default_parser, setup_logging,
                              handle_destination_dir_logging_check,
                              _main_function_docstring)

@@ -18,6 +18,5 @@ Contents
    installation
    scripts/automated_scripts
    scripts/manual_processing
-   image_management
    header_processing/index
    xref
