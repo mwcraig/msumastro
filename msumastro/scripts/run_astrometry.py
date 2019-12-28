@@ -38,9 +38,6 @@ EXAMPLES
         from msumastro.scripts import run_astrometry
         run_astrometry.main(['/my/folder/of/images'])
 """
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import shutil
 from os import path, getcwd
 import logging

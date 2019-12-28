@@ -39,12 +39,8 @@ EXAMPLES
 
 """
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import os
 from argparse import ArgumentParser
-from sys import exit
 import logging
 
 from astropy.table import Table, Column

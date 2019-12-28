@@ -77,9 +77,6 @@ From within python this would be::
     run_patch.main(['--object-list', 'path/to/list.txt',
                    'dir1', 'dir2', 'dir3'])
 """
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from os import getcwd
 from os import path
 import warnings

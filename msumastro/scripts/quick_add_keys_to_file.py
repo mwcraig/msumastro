@@ -14,9 +14,6 @@ DESCRIPTION
         This script OVERWRITES the image files in the list specified on the
         command line. There is NO WAY to override this behavior.
 """
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from argparse import ArgumentParser
 import logging
 

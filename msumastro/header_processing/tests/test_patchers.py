@@ -1,6 +1,3 @@
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from os import path, chdir, getcwd, remove
 from shutil import rmtree, copy, copytree, move
 from tempfile import mkdtemp

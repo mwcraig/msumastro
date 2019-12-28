@@ -1,6 +1,3 @@
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import pytest
 from astropy.io.fits.hdu import PrimaryHDU
 from astropy.io.fits import Header

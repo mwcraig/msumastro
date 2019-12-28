@@ -1,6 +1,3 @@
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from os import path
 from datetime import datetime
 import logging

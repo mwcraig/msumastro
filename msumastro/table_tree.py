@@ -1,6 +1,3 @@
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 from collections import Iterable, OrderedDict
 
 from astropy.table import Table

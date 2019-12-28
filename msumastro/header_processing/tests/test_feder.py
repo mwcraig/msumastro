@@ -1,6 +1,3 @@
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-
 import pytest
 
 from ..feder import Feder, ApogeeAltaU9, ApogeeAspenCG16
