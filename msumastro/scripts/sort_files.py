@@ -70,8 +70,6 @@ import os
 import logging
 import shutil
 
-from astropy.extern.six.moves import zip as izip
-
 from ..customlogger import console_handler, add_file_handlers
 from .. import ImageFileCollection
 from .. import TableTree
@@ -158,8 +156,8 @@ def sort_directory(directory, verbose=False,
     table_by_type = full_table.group_by('imagetyp')
     prepend_path = lambda path, file_list: \
                         [os.path.join(path, f) for f in file_list]
-    for im_type, table in izip(table_by_type.groups.keys,
-                               table_by_type.groups):
+    for im_type, table in zip(table_by_type.groups.keys,
+                              table_by_type.groups):
         image_type = im_type['imagetyp']
         tree_keys = image_types[image_type]
         dest_dir = os.path.join(working_dir, image_type)

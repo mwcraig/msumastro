@@ -4,14 +4,13 @@ from __future__ import (print_function, division, absolute_import,
 from collections import Iterable, OrderedDict
 
 from astropy.table import Table
-from astropy.extern.six.moves import zip as izip
-from astropy.extern import six
 
 __all__ = ['TableTree', 'RecursiveTree']
 
 
 class RecursiveTree(OrderedDict):
     """A dict-base recursive tree."""
+
     def __init__(self):
         super(RecursiveTree, self).__init__()
 
@@ -39,7 +38,8 @@ class RecursiveTree(OrderedDict):
 
 class TableTree(RecursiveTree):
     """
-    Base class for grouping images hierarchically into a tree based on metadata.
+    Base class for grouping images hierarchically into a tree based on
+    metadata.
 
     Parameters
     ----------
@@ -66,6 +66,7 @@ class TableTree(RecursiveTree):
         Raised if the number of initialization arguments is incorrect or the
         types of any of the arguments is incorrect.
     """
+
     def __init__(self, *args, **kwd):
         super(TableTree, self).__init__()
         if not args:
@@ -92,12 +93,12 @@ class TableTree(RecursiveTree):
             raise TypeError('First argument must be an '
                             'astropy.table.Table instance')
 
-        if (isinstance(tree_keys, six.string_types) or
+        if (isinstance(tree_keys, str) or
                 not isinstance(tree_keys, Iterable)):
             raise TypeError('Second argument must be list-like but not '
                             'a single string.')
 
-        if not isinstance(index_key, six.string_types):
+        if not isinstance(index_key, str):
             raise TypeError('Third argument must be a string.')
 
         self._table = use_table
@@ -138,8 +139,8 @@ class TableTree(RecursiveTree):
         grouped = self.table.group_by(self.tree_keys)
         columns = list(self.tree_keys)
         columns.append(self.index_key)
-        for group_key, members in izip(grouped.groups.keys,
-                                       grouped.groups):
+        for group_key, members in zip(grouped.groups.keys,
+                                      grouped.groups):
             key_list = list(group_key)  # table rows can't be indexed w/slice
             indexes = list(members[self.index_key])
             self.add_keys(key_list, value=indexes)
