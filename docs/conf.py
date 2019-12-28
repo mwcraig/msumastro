@@ -59,7 +59,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'MSUMastro toolbox'
-copyright = u'2011-2013, Matt Craig'
+copyright = u'2011-2019, Matt Craig'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
