@@ -7,8 +7,6 @@ from os import path, remove, rename
 import tempfile
 from textwrap import dedent
 
-from astropy.extern import six
-
 __all__ = ['call_astrometry', 'add_astrometry']
 
 logger = logging.getLogger(__name__)
@@ -76,13 +74,13 @@ def call_astrometry(filename, sextractor=False,
             "--scale-low 0.5 --scale-high 0.6 --scale-units arcsecperpix")
 
     if additional_args is not None:
-        if isinstance(additional_args, six.string_types):
+        if isinstance(additional_args, str):
             add_ons = [additional_args]
         else:
             add_ons = additional_args
         option_list.extend(add_ons)
 
-    if isinstance(sextractor, six.string_types):
+    if isinstance(sextractor, str):
         option_list.append("--sextractor-path " + sextractor)
     elif sextractor:
         option_list.append("--use-sextractor")

@@ -5,6 +5,7 @@ from os import path
 from datetime import datetime
 import logging
 from socket import timeout
+from urllib import parse
 
 import numpy as np
 import astropy.io.fits as fits
@@ -12,8 +13,6 @@ from astropy.time import Time
 from astropy.coordinates import Angle, name_resolve, SkyCoord, AltAz
 from astropy import units as u
 from astropy.table import Table
-
-from astropy.extern.six.moves.urllib import parse as urlparse
 
 try:
     from .feder import Feder
@@ -295,7 +294,7 @@ def add_image_unit(header, history=True):
 
 
 def list_name_is_url(name):
-    may_be_url = urlparse.urlparse(name)
+    may_be_url = parse.urlparse(name)
     return (may_be_url.scheme and may_be_url.netloc)
 
 

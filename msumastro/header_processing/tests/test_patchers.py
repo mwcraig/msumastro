@@ -8,6 +8,7 @@ from glob import glob
 import warnings
 import logging
 from socket import timeout
+import urllib
 
 import pytest
 import numpy as np
@@ -16,7 +17,6 @@ from astropy.io import fits
 from astropy.coordinates import Angle, name_resolve, SkyCoord
 from astropy import units as u
 from astropy.table import Table
-from astropy.extern import six
 from astropy.time import Time
 
 from .. import patchers as ph
@@ -62,7 +62,7 @@ def test_read_object_list_from_internet():
     try:
         obj, ra_dec = ph.read_object_list(directory='',
                                           input_list=OBJECT_LIST_URL)
-    except six.moves.urllib.error.URLError:
+    except urllib.error.URLError:
         pytest.xfail("Unable to open URL")
     assert 'ey uma' in obj
 

@@ -5,7 +5,6 @@ import logging
 
 from astropy.io.fits import Header
 from astropy.io.fits import PrimaryHDU
-from astropy.extern import six
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +86,7 @@ class FITSKeyword(object):
         if not inp_synonyms:
             self._synonyms = []
             return
-        if isinstance(inp_synonyms, six.string_types):
+        if isinstance(inp_synonyms, str):
             synonym_list = [inp_synonyms]
         elif isinstance(inp_synonyms, list):
             synonym_list = set(inp_synonyms)
