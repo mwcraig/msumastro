@@ -8,8 +8,8 @@ MSUM Astro library
     :target: https://travis-ci.org/mwcraig/msumastro
 
 
-.. image:: https://coveralls.io/repos/github/mwcraig/msumastro/badge.svg?branch=master
-    :target: https://coveralls.io/github/mwcraig/msumastro?branch=master
+.. image:: https://codecov.io/gh/mwcraig/msumastro/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/mwcraig/msumastro
 
 
 This software was developed primarily to process the files coming off the Paul
