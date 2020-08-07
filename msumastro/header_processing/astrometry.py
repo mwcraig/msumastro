@@ -78,9 +78,9 @@ def call_astrometry(filename, sextractor=False,
         option_list.extend(add_ons)
 
     if isinstance(sextractor, str):
-        option_list.append("--sextractor-path " + sextractor)
+        option_list.append("--source-extractor-path " + sextractor)
     elif sextractor:
-        option_list.append("--use-sextractor")
+        option_list.append("--use-source-extractor")
 
     if no_plots:
         option_list.append("--no-plot")
@@ -121,7 +121,7 @@ def call_astrometry(filename, sextractor=False,
             f.write(dedent(contents))
 
         additional_solve_args = [
-            '--sextractor-config', config_location,
+            '--source-extractor-config', config_location,
             '--x-column', 'X_IMAGE',
             '--y-column',  'Y_IMAGE',
             '--sort-column', 'MAG_AUTO',
@@ -173,7 +173,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    odds_ratio=None,
                    astrometry_config=None,
                    camera='',
-                   avoid_pyfits=False):
+                   avoid_pyfits=False,
+                   no_source_extractor=False,
+                   solve_field_args=None):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -250,11 +252,15 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     additional_opts = ' '.join([scale_options,
                                 pyfits_options])
 
+    if solve_field_args is not None:
+        additional_opts = additional_opts.split()
+        additional_opts.extend(solve_field_args)
+
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     try:
         logger.debug('About to call call_astrometry')
         solved_field = (call_astrometry(filename,
-                                        sextractor=True,
+                                        sextractor=not no_source_extractor,
                                         ra_dec=ra_dec,
                                         save_wcs=save_wcs, verify=verify,
                                         custom_sextractor_config=custom_sextractor,
