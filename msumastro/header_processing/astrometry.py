@@ -173,7 +173,9 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    odds_ratio=None,
                    astrometry_config=None,
                    camera='',
-                   avoid_pyfits=False):
+                   avoid_pyfits=False,
+                   no_source_extractor=False,
+                   solve_field_args=None):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -250,11 +252,14 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     additional_opts = ' '.join([scale_options,
                                 pyfits_options])
 
+    if solve_field_args is not None:
+        additional_opts.extend(solve_field_args)
+
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     try:
         logger.debug('About to call call_astrometry')
         solved_field = (call_astrometry(filename,
-                                        sextractor=True,
+                                        sextractor=not no_source_extractor,
                                         ra_dec=ra_dec,
                                         save_wcs=save_wcs, verify=verify,
                                         custom_sextractor_config=custom_sextractor,

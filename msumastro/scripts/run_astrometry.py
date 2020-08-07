@@ -72,7 +72,9 @@ def astrometry_for_directory(directories,
                              avoid_pyfits=False,
                              ignore_ra_dec=False,
                              no_verify=False,
-                             force=False):
+                             force=False,
+                             no_source_extractor=False,
+                             solve_field_args=None):
     """
     Add astrometry to files in list of directories
 
@@ -142,7 +144,9 @@ def astrometry_for_directory(directories,
                                             astrometry_config=astrometry_config,
                                             camera=camera,
                                             avoid_pyfits=avoid_pyfits,
-                                            verify=verify_option)
+                                            verify=verify_option,
+                                            no_source_extractor=no_source_extractor,
+                                            solve_field_args=solve_field_args)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -207,6 +211,11 @@ def construct_parser():
     parser.add_argument('--force', action='store_true',
                         help='Run astrometry.net even if WCS is already '
                              'present')
+    parser.add_argument('--no-source-extractor', action='store_true',
+                        help="Use astrometry.net's built-in source extractor")
+    parser.add_argument('--solve-field-args', action='append',
+                        help="Arguments to be passed to solve-field. Use multiple "
+                             "times to send multiple arguments.")
 
     return parser
 
@@ -235,7 +244,9 @@ def main(arglist=None):
                              avoid_pyfits=args.avoid_pyfits,
                              ignore_ra_dec=args.ignore_fits_ra_dec,
                              no_verify=args.no_verify,
-                             force=args.force)
+                             force=args.force,
+                             no_source_extractor=args.no_source_extractor,
+                             solve_field_args=args.solve_field_args)
 
 
 main.__doc__ = _main_function_docstring(__name__)
