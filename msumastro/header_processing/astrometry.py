@@ -253,7 +253,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                 pyfits_options])
 
     if solve_field_args is not None:
-        additional_opts.extend(solve_field_args)
+        additional_opts.split().extend(solve_field_args)
 
     logger.info('BEGIN ADDING ASTROMETRY on {0}'.format(filename))
     try:
