@@ -78,9 +78,9 @@ def call_astrometry(filename, sextractor=False,
         option_list.extend(add_ons)
 
     if isinstance(sextractor, str):
-        option_list.append("--sextractor-path " + sextractor)
+        option_list.append("--source-extractor-path " + sextractor)
     elif sextractor:
-        option_list.append("--use-sextractor")
+        option_list.append("--use-source-extractor")
 
     if no_plots:
         option_list.append("--no-plot")
@@ -121,7 +121,7 @@ def call_astrometry(filename, sextractor=False,
             f.write(dedent(contents))
 
         additional_solve_args = [
-            '--sextractor-config', config_location,
+            '--source-extractor-config', config_location,
             '--x-column', 'X_IMAGE',
             '--y-column',  'Y_IMAGE',
             '--sort-column', 'MAG_AUTO',
