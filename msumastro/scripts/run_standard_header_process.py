@@ -65,6 +65,15 @@ def construct_parser():
                         help=object_list_help,
                         default=None)
 
+    parser.add_argument('--no-source-extractor',
+                        help="Use astrometry.net's built in source detection",
+                        action="store_true")
+
+    parser.add_argument('--additional-astrometry-args',
+                        help="Pass the values along to solve-field. Can be "
+                             "repeated to add several arguments.",
+                        action='append')
+
     script_helpers.add_console_output_args(parser)
     script_helpers.add_debug(parser)
     parser.add_argument('--quiet-log',
@@ -169,6 +178,13 @@ def main(arglist=None):
 
         if ignore_fits_ra_dec:
             additional_args.append('--ignore-fits-ra-dec')
+
+        if args.no_source_extractor:
+            additional_args.append('--no-source-extractor')
+
+        if args.additional_astrometry_args:
+            for arg in args.additional_astrometry_args:
+                additional_args.append(f'--solve-field-args="{arg}"')
 
         run_astrometry = construct_command('run_astrometry.py',
                                            source_for_rest,
