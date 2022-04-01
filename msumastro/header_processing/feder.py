@@ -315,11 +315,12 @@ class MaximDL6(ImageSoftware):
                      'MaxIm DL Version 6.17 190601 00KPP',
                      'MaxIm DL Version 6.18 190601 00KPP',
                      'MaxIm DL Version 6.27 220525 26KU2',
+                     'MaxIm DL Version 6.29 220525 26KU2'
                      ]
         super(MaximDL6, self).__init__("MaxImDL",
                                        fits_name=fits_name,
                                        major_version=6,
-                                       minor_version=27,
+                                       minor_version=29,
                                        bad_keywords=bad_keys,
                                        fits_keyword='SWCREATE'
                                        )
