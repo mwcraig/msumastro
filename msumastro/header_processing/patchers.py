@@ -615,6 +615,7 @@ def patch_headers(dir=None,
                            '{1}: {2}'.format(fname, type(e).__name__, e))
             logger.warn(warning_msg)
             header.add_history(warning_msg)
+            raise e
             continue
         finally:
             header.add_history(history(patch_headers, mode='end',
