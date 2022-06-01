@@ -583,10 +583,14 @@ def patch_headers(dir=None,
                                    time=run_time))
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
+
+        # Removed this from the try/except to ensure an error is
+        # raised if the software isn't recognized.
+        get_software_name(header)  # is there some software?
+        header['instrume']  # is there an instrument?
+        feder.instruments[header['instrume']]  # Is this an instrument we know?
+
         try:
-            # each of the next 3 lines checks for presences of something
-            get_software_name(header)  # is there some software?
-            header['instrume']  # is there an instrument?
             header['imagetyp']  # is there an image type?
 
             if purge_bad:
@@ -615,7 +619,6 @@ def patch_headers(dir=None,
                            '{1}: {2}'.format(fname, type(e).__name__, e))
             logger.warn(warning_msg)
             header.add_history(warning_msg)
-            raise e
             continue
         finally:
             header.add_history(history(patch_headers, mode='end',
