@@ -1,5 +1,5 @@
-from collections import Iterable, OrderedDict
-
+from collections import OrderedDict
+from collections.abc import Iterable
 from astropy.table import Table
 
 __all__ = ['TableTree', 'RecursiveTree']

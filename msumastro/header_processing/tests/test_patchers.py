@@ -163,10 +163,9 @@ def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
     badname = 'Nonsense'
     hdr[badkey] = badname
     a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), overwrite=True)
-    ph.patch_headers(_test_dir)
-    patch_warnings = get_patch_header_logs(caplog)
-    assert('KeyError' in patch_warnings)
-    assert(badname in patch_warnings)
+
+    with pytest.raises(KeyError):
+        ph.patch_headers(_test_dir)
 
 
 def test_adding_overscan_apogee_u9(make_overscan_test_files):
