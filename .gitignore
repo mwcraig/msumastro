@@ -1,4 +1,6 @@
 _build
+build
+__pycache__
 *.pyc
 2011-08-24
 .ropeproject
