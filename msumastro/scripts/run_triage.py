@@ -73,7 +73,7 @@ def write_list(dir, file, info, column_name=None):
     temp_table = Table(data=[info],
                        names=[col_name])
     temp_table.write(os.path.join(dir, file),
-                     format='ascii')
+                     format='ascii', overwrite=True)
 
 
 def contains_maximdl_imagetype(image_collection):
