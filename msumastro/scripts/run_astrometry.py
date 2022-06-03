@@ -178,6 +178,16 @@ def astrometry_for_directory(directories,
                 img_new.header['RA'] = coords.ra.to_string(unit=u.hour,
                                                            sep=':')
                 img_new.header['DEC'] = coords.dec.to_string(sep=':')
+
+                # If OBJCTRA/DEC are present then update them
+                try:
+                    img_new.header['objctra']
+                except KeyError:
+                    pass
+                else:
+                    img_new.header['objctra'] = img_new.header['ra']
+                    img_new.header['objctdec'] = img_new.header['dec']
+
                 img_new.write(original_fname, overwrite=True)
 
 
