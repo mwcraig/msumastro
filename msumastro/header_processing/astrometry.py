@@ -281,7 +281,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                         odds_ratio=odds_ratio,
                                         astrometry_config=astrometry_config,
                                         feder_settings=use_feder,
-                                        additional_args=additional_opts)
+                                        additional_args=additional_opts,
+                                        timeout=timeout)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')
@@ -298,7 +299,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         try:
             solved_field = (call_astrometry(filename, ra_dec=ra_dec,
                                             overwrite=True,
-                                            save_wcs=save_wcs, verify=verify)
+                                            save_wcs=save_wcs, verify=verify,
+                                            timeout=timeout)
                             == 0)
         except subprocess.CalledProcessError as e:
             failed_details = e.output
