@@ -228,9 +228,10 @@ def construct_parser():
     parser.add_argument('--solve-field-args', action='append',
                         help="Arguments to be passed to solve-field. Use multiple "
                              "times to send multiple arguments.")
-    parser.add_argument('--timeout', action='store', default=None,
+    parser.add_argument('--timeout', action='store', default=0, type=int,
                         help="Maximum time, in seconds, to allow the "
-                             "astrometry process to run. Omit for no timeout.")
+                             "astrometry process to run. Omit or use 0 for "
+                             "no timeout.")
 
     return parser
 

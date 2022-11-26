@@ -249,6 +249,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         'cp16': 0.55
     }
 
+    if timeout == 0:
+        timeout = None
     if camera:
         use_feder = False
         scale = camera_pixel_scales[camera]
