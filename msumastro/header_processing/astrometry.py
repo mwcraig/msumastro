@@ -17,7 +17,8 @@ def call_astrometry(filename, sextractor=False,
                     wcs_reference_image_center=True,
                     odds_ratio=None,
                     astrometry_config=None,
-                    additional_args=None):
+                    additional_args=None,
+                    timeout=None):
     """
     Wrapper around astrometry.net solve-field.
 
@@ -61,6 +62,8 @@ def call_astrometry(filename, sextractor=False,
         Name of configuration file to use for SExtractor.
     additional_args : str or list of str, optional
         Additional arguments to pass to `solve-field`
+    timeout : int or None, optional
+        Max time subprocess can run, in seconds. ``None`` means no timeout.
     """
     solve_field = ["solve-field"]
     option_list = []
@@ -153,7 +156,7 @@ def call_astrometry(filename, sextractor=False,
     logger.info(' '.join(solve_field))
     try:
         solve_field_output = subprocess.check_output(solve_field,
-                                                     stderr=subprocess.STDOUT)
+                                                     stderr=subprocess.STDOUT, timeout=timeout)
         return_status = 0
         log_level = logging.DEBUG
     except subprocess.CalledProcessError as e:
@@ -161,6 +164,12 @@ def call_astrometry(filename, sextractor=False,
         solve_field_output = 'Output from astrometry.net:\n' + str(e.output)
         log_level = logging.WARN
         logger.warning('Adding astrometry failed for %s', filename)
+        raise e
+    except subprocess.TimeoutExpired as e:
+        log_level = logging.WARN
+        logger.warning('Adding astrometry timed out for %s', filename)
+        # Anything that is not 0 should work here
+        return_status = -99
         raise e
     logger.log(log_level, solve_field_output)
     return return_status
@@ -175,7 +184,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                    camera='',
                    avoid_pyfits=False,
                    no_source_extractor=False,
-                   solve_field_args=None):
+                   solve_field_args=None,
+                   timeout=None):
     """Add WCS headers to FITS file using astrometry.net
 
     Parameters
@@ -209,6 +219,10 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         Add arguments to solve-field to avoid calls to pyfits.BinTableHDU.
         See https://groups.google.com/forum/#!topic/astrometry/AT21x6zVAJo
 
+    timeout : int or None, optional
+        Time, in seconds, before the astrometry xsubprocess times out.
+        ``None`` means no timeout.
+
     Returns
     -------
     bool
@@ -235,6 +249,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         'cp16': 0.55
     }
 
+    if timeout == 0:
+        timeout = None
     if camera:
         use_feder = False
         scale = camera_pixel_scales[camera]
@@ -267,11 +283,15 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
                                         odds_ratio=odds_ratio,
                                         astrometry_config=astrometry_config,
                                         feder_settings=use_feder,
-                                        additional_args=additional_opts)
+                                        additional_args=additional_opts,
+                                        timeout=timeout)
                         == 0)
     except subprocess.CalledProcessError as e:
         logger.debug('Failed with error')
         failed_details = e.output
+        solved_field = False
+    except subprocess.TimeoutExpired:
+        failed_details = "Timed out"
         solved_field = False
 
     if (not solved_field) and try_builtin_source_finder:
@@ -281,10 +301,14 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
         try:
             solved_field = (call_astrometry(filename, ra_dec=ra_dec,
                                             overwrite=True,
-                                            save_wcs=save_wcs, verify=verify)
+                                            save_wcs=save_wcs, verify=verify,
+                                            timeout=timeout)
                             == 0)
         except subprocess.CalledProcessError as e:
             failed_details = e.output
+            solved_field = False
+        except subprocess.TimeoutExpired:
+            failed_details = "Timed out"
             solved_field = False
 
     if solved_field:
@@ -315,9 +339,8 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
 
     if note_failure and not solved_field:
         try:
-            f = open(base + '.failed', 'wb')
-            f.write(failed_details)
-            f.close()
+            with open(base + '.failed', 'w') as f:
+                f.write(failed_details)
         except IOError as e:
             logger.error('Unable to save output of astrometry.net %s', e)
             pass

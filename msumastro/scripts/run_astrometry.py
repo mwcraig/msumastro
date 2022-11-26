@@ -74,7 +74,8 @@ def astrometry_for_directory(directories,
                              no_verify=False,
                              force=False,
                              no_source_extractor=False,
-                             solve_field_args=None):
+                             solve_field_args=None,
+                             timeout=None):
     """
     Add astrometry to files in list of directories
 
@@ -146,7 +147,8 @@ def astrometry_for_directory(directories,
                                             avoid_pyfits=avoid_pyfits,
                                             verify=verify_option,
                                             no_source_extractor=no_source_extractor,
-                                            solve_field_args=solve_field_args)
+                                            solve_field_args=solve_field_args,
+                                            timeout=timeout)
 
             with fits.open(original_fname,
                            do_not_scale_image_data=True) as f:
@@ -226,11 +228,15 @@ def construct_parser():
     parser.add_argument('--solve-field-args', action='append',
                         help="Arguments to be passed to solve-field. Use multiple "
                              "times to send multiple arguments.")
+    parser.add_argument('--timeout', action='store', default=0, type=int,
+                        help="Maximum time, in seconds, to allow the "
+                             "astrometry process to run. Omit or use 0 for "
+                             "no timeout.")
 
     return parser
 
 
-def main(arglist=None):
+def main(arglist=None)      :
     """See script_helpers._main_function_docstring for actual documentation
     """
 
@@ -256,7 +262,8 @@ def main(arglist=None):
                              no_verify=args.no_verify,
                              force=args.force,
                              no_source_extractor=args.no_source_extractor,
-                             solve_field_args=args.solve_field_args)
+                             solve_field_args=args.solve_field_args,
+                             timeout=int(args.timeout))
 
 
 main.__doc__ = _main_function_docstring(__name__)
