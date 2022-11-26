@@ -262,7 +262,7 @@ def main(arglist=None)      :
                              force=args.force,
                              no_source_extractor=args.no_source_extractor,
                              solve_field_args=args.solve_field_args,
-                             timeout=args.timeout)
+                             timeout=int(args.timeout))
 
 
 main.__doc__ = _main_function_docstring(__name__)
