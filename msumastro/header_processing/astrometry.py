@@ -340,7 +340,7 @@ def add_astrometry(filename, overwrite=False, ra_dec=None,
     if note_failure and not solved_field:
         try:
             with open(base + '.failed', 'w') as f:
-                f.write(failed_details)
+                f.write(str(failed_details))
         except IOError as e:
             logger.error('Unable to save output of astrometry.net %s', e)
             pass
