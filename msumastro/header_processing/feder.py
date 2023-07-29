@@ -316,7 +316,8 @@ class MaximDL6(ImageSoftware):
                      'MaxIm DL Version 6.18 190601 00KPP',
                      'MaxIm DL Version 6.27 220525 26KU2',
                      'MaxIm DL Version 6.29 220525 26KU2',
-                     'MaxIm DL Version 6.30 220525 26KU2'
+                     'MaxIm DL Version 6.30 220525 26KU2',
+                     'MaxIm DL Version 6.30 240628 2HVXS',
                      ]
         super(MaximDL6, self).__init__("MaxImDL",
                                        fits_name=fits_name,
