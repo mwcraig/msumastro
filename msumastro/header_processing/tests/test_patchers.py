@@ -243,7 +243,7 @@ def test_data_is_unmodified_by_adding_object():
     assert np.all(orig[0].data == modified[0].data)
 
 
-def test_adding_object_name(use_list=None,
+def _test_adding_object_name(use_list=None,
                             use_obj_dir=None,
                             check_fits_file=None):
     """
@@ -272,18 +272,18 @@ def test_adding_object_from_name_only():
     if simbad_down:
         pytest.xfail("Simbad is down")
     try:
-        test_adding_object_name()
+        _test_adding_object_name()
     except (name_resolve.NameResolveError, timeout):
         pytest.xfail("Simbad is down")
 
 
 @pytest.mark.usefixtures('object_file_ra_change_col_case')
 def test_adding_object_name_does_not_depend_on_column_name_case():
-    test_adding_object_name()
+    _test_adding_object_name()
 
 
 def test_add_object_name_warns_if_no_match(caplog):
-    test_adding_object_name()
+    _test_adding_object_name()
     patch_header_warnings = get_patch_header_logs(caplog)
     assert('No object found for image ' in patch_header_warnings)
 
@@ -302,7 +302,6 @@ def test_adding_object_name_to_different_directory(use_list=None,
     with_name = fits.open(fname + '.fit')
     print('add object name: %s' % fname)
     assert (with_name[0].header['object'] == 'm101')
-    return with_name
 
 
 def test_add_object_name_uses_object_list_name():
@@ -311,7 +310,7 @@ def test_add_object_name_uses_object_list_name():
     old_object_path = path.join(_test_dir, _default_object_file_name)
     new_path = path.join(_test_dir, custom_object_name)
     move(old_object_path, new_path)
-    fits_with_obj_name = test_adding_object_name(use_list=custom_object_name)
+    fits_with_obj_name = _test_adding_object_name(use_list=custom_object_name)
     # The line below is probably not really necessary since the same test
     # is done in test_adding_object_name but it doesn't hurt to test it
     # here too
@@ -325,7 +324,7 @@ def test_add_object_name_with_custom_dir_standard_name():
     old_object_path = path.join(_test_dir, _default_object_file_name)
     new_path = path.join(a_temp_dir, _default_object_file_name)
     move(old_object_path, new_path)
-    test_adding_object_name(use_obj_dir=a_temp_dir)
+    _test_adding_object_name(use_obj_dir=a_temp_dir)
 
 
 def test_add_object_name_uses_object_list_dir():
@@ -338,12 +337,12 @@ def test_add_object_name_uses_object_list_dir():
     move(old_object_path, new_path)
     # first make sure object name isn't added if object list can't be found
     with pytest.raises(IOError):
-        test_adding_object_name(use_list=custom_object_name)
+        _test_adding_object_name(use_list=custom_object_name)
 
     # Now make sure it works when we specify the directory; need to redo
     # setup to clear out files made in pass above
     setup_function(test_add_object_name_uses_object_list_dir)
-    test_adding_object_name(use_list=custom_object_name,
+    _test_adding_object_name(use_list=custom_object_name,
                             use_obj_dir=a_temp_dir)
 
 
@@ -360,7 +359,7 @@ def test_ambiguous_object_file_raises_error():
     object_file.write(to_write)
     object_file.close()
     with pytest.raises(RuntimeError):
-        test_adding_object_name(use_list=obj_name, use_obj_dir=a_temp_dir)
+        _test_adding_object_name(use_list=obj_name, use_obj_dir=a_temp_dir)
 
 
 def test_missing_object_file_issues_warning(caplog):
