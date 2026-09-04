@@ -328,6 +328,32 @@ class MaximDL6(ImageSoftware):
                                        )
 
 
+
+
+class MaximDL7(ImageSoftware):
+
+    """
+    Represents MaximDL version 7, all sub-versions.
+
+    Subversions are included by listing the FITS names of all versions that
+    have been used at Feder Observatory.
+    """
+
+    def __init__(self):
+        bad_keys = ['OBJECT', 'JD', 'JD-HELIO', 'OBJCTALT', 'OBJCTAZ',
+                    'OBJCTHA', 'AIRMASS', 'OBSERVER']
+        fits_name = [
+            'MaxIm DL Version 7.1.4.0 260709 07593',
+        ]
+        super(MaximDL7, self).__init__("MaxImDL",
+                                       fits_name=fits_name,
+                                       major_version=7,
+                                       minor_version=1,
+                                       bad_keywords=bad_keys,
+                                       fits_keyword='SWCREATE'
+                                       )
+
+
 class SBIGCCDOps(ImageSoftware):
     """
     Represents software used to create images from the SBIG spectrometer.
