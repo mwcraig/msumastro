@@ -64,8 +64,8 @@ class DefaultFileNames(object):
         self.output_table = 'Manifest.txt'
         self.astrometry_file_name = 'NEEDS_ASTROMETRY.txt'
         # Written by run_patch.py (not by triage_directories below) for
-        # files whose imaging software or instrument was not recognized
-        # and so could not be patched.
+        # files whose imaging software, instrument or image type was
+        # missing or not recognized and so could not be patched.
         self.patching_file_name = 'NEEDS_PATCHING.txt'
 
     def as_dict(self):
@@ -80,22 +80,50 @@ def write_list(dir, file, info, column_name=None):
                      format='ascii', overwrite=True)
 
 
-def contains_maximdl_imagetype(image_collection):
+def maximdl_imagetype_files(image_collection):
     """
-    Check an image file collection for MaxImDL-style image types
+    Find files in an image collection with MaxImDL-style image types.
+
+    MaxImDL writes image types like "Light Frame"; ``run_patch`` converts
+    them to IRAF-style ("LIGHT"). A file that still has a MaxImDL-style type
+    has not been patched.
+
+    Parameters
+    ----------
+
+    image_collection : ccdproc.ImageFileCollection
+        Collection whose summary includes the ``imagetyp`` keyword.
+
+    Returns
+    -------
+
+    list of str
+        Names (relative to the collection location) of files whose
+        ``IMAGETYP`` is MaxImDL-style. Files with no ``IMAGETYP`` are not
+        included.
     """
     import re
     file_info = image_collection.summary
 
+    if file_info is None:
+        return []
+
     if file_info['imagetyp'].mask.any():
         logger.warn('One or more image is missing IMAGETYP in header')
 
-    image_types = ' '.join([typ for typ in file_info['imagetyp'].compressed()])
+    maxim_files = []
+    for fname, typ in zip(file_info['file'], file_info['imagetyp']):
+        if typ is not np.ma.masked and re.search('[fF]rame', typ) is not None:
+            maxim_files.append(fname)
 
-    if re.search('[fF]rame', image_types) is not None:
-        return True
-    else:
-        return False
+    return maxim_files
+
+
+def contains_maximdl_imagetype(image_collection):
+    """
+    Check an image file collection for MaxImDL-style image types
+    """
+    return bool(maximdl_imagetype_files(image_collection))
 
 
 def get_column_name_case_insensitive(name, column_names):
@@ -143,12 +171,36 @@ def triage_fits_files(dir=None, file_info_to_keep=None):
         all_file_info.extend(RA.names)
 
     images = ImageFileCollection(dir, keywords=all_file_info)
+
+    # Files that still have MaxImDL-style image types were not patched by
+    # run_patch (they are listed in NEEDS_PATCHING.txt). Leave them out of
+    # the triage rather than stopping, so the results reflect the files that
+    # were patched.
+    empty_result = {'files': Table(),
+                    'needs_filter': [],
+                    'needs_pointing': [],
+                    'needs_object_name': [],
+                    'needs_astrometry': []}
+
+    unpatched = maximdl_imagetype_files(images)
+    if unpatched:
+        logger.error('Skipping %d file(s) in %s with MaxImDL-style image '
+                     'types; run run_patch on them first: %s',
+                     len(unpatched), dir, ', '.join(unpatched))
+        keep = [f for f in images.files if f not in unpatched]
+        if not keep:
+            # An empty filenames list means "all files" to
+            # ImageFileCollection, so handle this case ourselves.
+            logger.warning('No patched FITS files to triage in %s', dir)
+            return empty_result
+        images = ImageFileCollection(dir, keywords=all_file_info,
+                                     filenames=keep)
+
     file_info = images.summary
 
-    # check for bad image type and halt until that is fixed.
-    if contains_maximdl_imagetype(images):
-        raise ValueError(
-            'Correct MaxImDL-style image types before proceeding.')
+    if file_info is None:
+        logger.warning('No FITS files to triage in %s', dir)
+        return empty_result
 
     file_needs_filter = \
         list(images.files_filtered(imagetyp='light',

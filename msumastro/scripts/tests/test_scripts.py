@@ -275,14 +275,44 @@ class TestScript(object):
         run_triage.main(arglist)
         assert 1
 
-    def test_run_triage_on_set_with_maximdl_imagetype_fails(self):
+    def test_run_triage_skips_files_with_maximdl_imagetype(self, caplog):
+        # A file that still has a MaxImDL-style image type was not patched
+        # (it is listed in NEEDS_PATCHING.txt by run_patch); triage should
+        # leave it out and carry on with the rest rather than stopping.
+        n_files_before = len(self.test_dir.listdir(fil='*.fit*'))
         hdu = fits.PrimaryHDU()
         hdu.header['imagetyp'] = 'Bias Frame'
         hdu.header['exptime'] = 0.0
         hdu.data = np.random.random([100, 100])
         hdu.writeto(self.test_dir.join('maxim.fits').strpath)
-        with pytest.raises(ValueError):
-            run_triage.triage_fits_files(self.test_dir.strpath)
+
+        result = run_triage.triage_fits_files(self.test_dir.strpath)
+
+        files = list(result['files']['file'])
+        assert 'maxim.fits' not in files
+        assert len(files) == n_files_before
+        assert 'maxim.fits' in caplog.text
+        assert 'MaxImDL-style' in caplog.text
+
+    def test_run_triage_on_set_with_only_maximdl_imagetype(self, tmpdir):
+        # If every file is unpatched there is nothing to triage, but that
+        # should not be an error.
+        hdu = fits.PrimaryHDU()
+        hdu.header['imagetyp'] = 'Light Frame'
+        hdu.header['exptime'] = 1.0
+        hdu.data = np.random.random([100, 100])
+        tmpdir = tmpdir.mkdir('only_maxim')
+        hdu.writeto(tmpdir.join('maxim.fits').strpath)
+
+        result = run_triage.triage_fits_files(tmpdir.strpath)
+        assert len(result['files']) == 0
+        for key in ['needs_filter', 'needs_pointing',
+                    'needs_object_name', 'needs_astrometry']:
+            assert result[key] == []
+
+        # ...and the script should run without writing anything.
+        run_triage.main([tmpdir.strpath])
+        assert not tmpdir.join('Manifest.txt').check()
 
     def test_run_triage_contains_columns_with_extended_location_info(self):
         result = run_triage.triage_fits_files(self.test_dir.strpath)

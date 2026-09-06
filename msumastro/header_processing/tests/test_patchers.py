@@ -182,6 +182,38 @@ def test_patch_headers_skips_unrecognized_instrument_or_software(badkey,
     assert other_header.get('PURGED')
 
 
+@pytest.mark.parametrize('missing_key', ['swcreate', 'imagetyp'])
+def test_patch_headers_skips_file_missing_keyword(missing_key, caplog):
+    # No SWCREATE at all raises ValueError (rather than KeyError) from
+    # get_software_name; no IMAGETYP means nothing can be patched. Both
+    # should be reported, not raised, and the other files still patched.
+    ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
+    a_fits_file = ''
+    other_files = []
+    for h, f in ic.headers(imagetyp='*', return_fname=True):
+        if not a_fits_file:
+            a_fits_file = f
+        else:
+            other_files.append(f)
+    a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
+    hdr = a_fits_hdu[0].header
+    del hdr[missing_key]
+    a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), overwrite=True)
+
+    not_patched = ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
+
+    # (Other files in the test data may legitimately be in not_patched
+    # too, e.g. one that has no IMAGETYP to begin with.)
+    assert a_fits_file in not_patched
+
+    errs = get_patch_header_logs(caplog, level=logging.ERROR)
+    assert 'FILE NOT PATCHED' in errs
+    assert a_fits_file in errs
+
+    other_header = fits.getheader(path.join(_test_dir, other_files[0]))
+    assert other_header.get('PURGED')
+
+
 def test_adding_overscan_apogee_u9(make_overscan_test_files):
     original_dir = getcwd()
 
