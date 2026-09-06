@@ -150,6 +150,55 @@ class TestScript(object):
         print(h)
         assert 'object' not in h
 
+    def test_run_patch_writes_needs_patching_file(self, tmpdir):
+        # Use a small, hand-picked directory (rather than the full
+        # clean_data/self.test_dir fixture) because some of the files in
+        # that fixture have pre-existing header problems unrelated to
+        # software/instrument recognition (e.g. missing RA) and would
+        # themselves show up in NEEDS_PATCHING.txt, making it impossible to
+        # get back to a clean (return value 0) state.
+        data_dir = py.path.local(get_data_dir())
+        test_dir = tmpdir.mkdir('needs_patching_test')
+        good_names = ['uint16.fit', 'maximdl_5_21_header.fit']
+        for name in good_names:
+            data_dir.join(name).copy(test_dir.join(name))
+
+        # Local object list so add_object_info does not need the network.
+        objs = ["m101,14:03:12.58,+54:20:55.50"]
+        to_write = 'object, RA, Dec\n' + '\n'.join(objs)
+        object_list = test_dir.join('obsinfo.txt')
+        object_list.write(to_write)
+
+        bad_path = test_dir.join('uint16.fit')
+        hdulist = fits.open(bad_path.strpath)
+        hdulist[0].header['swcreate'] = 'Nonsense'
+        hdulist.writeto(bad_path.strpath, overwrite=True)
+        hdulist.close()
+
+        arglist = ['-o', object_list.strpath, test_dir.strpath]
+        result = run_patch.main(arglist)
+
+        assert result == 1
+        needs_patching = test_dir.join('NEEDS_PATCHING.txt')
+        assert needs_patching.check()
+        content = needs_patching.read()
+        assert 'uint16.fit' in content
+
+        # The other file in the directory should still have been patched.
+        other_header = fits.getheader(test_dir.join('maximdl_5_21_header.fit').strpath)
+        assert other_header.get('PURGED')
+
+        # Fix the bad header and re-run; the file should no longer be
+        # reported and NEEDS_PATCHING.txt should be removed.
+        hdulist = fits.open(bad_path.strpath)
+        hdulist[0].header['swcreate'] = 'MaxIm DL Version 5.21 130912 01A17'
+        hdulist.writeto(bad_path.strpath, overwrite=True)
+        hdulist.close()
+
+        result = run_patch.main(arglist)
+        assert result == 0
+        assert not needs_patching.check()
+
     def test_run_triage_no_output_generated(self, default_keywords):
         list_before = self.test_dir.listdir(sort=True)
         run_triage.triage_directories([self.test_dir.strpath],
@@ -166,24 +215,33 @@ class TestScript(object):
             print(option_name, file_name, directory.join(file_name).check())
             assert(directory.join(file_name).check())
 
+    def _triage_directories_kwargs(self, triage_dict):
+        # `patching_file_name` is only ever written by run_patch, not by
+        # run_triage.triage_directories, so it isn't a valid kwarg for that
+        # function and isn't among the files triage creates.
+        return {name: fname for name, fname in triage_dict.items()
+               if name != 'patching_file_name'}
+
     def test_triage_output_file_by_keyword(self, triage_dict,
                                            default_keywords):
+        kwargs = self._triage_directories_kwargs(triage_dict)
         run_triage.triage_directories([self.test_dir.strpath],
                                       keywords=default_keywords,
-                                      **triage_dict)
-        self._verify_triage_files_created(self.test_dir, triage_dict)
+                                      **kwargs)
+        self._verify_triage_files_created(self.test_dir, kwargs)
 
     def test_triage_destination_directory(self, triage_dict,
                                           default_keywords):
         destination = self.test_dir.make_numbered_dir()
         list_before = self.test_dir.listdir(sort=True)
+        kwargs = self._triage_directories_kwargs(triage_dict)
         run_triage.triage_directories([self.test_dir.strpath],
                                       keywords=default_keywords,
                                       destination=destination.strpath,
-                                      **triage_dict)
+                                      **kwargs)
         list_after = self.test_dir.listdir(sort=True)
         assert(list_before == list_after)
-        self._verify_triage_files_created(destination, triage_dict)
+        self._verify_triage_files_created(destination, kwargs)
 
     @pytest.mark.parametrize('extra_keys',
                              [['key1'],
@@ -443,6 +501,55 @@ class TestRunStandardHeaderProcess(object):
         new_mtimes = mtimes(fits_files)
         for original, new in zip(original_mtimes, new_mtimes):
             assert(original == new)
+
+    def test_generated_script_has_status_checks(self, scratch_destination):
+        """
+        Test that the generated shell script properly tracks status.
+
+        The script should:
+        - Start with status=0
+        - Have || status=1 appended to each command (mkdir, run_patch, run_astrometry, run_triage)
+        - End with exit $status
+        """
+        # Change to the scratch directory so the script is created there
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(scratch_destination.strpath)
+
+            arglist = ['--scripts-only', '--dest-root', scratch_destination.strpath]
+            arglist += [self.test_dir.strpath]
+            run_standard_header_process.main(arglist)
+
+            # Read the generated script
+            script_path = os.path.join(scratch_destination.strpath, 'header_process_script.sh')
+            assert os.path.exists(script_path), f"Script file not found at {script_path}"
+
+            with open(script_path, 'r') as f:
+                script_content = f.read()
+
+            lines = script_content.split('\n')
+            # Filter out empty lines for easier checking
+            non_empty_lines = [line for line in lines if line.strip()]
+
+            # Check first line is status=0
+            assert non_empty_lines[0] == 'status=0', f"First line should be 'status=0', got: {non_empty_lines[0]}"
+
+            # Check last line is exit $status
+            assert non_empty_lines[-1] == 'exit $status', f"Last line should be 'exit $status', got: {non_empty_lines[-1]}"
+
+            # Check that command lines end with || status=1
+            command_prefixes = ('mkdir', 'run_patch.py', 'run_astrometry.py', 'run_triage.py')
+            for line in non_empty_lines[1:-1]:  # Skip first and last lines
+                # Skip comment lines and if/fi statements
+                if line.startswith('#') or line.startswith('if') or line == 'fi':
+                    continue
+                # For indented lines (inside if block), check after indentation
+                stripped = line.lstrip()
+                if stripped.startswith(command_prefixes):
+                    assert stripped.endswith(' || status=1'), \
+                        f"Command line should end with ' || status=1': {line}"
+        finally:
+            os.chdir(original_cwd)
 
 
 class TestSortFiles(object):

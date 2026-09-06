@@ -563,12 +563,27 @@ def patch_headers(dir=None,
 
     add_unit : bool, optional
         If ``True``, add image unit to FITS header.
+
+    Returns
+    -------
+
+    list of str
+        Names (as yielded by the underlying
+        :class:`~ccdproc.ImageFileCollection`, i.e. relative to `dir`) of
+        files that were **not** patched because their imaging software
+        (``SWCREATE``) or instrument (``INSTRUME``) was not recognized. Such
+        files are saved with only the history entries added. Files that fail
+        part way through patching for other reasons (e.g. a LIGHT frame with
+        no pointing information) are logged as warnings but are *not*
+        included here; those cases are reported by ``run_triage``.
     """
     dir = dir or '.'
     if new_file_ext is None:
         new_file_ext = 'new'
 
     images = ImageFileCollection(location=dir, keywords=['imagetyp'])
+
+    not_patched = []
 
     for header, fname in images.headers(save_with_name=new_file_ext,
                                         save_location=save_location,
@@ -584,11 +599,22 @@ def patch_headers(dir=None,
         header.add_history('patch_headers.py modified this file on %s'
                            % run_time)
 
-        # Removed this from the try/except to ensure an error is
-        # raised if the software isn't recognized.
-        get_software_name(header)  # is there some software?
-        header['instrume']  # is there an instrument?
-        feder.instruments[header['instrume']]  # Is this an instrument we know?
+        try:
+            # is there some software, and do we recognize it?
+            get_software_name(header, file_name=fname)
+            # is there an instrument, and do we recognize it?
+            feder.instruments[header['instrume']]
+        except KeyError as e:
+            error_msg = ('********* FILE NOT PATCHED *********'
+                        'Unrecognized software or instrument in {0}: '
+                        '{1}'.format(fname, e))
+            logger.error(error_msg)
+            header.add_history(error_msg)
+            not_patched.append(fname)
+            header.add_history(history(patch_headers, mode='end',
+                               time=run_time))
+            logger.info('END PATCHING FILE: {0}'.format(fname))
+            continue
 
         try:
             header['imagetyp']  # is there an image type?
@@ -619,11 +645,12 @@ def patch_headers(dir=None,
                            '{1}: {2}'.format(fname, type(e).__name__, e))
             logger.warn(warning_msg)
             header.add_history(warning_msg)
-            continue
         finally:
             header.add_history(history(patch_headers, mode='end',
                                time=run_time))
             logger.info('END PATCHING FILE: {0}'.format(fname))
+
+    return not_patched
 
 
 def add_overscan_header(header, history=True):

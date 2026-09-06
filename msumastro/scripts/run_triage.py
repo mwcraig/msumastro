@@ -63,6 +63,10 @@ class DefaultFileNames(object):
         self.filter_file_name = 'NEEDS_FILTER.txt'
         self.output_table = 'Manifest.txt'
         self.astrometry_file_name = 'NEEDS_ASTROMETRY.txt'
+        # Written by run_patch.py (not by triage_directories below) for
+        # files whose imaging software or instrument was not recognized
+        # and so could not be patched.
+        self.patching_file_name = 'NEEDS_PATCHING.txt'
 
     def as_dict(self):
         return self.__dict__

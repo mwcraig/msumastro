@@ -132,6 +132,9 @@ def main(arglist=None):
 
     SCRIPT_NAME = 'header_process_script.sh'
 
+    # Track whether we write anything to the script
+    script_written = False
+
     scripts_to_run = args.run_only or 'pat'
     patch = 'p' in scripts_to_run
     astrometry = 'a' in scripts_to_run
@@ -203,7 +206,11 @@ def main(arglist=None):
         cmd_start_str = 'START commands for {}'.format(root)
         cmd_list = [separator_format.format(cmd_start_str)]
         for cmd in [make_destination, run_patch, run_astrometry, run_triage]:
-            cmd_list.append(' '.join(cmd))
+            cmd_str = ' '.join(cmd)
+            # Append || status=1 to non-empty commands
+            if cmd_str:
+                cmd_str += ' || status=1'
+            cmd_list.append(cmd_str)
         # Re-run patch and triage if any files are missing pointing-related
         # keywords.
         if run_patch or run_triage:
@@ -212,14 +219,29 @@ def main(arglist=None):
                                             destination, common_args,
                                             additional_args=object_list_option)
             cmd_list.append('if [[ -e {} ]]; then'.format(pointing_file))
-            cmd_list.append('    ' + ' '.join(rerun_patch))
-            cmd_list.append('    ' + ' '.join(run_triage))
+            rerun_patch_str = ' '.join(rerun_patch)
+            if rerun_patch_str:
+                rerun_patch_str += ' || status=1'
+            cmd_list.append('    ' + rerun_patch_str)
+            run_triage_str = ' '.join(run_triage)
+            if run_triage_str:
+                run_triage_str += ' || status=1'
+            cmd_list.append('    ' + run_triage_str)
             cmd_list.append('fi')
         end_str = separator_format.format('END commands for {}'.format(root))
         cmd_list.append(end_str)
         cmd_list = '\n'.join(cmd_list) + '\n'*5
+        # Start the script with status=0 the first time it is created so that
+        # each command can record a failure with `|| status=1` and the script
+        # can exit with that status at the end.
+        if not script_written and not os.path.exists(SCRIPT_NAME):
+            with open(SCRIPT_NAME, mode='w') as f:
+                f.write('status=0\n')
+
         with open(SCRIPT_NAME, mode='a') as f:
             f.write(cmd_list)
+
+        script_written = True
 
         if not args.scripts_only:
             subprocess.call(make_destination)
@@ -232,6 +254,11 @@ def main(arglist=None):
                 subprocess.call(run_astrometry)
             if triage:
                 subprocess.call(run_triage)
+
+    # Write final exit status if we wrote anything to the script
+    if script_written:
+        with open(SCRIPT_NAME, mode='a') as f:
+            f.write('exit $status\n')
 
 
 main.__doc__ = script_helpers._main_function_docstring(__name__)

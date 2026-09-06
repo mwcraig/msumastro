@@ -12,7 +12,7 @@ from .fitskeyword import FITSKeyword
 logger = logging.getLogger(__name__)
 
 __all__ = ['FederSite', 'ImageSoftware', 'Instrument', 'ApogeeAltaU9',
-           'ApogeeAspenCG16', 'MaximDL4', 'MaximDL5']
+           'ApogeeAspenCG16', 'MaximDL4', 'MaximDL5', 'MaximDL6', 'MaximDL7']
 
 
 class FederSite(EarthLocation):
@@ -416,18 +416,8 @@ class Feder(object):
         for instrument in self._instrument_objects:
             for name in instrument.fits_names:
                 self.instruments[name] = instrument
-        self._maximdl4 = MaximDL4()
-        self._maximdl5 = MaximDL5()
-        self._maximdl6 = MaximDL6()
-        self._sbig_ccdops = SBIGCCDOps()
-        self._astrofx = CelestronAstroFX()
-        self._software_objects = [
-            self._maximdl4,
-            self._maximdl5,
-            self._maximdl6,
-            self._sbig_ccdops,
-            self._astrofx
-        ]
+        self._software_objects = [cls() for cls in
+                                  ImageSoftware.__subclasses__()]
         self.software = {}
         self.software_FITS_keywords = []
         for software in self._software_objects:

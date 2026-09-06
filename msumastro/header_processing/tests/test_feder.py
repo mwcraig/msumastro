@@ -1,6 +1,7 @@
 import pytest
 
-from ..feder import Feder, ApogeeAltaU9, ApogeeAspenCG16
+from ..feder import (Feder, ApogeeAltaU9, ApogeeAspenCG16, ImageSoftware,
+                     MaximDL7)
 
 
 def test_apogee_alta_has_overscan():
@@ -36,3 +37,18 @@ def test_apogee_aspen_fits_names():
 def test_sbig_celestron_has_no_overscan(instrument):
     feder_obj = Feder()
     assert not feder_obj.instruments[instrument].has_overscan([])
+
+
+def test_all_image_software_subclasses_are_registered():
+    feder_obj = Feder()
+    for cls in ImageSoftware.__subclasses__():
+        instance = cls()
+        for name in instance.fits_name:
+            assert name in feder_obj.software
+            assert isinstance(feder_obj.software[name], cls)
+
+
+def test_maximdl7_registered():
+    feder_obj = Feder()
+    swname = 'MaxIm DL Version 7.1.4.0 260709 07593'
+    assert isinstance(feder_obj.software[swname], MaximDL7)

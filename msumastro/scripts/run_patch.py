@@ -77,13 +77,14 @@ From within python this would be::
     run_patch.main(['--object-list', 'path/to/list.txt',
                    'dir1', 'dir2', 'dir3'])
 """
-from os import getcwd
+from os import getcwd, remove
 from os import path
 import warnings
 import logging
 
 from ..header_processing import patch_headers, add_object_info, list_name_is_url
 from ..customlogger import console_handler, add_file_handlers
+from . import run_triage
 from .script_helpers import (setup_logging, construct_default_parser,
                              handle_destination_dir_logging_check,
                              _main_function_docstring)
@@ -124,6 +125,19 @@ def patch_directories(directories, verbose=False, object_list=None,
         Path to directory in which patched images will be stored. Default
         value is None, which means that **files will be overwritten** in
         the directory being processed.
+
+    Returns
+    -------
+
+    int
+        Total number of files, across all directories, whose imaging
+        software or instrument was not recognized (and so could not be
+        patched). As a side effect, for each directory processed, a file
+        called ``NEEDS_PATCHING.txt`` (see
+        :class:`~msumastro.scripts.run_triage.DefaultFileNames`) is written
+        to `working_dir` listing those files if there are any, or removed if
+        it exists but there are none, mirroring the other ``NEEDS_*.txt``
+        files written by :mod:`~msumastro.scripts.run_triage`.
     """
     no_explicit_object_list = (object_list is None)
     if not no_explicit_object_list:
@@ -133,6 +147,9 @@ def patch_directories(directories, verbose=False, object_list=None,
         else:
             full_path = path.abspath(object_list)
             obj_dir, obj_name = path.split(full_path)
+
+    patching_file_name = run_triage.DefaultFileNames().patching_file_name
+    total_not_patched = 0
 
     for currentDir in directories:
         if destination is not None:
@@ -150,18 +167,20 @@ def patch_directories(directories, verbose=False, object_list=None,
             ignore_from = 'astropy.io.fits.hdu.hdulist'
             warnings.filterwarnings('ignore', module=ignore_from)
             if overscan_only:
-                patch_headers(currentDir, new_file_ext='', overwrite=True,
-                              save_location=destination,
-                              purge_bad=False,
-                              add_time=False,
-                              add_apparent_pos=False,
-                              add_overscan=True,
-                              fix_imagetype=False,
-                              add_unit=False)
+                not_patched = patch_headers(currentDir, new_file_ext='',
+                                            overwrite=True,
+                                            save_location=destination,
+                                            purge_bad=False,
+                                            add_time=False,
+                                            add_apparent_pos=False,
+                                            add_overscan=True,
+                                            fix_imagetype=False,
+                                            add_unit=False)
 
             else:
-                patch_headers(currentDir, new_file_ext='', overwrite=True,
-                              save_location=destination)
+                not_patched = patch_headers(currentDir, new_file_ext='',
+                                            overwrite=True,
+                                            save_location=destination)
 
                 default_object_list_present = path.exists(path.join(currentDir,
                                                           DEFAULT_OBJ_LIST))
@@ -171,6 +190,22 @@ def patch_directories(directories, verbose=False, object_list=None,
                 add_object_info(working_dir, new_file_ext='', overwrite=True,
                                 save_location=destination,
                                 object_list_dir=obj_dir, object_list=obj_name)
+
+        needs_patching_path = path.join(working_dir, patching_file_name)
+        if not_patched:
+            logger.error('%d file(s) in %s were not patched; see %s',
+                         len(not_patched), currentDir, needs_patching_path)
+            run_triage.write_list(working_dir, patching_file_name,
+                                  not_patched)
+        else:
+            try:
+                remove(needs_patching_path)
+            except OSError:
+                pass
+
+        total_not_patched += len(not_patched)
+
+    return total_not_patched
 
 
 def construct_parser():
@@ -201,10 +236,13 @@ def main(arglist=None):
 
     do_not_log_in_destination = handle_destination_dir_logging_check(args)
 
-    patch_directories(args.dir, verbose=args.verbose,
-                      object_list=args.object_list,
-                      destination=args.destination_dir,
-                      no_log_destination=do_not_log_in_destination,
-                      overscan_only=args.overscan_only)
+    total_not_patched = patch_directories(
+        args.dir, verbose=args.verbose,
+        object_list=args.object_list,
+        destination=args.destination_dir,
+        no_log_destination=do_not_log_in_destination,
+        overscan_only=args.overscan_only)
+
+    return 1 if total_not_patched else 0
 
 main.__doc__ = _main_function_docstring(__name__)

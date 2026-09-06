@@ -150,22 +150,36 @@ def test_purging_maximdl5_keywords(data_source):
 
 
 @pytest.mark.parametrize('badkey', ['swcreate', 'instrume'])
-def test_patch_headers_stops_if_instrument_or_software_not_found(badkey,
-                                                                 caplog):
+def test_patch_headers_skips_unrecognized_instrument_or_software(badkey,
+                                                                  caplog):
     ic = ImageFileCollection(_test_dir, keywords=['imagetyp'])
     # need a header that contains IMAGETYP so that it will be processed
     a_fits_file = ''
+    other_files = []
     for h, f in ic.headers(imagetyp='*', return_fname=True):
-        a_fits_file = f
-        break
+        if not a_fits_file:
+            a_fits_file = f
+        else:
+            other_files.append(f)
     a_fits_hdu = fits.open(path.join(_test_dir, a_fits_file))
     hdr = a_fits_hdu[0].header
     badname = 'Nonsense'
     hdr[badkey] = badname
     a_fits_hdu.writeto(path.join(_test_dir, a_fits_file), overwrite=True)
 
-    with pytest.raises(KeyError):
-        ph.patch_headers(_test_dir)
+    not_patched = ph.patch_headers(_test_dir, new_file_ext='', overwrite=True)
+
+    # The bad file should be reported back, not raise an exception, and
+    # the run should not stop -- the rest of the directory should still
+    # get patched.
+    assert a_fits_file in not_patched
+
+    errs = get_patch_header_logs(caplog, level=logging.ERROR)
+    assert 'FILE NOT PATCHED' in errs
+    assert badname in errs
+
+    other_header = fits.getheader(path.join(_test_dir, other_files[0]))
+    assert other_header.get('PURGED')
 
 
 def test_adding_overscan_apogee_u9(make_overscan_test_files):
