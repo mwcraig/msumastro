@@ -289,6 +289,7 @@ class MaximDL5(ImageSoftware):
         fits_name = ['MaxIm DL Version 5.21 130912 01A17',
                      'MaxIm DL Version 5.21 120829 2R1M0',
                      'MaxIm DL Version 5.23 130912 01A17',
+                     'MaxIm DL Version 5.14',
                      'MaxIm DL Version 5.15']
         super(MaximDL5, self).__init__("MaxImDL",
                                        fits_name=fits_name,
@@ -318,6 +319,7 @@ class MaximDL6(ImageSoftware):
                      'MaxIm DL Version 6.29 220525 26KU2',
                      'MaxIm DL Version 6.30 220525 26KU2',
                      'MaxIm DL Version 6.30 240628 2HVXS',
+                     'MaxIm DL Version 6.50 240628 2HVXS',
                      ]
         super(MaximDL6, self).__init__("MaxImDL",
                                        fits_name=fits_name,

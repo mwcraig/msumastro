@@ -1,7 +1,7 @@
 import pytest
 
 from ..feder import (Feder, ApogeeAltaU9, ApogeeAspenCG16, ImageSoftware,
-                     MaximDL7)
+                     MaximDL5, MaximDL6, MaximDL7)
 
 
 def test_apogee_alta_has_overscan():
@@ -52,3 +52,12 @@ def test_maximdl7_registered():
     feder_obj = Feder()
     swname = 'MaxIm DL Version 7.1.4.0 260709 07593'
     assert isinstance(feder_obj.software[swname], MaximDL7)
+
+
+@pytest.mark.parametrize('swname,cls', [
+    ('MaxIm DL Version 5.14', MaximDL5),
+    ('MaxIm DL Version 6.50 240628 2HVXS', MaximDL6),
+])
+def test_maximdl_versions_seen_at_feder_registered(swname, cls):
+    feder_obj = Feder()
+    assert isinstance(feder_obj.software[swname], cls)

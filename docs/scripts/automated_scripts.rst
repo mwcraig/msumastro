@@ -99,12 +99,17 @@ Manual intervention will be required in any of these circumstances:
     In addition, one file with suffix `.blind` will be created for each light
     file which contains no pointing information.
 
-+ **The imaging software or instrument that created a file is not recognized.**
++ **The imaging software or instrument that created a file is missing or not
+  recognized, or the file has no image type.**
   ``run_patch`` identifies the software that wrote a file from the ``SWCREATE``
-  keyword and the instrument from ``INSTRUME``; a value it does not recognize
-  (for example, a new MaxIm DL version that has not yet been added to
-  :mod:`~msumastro.header_processing.feder`) means that file cannot be
-  patched. The rest of the files in the directory are still patched normally.
+  keyword and the instrument from ``INSTRUME``; a missing keyword or a value
+  it does not recognize (for example, a new MaxIm DL version that has not yet
+  been added to :mod:`~msumastro.header_processing.feder`) means that file
+  cannot be patched. The same is true of a file with no ``IMAGETYP``. The
+  rest of the files in the directory are still patched normally, and
+  :mod:`~msumastro.scripts.run_triage` leaves the unpatched files (which
+  still have MaxIm DL-style image types like "Light Frame") out of its
+  results rather than stopping.
 
   * **How to identify this case**: :mod:`~msumastro.scripts.run_patch` writes
     a file called "NEEDS_PATCHING.txt" listing every file it could not patch

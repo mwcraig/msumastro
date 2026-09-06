@@ -131,8 +131,8 @@ def patch_directories(directories, verbose=False, object_list=None,
 
     int
         Total number of files, across all directories, whose imaging
-        software or instrument was not recognized (and so could not be
-        patched). As a side effect, for each directory processed, a file
+        software, instrument or image type was missing or not recognized
+        (and so could not be patched). As a side effect, for each directory processed, a file
         called ``NEEDS_PATCHING.txt`` (see
         :class:`~msumastro.scripts.run_triage.DefaultFileNames`) is written
         to `working_dir` listing those files if there are any, or removed if

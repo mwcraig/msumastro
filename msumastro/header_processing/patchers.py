@@ -571,7 +571,8 @@ def patch_headers(dir=None,
         Names (as yielded by the underlying
         :class:`~ccdproc.ImageFileCollection`, i.e. relative to `dir`) of
         files that were **not** patched because their imaging software
-        (``SWCREATE``) or instrument (``INSTRUME``) was not recognized. Such
+        (``SWCREATE``) or instrument (``INSTRUME``) was missing or not
+        recognized, or because they have no image type (``IMAGETYP``). Such
         files are saved with only the history entries added. Files that fail
         part way through patching for other reasons (e.g. a LIGHT frame with
         no pointing information) are logged as warnings but are *not*
@@ -600,14 +601,20 @@ def patch_headers(dir=None,
                            % run_time)
 
         try:
-            # is there some software, and do we recognize it?
+            # is there some software, and do we recognize it? A missing
+            # SWCREATE raises ValueError, an unrecognized one KeyError.
             get_software_name(header, file_name=fname)
             # is there an instrument, and do we recognize it?
             feder.instruments[header['instrume']]
-        except KeyError as e:
+            # is there an image type? Nothing below can be done without it.
+            header['imagetyp']
+        except (KeyError, ValueError) as e:
+            # Collapse whitespace: the message goes into a HISTORY card,
+            # which cannot contain newlines.
             error_msg = ('********* FILE NOT PATCHED *********'
-                        'Unrecognized software or instrument in {0}: '
-                        '{1}'.format(fname, e))
+                        'Missing or unrecognized software, instrument or '
+                        'image type in {0}: '
+                        '{1}'.format(fname, ' '.join(str(e).split())))
             logger.error(error_msg)
             header.add_history(error_msg)
             not_patched.append(fname)
@@ -617,8 +624,6 @@ def patch_headers(dir=None,
             continue
 
         try:
-            header['imagetyp']  # is there an image type?
-
             if purge_bad:
                 purge_bad_keywords(header, history=True, file_name=fname)
 
