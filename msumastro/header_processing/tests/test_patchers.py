@@ -25,7 +25,7 @@ _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
 simbad_down = False
-OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
+OBJECT_LIST_URL = 'https://raw.githubusercontent.com/feder-observatory/acp-plans/main/feder_object_list.csv'
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
@@ -413,6 +413,15 @@ def test_missing_object_file_issues_warning(caplog):
     ph.add_object_info(_test_dir)
     patch_header_warnings = get_patch_header_logs(caplog)
     assert 'No object list in directory' in patch_header_warnings
+
+
+def test_unreadable_object_list_url_raises_error(caplog):
+    # A missing local list is skipped, but a URL that cannot be read must
+    # not be, or every image silently ends up without an object.
+    bad_url = 'http://localhost:9/no_such_object_list.csv'
+    with pytest.raises(IOError):
+        ph.add_object_info(_test_dir, object_list=bad_url)
+    assert 'Unable to read object list' in caplog.text
 
 
 def test_no_object_match_for_image_warning_includes_file_name(caplog):
