@@ -415,6 +415,15 @@ def test_missing_object_file_issues_warning(caplog):
     assert 'No object list in directory' in patch_header_warnings
 
 
+def test_unreadable_object_list_url_raises_error(caplog):
+    # A missing local list is skipped, but a URL that cannot be read must
+    # not be, or every image silently ends up without an object.
+    bad_url = 'http://localhost:9/no_such_object_list.csv'
+    with pytest.raises(IOError):
+        ph.add_object_info(_test_dir, object_list=bad_url)
+    assert 'Unable to read object list' in caplog.text
+
+
 def test_no_object_match_for_image_warning_includes_file_name(caplog):
     remove(path.join(_test_dir, _default_object_file_name))
     to_write = ('# comment 1\n# comment 2\nobject,RA,Dec\n'

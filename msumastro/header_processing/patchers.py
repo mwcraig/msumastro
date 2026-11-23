@@ -750,6 +750,11 @@ def add_object_info(directory=None,
         object_names, ra_dec = read_object_list(object_dir,
                                                 input_list=object_list)
     except IOError:
+        if object_list is not None and list_name_is_url(object_list):
+            # A list that should be on the internet but cannot be read is
+            # an error; only a missing local list is skipped.
+            logger.error('Unable to read object list %s', object_list)
+            raise
         warn_msg = 'No object list in directory {0}, skipping.'
         logger.warn(warn_msg.format(directory))
         return
