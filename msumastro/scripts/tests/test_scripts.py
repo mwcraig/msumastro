@@ -22,7 +22,7 @@ from .. import quick_add_keys_to_file
 from ...tests.data import get_data_dir
 
 _default_object_file_name = 'obsinfo.txt'
-OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
+OBJECT_LIST_URL = 'https://raw.githubusercontent.com/feder-observatory/acp-plans/main/feder_object_list.csv'
 
 
 def set_mtimes(files, offset=10):

@@ -94,8 +94,8 @@ screen_handler = console_handler()
 logger.addHandler(screen_handler)
 
 DEFAULT_OBJ_LIST = 'obsinfo.txt'
-DEFAULT_OBJECT_URL = ('https://raw.github.com/mwcraig/feder-object-list'
-                      '/master/feder_object_list.csv')
+DEFAULT_OBJECT_URL = ('https://raw.githubusercontent.com/feder-observatory'
+                      '/acp-plans/main/feder_object_list.csv')
 
 
 def patch_directories(directories, verbose=False, object_list=None,

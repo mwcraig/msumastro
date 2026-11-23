@@ -25,7 +25,7 @@ _test_dir = ''
 _default_object_file_name = 'obsinfo.txt'
 _test_image_name = 'uint16.fit'
 simbad_down = False
-OBJECT_LIST_URL = 'https://raw.github.com/mwcraig/feder-object-list/master/feder_object_list.csv'
+OBJECT_LIST_URL = 'https://raw.githubusercontent.com/feder-observatory/acp-plans/main/feder_object_list.csv'
 
 
 @pytest.mark.usefixtures('object_file_no_ra')
